@@ -17,6 +17,10 @@ target/
 
 # ignoro el pom
 pom.xml
+
+# ignoro los escudos
+src/main/webapp/resources/img/escudo.gif
+src/main/webapp/resources/img/favicon.ico
  
 ######################
 # Windows
