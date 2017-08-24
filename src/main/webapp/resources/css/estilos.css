@@ -1,0 +1,308 @@
+
+/* 
+    Se buscó, minimamente, adaptar los estilos de PrimeFaces a los existentes en la versión
+    php del componente local
+    Author: rincostante
+*/
+
+/* Para quitar los bordes a todos los paneles */
+.ui-widget {
+    font-size: 95% !important;
+}
+
+.ui-widget-content{
+    border: none !important;
+}
+
+.centro{
+    margin-bottom:10px;
+}
+
+/* Define estilos para el panel central del layout */
+.centro .ui-widget-content{
+    border-radius: 6px;
+    background: #EAEDEB;
+}
+
+.abmparam{
+    position: absolute; 
+    top: 15%;
+    left: 10%; 
+    width:80%;
+}
+
+.panelLogin{
+    position: absolute; 
+    top: 15%;
+    left: 25%; 
+    width:50%;
+}
+
+.abmparam .ui-widget-content{
+    background: white;
+    background: -webkit-linear-gradient(#FAFDFC, #CFD1D0);
+    background: -moz-linear-gradient(#FAFDFC, #CFD1D0);
+    background: -o-linear-gradient(#FAFDFC, #CFD1D0);
+    background: linear-gradient(#FAFDFC, #CFD1D0);
+    border-radius: 8px;
+}
+
+.panelLogin .ui-widget-content{
+    background: white;
+    background: -webkit-linear-gradient(#FAFDFC, #CFD1D0);
+    background: -moz-linear-gradient(#FAFDFC, #CFD1D0);
+    background: -o-linear-gradient(#FAFDFC, #CFD1D0);
+    background: linear-gradient(#FAFDFC, #CFD1D0);
+    border-radius: 8px;
+}
+
+/* Define estilos para el panel principal del frame */
+.pnPrincipal{
+    position: absolute; 
+    left: 18%; 
+    width:78%;
+}
+
+.pnMenuHoriz{
+    position: absolute; 
+    width:15%; 
+    height: 85%;
+}
+
+.pnPrincipal .ui-widget-content{
+    background: white;
+    background: -webkit-linear-gradient(#FAFDFC, #CFD1D0);
+    background: -moz-linear-gradient(#FAFDFC, #CFD1D0);
+    background: -o-linear-gradient(#FAFDFC, #CFD1D0);
+    background: linear-gradient(#FAFDFC, #CFD1D0);
+    border-radius: 8px;
+}
+
+/* Define estilos para el componente de cabecera de layout */
+.top .ui-layout-unit-content{
+    border-radius: 6px;
+    background: #0B614B;
+    background: -webkit-linear-gradient(#0B614B, #07220E);
+    background: -moz-linear-gradient(#0B614B, #07220E);
+    background: -o-linear-gradient(#0B614B, #07220E);
+    background: linear-gradient(#0B614B, #07220E);
+}
+
+.titPanel{
+    font-size: 50px !important;
+}
+
+/* Define las filas de una tabla */
+.table .ui-widget-content{
+    border: 1px solid #dddddd !important;
+    background: white;
+    color: #C5C6C6 !important;
+}
+
+.table .ui-outputlabel{
+    color: #07220E !important;
+}
+
+.table .ui-datatable-odd{
+    background-color: #f9f9f9 !important;
+}
+
+.ui-datepicker{
+    color: #610B21 !important;
+}
+
+/* alineación vertical panelGrid */
+.panelColumns td {
+    vertical-align: top; 
+} 
+
+/* Botones */
+.fa-file-pdf-o{
+    color: #FF9E00;
+}
+.fa-pencil { 
+    color: #FF9E00;
+}
+
+.fa-save {
+    color: #3B8980;
+}
+
+.fa-refresh{
+    color: #8A0829;
+}
+
+.fa-toggle-off{
+    color: #FF0000;
+}
+
+.fa-search-plus{
+    color: #4F75E6;
+}
+
+.fa-sign-out{
+    color: #C10D3A;
+}
+
+.fa-toggle-on{
+    color: #3B8980;
+}
+
+.fa-search{
+    color: #3B8980;
+}
+
+.fa-plus{
+    color: #3B8980;
+}
+
+.fa-external-link{
+    color: #3B8980;
+}
+
+.fa-share{
+    color: #3B8980;
+}
+
+.fa-close{
+    color: #8A0829;
+}
+
+.fa-cloud-download{
+    color: #81BEF7;
+}
+
+.fa-cloud-upload{
+    color: #81BEF7;
+}
+
+.fa-minus-circle{
+    color: #FF9E00;
+}
+
+.fa-plus-circle{
+    color: #3B8980;
+}
+
+.fa-download{
+    color: #3B8980;
+}
+
+.fa-arrow-circle-down{
+    color: #3B8980;
+}
+
+.fa-play-circle{
+    color: #3B8980;
+}
+
+.fa-key{
+    color: #FF9E00;
+}
+
+.ui-growl-item-container{
+    background: #81BEF7 !important;
+    border-radius: 8px !important;
+}
+
+/* Heredado */
+.top{
+    background-color: #07220E;
+}
+
+/* Heredado */
+.topPg{
+    width: 100%;
+}
+
+/* Color para la letra del header */
+.topOl{
+    color: #F9F4F2;
+    font-size: xx-large !important;
+}
+
+/* Pie */
+.botton .ui-layout-unit-content{
+   background: #07220E;
+}
+
+.botton{
+    background-color: #102554;
+    border-radius: 0px;
+}
+
+.bottonPg{
+    width: 100%;
+}
+
+.bottonOl{
+    color: #848484;
+}
+
+/* Define color de fondo para la barra de menús */
+.ui-toolbar{
+    background: #BBCDBF !important;
+    -webkit-box-shadow: 0px 7px 15px -6px rgba(0,0,0,0.56);
+    -moz-box-shadow: 0px 7px 15px -6px rgba(0,0,0,0.56);
+    box-shadow: 0px 7px 15px -6px rgba(0,0,0,0.56);
+}
+
+/* Define los botones de la barra de menús */
+.ui-menubar,.ui-menu-child,.ui-menu{
+    background: #BBCDBF !important;
+    background: -webkit-linear-gradient(#D6E9DB, #A1B1A5)!important;
+    background: -moz-linear-gradient(#D6E9DB, #A1B1A5)!important;
+    background: -o-linear-gradient(#D6E9DB, #A1B1A5)!important;
+    background: linear-gradient(#D6E9DB, #A1B1A5)!important;
+}
+
+/* Define estilos para los menús seleccionados */
+.ui-menuitem-link:hover{
+    background-color: #8A0829 !important;
+    background: -webkit-linear-gradient(#8A0829, #610B21)!important;
+    background: -moz-linear-gradient(#8A0829, #610B21)!important;
+    background: -o-linear-gradient(#8A0829, #610B21)!important;
+    background: linear-gradient(#8A0829, #610B21)!important;
+    color: #BBCDBF !important;
+}
+
+/* Define estilos para el menú vertical */
+.hMenu .ui-menuitem{
+    background-color: #BBCDBF !important;
+}
+
+ul li.ui-menuitem-active>a{
+    background-image: none !important;   
+}
+
+.ui-panelmenu-header{
+    background: #103B80 !important;
+    background: -webkit-linear-gradient(#7CB0A3, #0F8164)!important; 
+    background: -moz-linear-gradient(#7CB0A3, #0F8164)!important;
+    background: -o-linear-gradient(#7CB0A3, #0F8164)!important;
+    background: linear-gradient(#7CB0A3, #0F8164)!important;
+}
+
+.ui-panelmenu .ui-panelmenu-header a {
+    color: white !important;
+    font-weight: 100 !important;
+    text-decoration: none !important;
+}
+
+/* Define estilos para los headers de los paneles */
+.ui-panel-titlebar{
+    background: #E9D6D7 !important;
+}
+
+.frmLogin{
+    background-color: #103B80;
+}
+
+.frmError{
+    background-color: #102554;
+    position: relative; 
+    margin-top: 365px; 
+    left:50%; width:490px; 
+    margin-left:-245px; 
+    font-size: 70%
+}

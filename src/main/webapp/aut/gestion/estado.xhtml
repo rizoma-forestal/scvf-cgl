@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/key.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Estado" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frEstado">
+            <!-- Formulario -->
+            <p:panel id="pnGral" styleClass="centro" header="Seleccionar" >
+                <h:panelGrid columns="3">
+                    <p:outputLabel value="Estado Actual: " />
+                    <p:outputLabel value="#{mbAutorizacion.autorizacion.estado.nombre}" style=" font-weight: bold" />
+                    <p:commandButton title="Modificar el Estado de la Autorización" styleClass="save" icon="fa fa-fw fa-pencil" 
+                                     action="#{mbAutorizacion.prepareEditEstado()}" update="frEstado,messages" 
+                                     rendered="#{not mbAutorizacion.editEstado}"/>
+                </h:panelGrid>
+                <h:panelGrid columns="2" rendered="#{mbAutorizacion.editEstado}" >
+                    <p:outputLabel value="Cambiar Estado" for="cmbEstados"/>   
+                    <p:selectOneMenu id="cmbEstados" value="#{mbAutorizacion.autorizacion.estado}" required="true" 
+                                     requiredMessage="Debe seleccionar un Estado." >
+                        <f:selectItem itemLabel="Seleccione un Estado" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{mbAutorizacion.lstEstados}" 
+                                       var="estado" itemLabel="#{estado.nombre}" itemValue="#{estado}"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Observaciones" for="obs"/>
+                    <p:inputTextarea  id="obs" rows="5" cols="50" counter="display" maxlength="500" 
+                                      value="#{mbAutorizacion.autorizacion.obs}" counterTemplate="Restan {0} caracteres." 
+                                      autoResize="false" />
+                    <h:outputText id="display" style="font-size: 12px" />
+                </h:panelGrid>
+                <h:panelGrid columns="3" rendered="#{mbAutorizacion.editEstado}" >
+                    <p:commandButton title="Actualizar el Estado de la Autorización" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Guardar" action="#{mbAutorizacion.actualizarEstado()}" update="frEstado,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnGral" resetValues="true" />
+                    </p:commandButton>
+                    <p:commandButton title="Cancelar el cambio de Estado de la Autorización" styleClass="save" icon="fa fa-fw fa-close" 
+                                     value="Cancelar" action="#{mbAutorizacion.cancelarEditEstado()}" process="@this" update="pnGral" />
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

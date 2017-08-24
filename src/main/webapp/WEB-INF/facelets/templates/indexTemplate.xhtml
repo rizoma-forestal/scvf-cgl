@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <link href="#{request.contextPath}/resources/css/estilos.css" type="text/css" rel="stylesheet" />
+        <link rel="shortcut icon" type="image/x-icon" href="#{request.contextPath}/resources/img/favicon.ico"/>
+        <h:outputScript library="js" name="calendar_es.js" />
+        <f:facet name="first">
+            <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+            <title>#{bundle.Aplicacion}</title>
+        </f:facet>
+    </h:head>
+    <h:body >
+
+        <p:layout fullPage="true" >
+
+            <p:layoutUnit id="top" styleClass="top" position="north" size="100" resizable="true" closable="true" collapsible="true">
+                <h:panelGrid id="topPg" columns="3" styleClass="topPg" >
+                    <img src="#{request.contextPath}/resources/img/logoSACveforHeader.jpg" width="80" height="80" style="float: left; margin-left: 15px" />
+                    <p:outputLabel id="topOl" value="SACVeFor - Gestión local de la Provincia de #{config.Provincia}" styleClass="topOl" />
+                </h:panelGrid>
+            </p:layoutUnit>
+
+            <p:layoutUnit id="botton" styleClass="botton" position="south" size="100" closable="true" collapsible="true" style="background-color: #07220E">
+                <h:panelGrid id="botPg" columns="2" style = "margin: 0 auto" >
+                    <img src="#{request.contextPath}/resources/img/escudo.gif" height="80" />
+                    <h:panelGrid id="aut" columns="1" >
+                        <p:outputLabel value="#{config.AutoridadLocal}" style="color: #F9F4F2" />
+                        <p:outputLabel value="#{config.DependienteDe}" style="color: #F9F4F2" />
+                        <p:outputLabel value="#{config.Gobierno}" style="color: #F9F4F2" />
+                    </h:panelGrid>
+                </h:panelGrid>
+            </p:layoutUnit>
+
+            <p:layoutUnit id="pnCentral" styleClass="centro" position="center" >
+                <p:toolbar >
+                    <f:facet name="left">
+                        <p:menubar>
+                            <p:menuitem value="#{config.Inicio}" url="#{config.Server}#{bundle.RutaAplicacion}" />
+                            <p:submenu label="#{config.Administracion}" >
+                                <p:menuitem value="#{config.TiposParametros}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.EntidadesParametricas}/tipoParam.xhtml" />
+                                <p:menuitem value="#{config.EntidadesParametricas}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.EntidadesParametricas}/entParam.xhtml" />
+                                <p:submenu label="#{config.Productos}" >
+                                    <p:menuitem value="#{config.ProdUnidadesMedida}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Productos}/undadMedida.xhtml" />
+                                    <p:menuitem value="#{config.ProdClases}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Productos}/clase.xhtml" />
+                                    <p:menuitem value="#{config.ProdEspeciesLocal}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Productos}/especie.xhtml" />
+                                    <p:menuitem value="#{config.Productos}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Productos}/producto.xhtml" />
+                                </p:submenu>
+                            </p:submenu>                         
+                            <p:submenu label="#{config.Autorizaciones}" >
+                                <p:menuitem value="#{config.Ver}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.VerAut}/listado.xhtml" />
+                                <p:menuitem value="#{config.Gestionar}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.GestionarAut}/index.xhtml" />
+                                <p:menuitem value="#{config.ZonasIntervencion}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ZonasIntervencion}/zona.xhtml" />
+                                <p:menuitem value="#{config.SubZonasIntervencion}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ZonasIntervencion}/subZona.xhtml" />
+                                <p:menuitem value="#{config.EstadosAut}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.EstadosAutorizacion}/estado.xhtml" />
+                                <p:menuitem value="#{config.Tecnicos}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Personas}/tec.xhtml" />
+                                <p:menuitem value="#{config.Proponentes}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Personas}/prop.xhtml" />
+                                <p:menuitem value="#{config.Apoderados}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Personas}/apod.xhtml" />
+                                <p:menuitem value="#{config.Inmuebles}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Inmuebles}/inmueble.xhtml" />
+                            </p:submenu>
+                            <p:submenu label="#{config.Guias}" >
+                                <p:menuitem value="#{config.Ver}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.VerGuias}/listado.xhtml" />
+                                <p:menuitem value="#{config.Gestionar}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.GestionarGuias}/index.xhtml" />
+                                <p:menuitem value="#{config.EstadosGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/estado.xhtml" />
+                                <p:menuitem value="#{config.TiposGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/tipo.xhtml" />
+                                <p:menuitem value="#{config.Copias}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/copia.xhtml" />
+                                <p:menuitem value="#{config.Destinatarios}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/destinatario.xhtml" />
+                                <p:menuitem value="#{config.Transportistas}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/transportista.xhtml" />
+                                <p:menuitem value="#{config.Vehiculos}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Transporte}/vehiculo.xhtml" />
+                            </p:submenu>
+                            <p:menuitem value="#{config.Usuarios}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Seguridad}/usuario.xhtml" />
+                        </p:menubar>
+                    </f:facet>
+                    <f:facet name="right">
+                        <h:form prependId="false" id="frCerrarSession" >
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="Usuario: #{mbSesion.usuario.nombreCompleto}" style="margin-right:10px" />
+                                <p:menubar>
+                                    <p:menuitem icon="fa fa-fw fa-key" value="Cambiar clave" action="#{mbSesion.cambiarClave()}"/>
+                                    <p:menuitem icon="fa fa-fw fa-sign-out" value="Cerrar sesión" action="#{mbSesion.logout()}"/>
+                                </p:menubar>
+                            </h:panelGrid>
+                        </h:form>
+                    </f:facet>
+                </p:toolbar>
+                <ui:insert name="content">Página en construcción</ui:insert>
+            </p:layoutUnit>
+
+        </p:layout>
+
+    </h:body>
+</html>
+

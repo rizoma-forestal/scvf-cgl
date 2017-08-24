@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/user-6.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Apoderados}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frApoderados">
+            <!-- Formulario de búsqueda -->
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
+                     rendered="#{mbAutorizacion.persona eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                <h:panelGrid columns="5">
+                    <p:outputLabel value="CUIT" for="cuitBuscar"/>
+                    <p:inputText id="cuitBuscar" value="#{mbAutorizacion.cuitBuscar}" 
+                                     requiredMessage="Debe haber un CUIT para buscar" required="true"/>
+                    <p:commandButton title="Buscar #{config.Apoderado} existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbAutorizacion.buscarPersona(config.Apoderado)}" update="frApoderados,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar" resetValues="true" />
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Vista de los datos del Apoderado -->
+            <p:panel id="pnForm" header="Datos del #{config.Apoderado} obtenido" style="margin-bottom:10px;" rendered="#{mbAutorizacion.persona ne null}">
+                <h:panelGrid columns="2" cellpadding="1">
+                    <p:outputLabel value="Nombre completo/Razón Social: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.nombreCompleto}" style=" font-weight: bold" />
+                    <p:outputLabel value="CUIT: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.cuit}" style=" font-weight: bold" />
+                    <p:outputLabel value="Tipo de Persona: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.tipo}" style=" font-weight: bold" />
+                    <p:outputLabel value="Inicio de vigencia: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.inicioVigencia}" style=" font-weight: bold" >
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </p:outputLabel>
+                    <p:outputLabel value="Fin de vigencia: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.finVigencia}" style=" font-weight: bold" >
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </p:outputLabel>
+                </h:panelGrid>
+                <h:panelGrid columns="2">
+                    <p:commandButton title="Agregar el #{config.Apoderado} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Agregar" action="#{mbAutorizacion.addPersona(config.Apoderado)}" 
+                                     rendered="#{!mbAutorizacion.viewPersona}" update="@form,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Buscar otro #{config.Apoderado}" styleClass="save" icon="fa fa-fw fa-search-plus" 
+                                     rendered="#{!mbAutorizacion.viewPersona}" value="Buscar otro" 
+                                     action="#{mbAutorizacion.limpiarViewPersona()}" update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Guardar #{config.Apoderado}" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Guardar" action="#{mbAutorizacion.limpiarViewPersona()}" 
+                                     rendered="#{mbAutorizacion.viewPersona or not mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Desasociar #{config.Apoderado}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
+                                     value="Quitar" action="#{mbAutorizacion.deletePersona(config.Apoderado)}" 
+                                     rendered="#{mbAutorizacion.viewPersona and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form,messages" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Listado de Apoderados vinculados -->
+            <p:panel id="pnTable" header="Listado de #{config.Apoderados}" style="margin-bottom:10px;" >
+                <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.lstApoderados}"
+                             var="apod"
+                             id="dtApod" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="apodTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{apod.id}"/>
+                    </p:column>
+                    <p:column headerText="Nombre completo" 
+                        filterMatchMode="contains"
+                        sortBy="#{apod.nombreCompleto}" 
+                        filterBy="#{apod.nombreCompleto}" >
+                        <p:outputLabel value="#{apod.nombreCompleto}"/>
+                    </p:column>
+                    <p:column headerText="CUIT" 
+                        filterMatchMode="contains"
+                        sortBy="#{apod.cuit}" 
+                        filterBy="#{apod.cuit}" >
+                        <p:outputLabel value="#{apod.cuit}"/>
+                    </p:column>
+                    <p:column headerText="Tipo" 
+                        filterMatchMode="contains"
+                        sortBy="#{apod.tipo}" 
+                        filterBy="#{apod.tipo}" >
+                        <p:outputLabel value="#{apod.tipo}"/>
+                    </p:column>
+                    <p:column headerText="Fecha de alta" 
+                        filterMatchMode="contains"
+                        sortBy="#{apod.fechaAlta}" 
+                        filterBy="#{apod.fechaAlta}" >
+                        <p:outputLabel value="#{apod.fechaAlta}" >
+                            <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                        </p:outputLabel>
+                    </p:column>  
+                    <p:column style="width:30px">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                         update="@form" action="#{mbAutorizacion.prepareViewPersona()}" >
+                            <f:setPropertyActionListener value="#{apod}" target="#{mbAutorizacion.persona}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>

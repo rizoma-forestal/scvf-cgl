@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SR_descargas" pageWidth="555" pageHeight="802" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="34caf20a-3ff3-4425-9e13-e57781bb722e">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Users\\rincostante\\Documents\\NetBeansProjects\\grp_wildfly\\sacvefor\\sacvefor-gestionLocalCompleto\\src\\main\\webapp\\resources\\reportes\\"]]></defaultValueExpression>
+	</parameter>
+	<field name="nombreVulgar" class="java.lang.String"/>
+	<field name="clase" class="java.lang.String"/>
+	<field name="unidad" class="java.lang.String"/>
+	<field name="total" class="java.lang.Float"/>
+	<field name="totalKg" class="java.lang.Float"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="24" splitType="Stretch">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="349" y="0" width="70" height="24" uuid="04b0b1ed-024b-44ae-adbb-621b33f9d6e2"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="229" y="0" width="120" height="24" uuid="9a1b1f47-ac71-4280-b33f-fa4806f7ba3a"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{unidad}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="159" height="24" uuid="23dfeef8-f8dc-4043-b759-6ff8b0f66041"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single" leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nombreVulgar}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="159" y="0" width="70" height="24" uuid="c31c6fde-634e-4b0f-9228-b1ad5253dd19"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{clase}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="419" y="0" width="83" height="24" uuid="6ae7b545-c4b3-4f20-a954-f645766c437f"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalKg}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

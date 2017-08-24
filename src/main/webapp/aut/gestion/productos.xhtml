@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/parque.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Productos}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frProductos">
+            <!-- Formulario de búsqueda -->
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
+                     rendered="#{mbAutorizacion.itemAutorizado eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                <h:panelGrid columns="6">
+                    <p:outputLabel value="Especie local" for="cmbEspeciesBuscar"/>
+                    <p:selectOneMenu id="cmbEspeciesBuscar" value="#{mbAutorizacion.especieSelected}" required="true" 
+                                     requiredMessage="Debe seleccionar una Especie local." >
+                        <f:selectItem itemLabel="Seleccione una Especie" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{mbAutorizacion.lstEspecieLocal}" 
+                                       var="esp" itemLabel="#{esp.nombreVulgar}" itemValue="#{esp}"/>
+                        <p:ajax listener="#{mbAutorizacion.especieChangeListener()}" update="pnBuscar,cmbClasesBuscar" />
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Clase" for="cmbClasesBuscar"/>
+                    <p:selectOneMenu id="cmbClasesBuscar" value="#{mbAutorizacion.prodClaseSelected}" required="true" 
+                                     requiredMessage="Debe seleccionar una Clase." >
+                        <f:selectItem itemLabel="Seleccione una Clase" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{mbAutorizacion.lstProductos}" 
+                                       var="prodClase" itemLabel="#{prodClase.clase.nombre}-#{prodClase.clase.unidad.abreviatura}" itemValue="#{prodClase}"/>
+                    </p:selectOneMenu>
+                    <p:commandButton title="Buscar #{config.Inmueble} existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbAutorizacion.buscarProducto()}" update="frProductos,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar" resetValues="true" />
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Vista de los datos del Producto -->
+            <p:panel id="pnForm" header="Datos del #{config.Producto} obtenido" style="margin-bottom:10px;" rendered="#{mbAutorizacion.itemAutorizado ne null}">
+                <h:panelGrid columns="2" cellpadding="1">
+                    <p:outputLabel value="Id: " for="id"/>
+                    <p:outputLabel id="id" value="#{mbAutorizacion.itemAutorizado.idProd}"/>
+                    <p:outputLabel value="Especie local: " for="especie"/>
+                    <p:outputLabel id="especie" value="#{mbAutorizacion.itemAutorizado.nombreVulgar}"/>
+                    <p:outputLabel value="Clase: " for="clase"/>
+                    <p:outputLabel id="clase" value="#{mbAutorizacion.itemAutorizado.clase}"/>
+                    <p:outputLabel value="Unidad: " for="unidad"/>
+                    <p:outputLabel id="unidad" value="#{mbAutorizacion.itemAutorizado.unidad}"/>
+                    <p:outputLabel value="Cantidad autorizada: " />
+                    <p:outputLabel value="#{mbAutorizacion.itemAutorizado.total}" rendered="#{not mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                        <f:convertNumber type="currency"  currencySymbol=""/>
+                    </p:outputLabel>
+                    <p:outputLabel value="Saldo: " rendered="#{not mbAutorizacion.autorizacion.estado.habilitaEdicion}" />
+                    <p:outputLabel value="#{mbAutorizacion.itemAutorizado.saldo}" rendered="#{not mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                        <f:convertNumber type="currency"  currencySymbol=""/>
+                    </p:outputLabel>
+                    <p:inputNumber value="#{mbAutorizacion.itemAutorizado.total}" decimalPlaces="4" minValue="1"  
+                                 required="true" requiredMessage="Debe ingresar la cantidad autorizada." decimalSeparator="," thousandSeparator="."
+                                 rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion}" />
+                    <p:outputLabel value="Observaciones" />
+                    <p:outputLabel value="#{mbAutorizacion.itemAutorizado.obs}" rendered="#{not mbAutorizacion.autorizacion.estado.habilitaEdicion}"/>
+                    <p:inputTextarea  rows="5" cols="50" counter="display" maxlength="500" 
+                                      value="#{mbAutorizacion.itemAutorizado.obs}" counterTemplate="Restan {0} caracteres." 
+                                      autoResize="false" rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion}" />
+                    <h:outputText value="" />
+                    <h:outputText id="display" style="font-size: 12px" rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion}" />
+                </h:panelGrid>
+                <h:panelGrid columns="3">
+                    <p:commandButton title="Agregar el #{config.Producto} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Agregar" action="#{mbAutorizacion.addProducto()}" 
+                                     rendered="#{!mbAutorizacion.viewProducto}" update="frProductos,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Buscar otro #{config.Producto}" styleClass="save" icon="fa fa-fw fa-search-plus" 
+                                     rendered="#{!mbAutorizacion.viewProducto}" value="Buscar otro" 
+                                     action="#{mbAutorizacion.limpiarViewProducto()}" update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Guardar #{config.Producto}" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Guardar" action="#{mbAutorizacion.editProducto()}" 
+                                     rendered="#{mbAutorizacion.viewProducto and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="frProductos" >
+                    </p:commandButton>
+                    <p:commandButton title="Desasociar #{config.Producto}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
+                                     value="Quitar" action="#{mbAutorizacion.deleteProducto()}" 
+                                     rendered="#{mbAutorizacion.viewProducto and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Cerrar la vista" styleClass="save" icon="fa fa-fw fa-close" 
+                                     rendered="#{mbAutorizacion.viewProducto}" value="Cerrar" 
+                                     action="#{mbAutorizacion.limpiarViewProducto()}" update="@form" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Listado de Productos vinculados -->
+            <p:panel id="pnTable" header="Listado de #{config.Productos}" style="margin-bottom:10px;" >
+                <p:dataTable styleClass="table" value="#{mbAutorizacion.lstItemsAut}"
+                             var="item"
+                             id="dtItems" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="itemsTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{item.id}"/>
+                    </p:column>
+                    <p:column headerText="Especie local" 
+                        filterMatchMode="contains"
+                        sortBy="#{item.nombreVulgar}" 
+                        filterBy="#{item.nombreVulgar}" >
+                        <p:outputLabel value="#{item.nombreVulgar}"/>
+                    </p:column>
+                    <p:column headerText="Nombre cient." 
+                        filterMatchMode="contains"
+                        sortBy="#{item.nombreCientifico}" 
+                        filterBy="#{item.nombreCientifico}" >
+                        <p:outputLabel value="#{item.nombreCientifico}"/>
+                    </p:column>
+                    <p:column headerText="Clase" 
+                        filterMatchMode="contains"
+                        sortBy="#{item.clase}" 
+                        filterBy="#{item.clase}" >
+                        <p:outputLabel value="#{item.clase}"/>
+                    </p:column>
+                    <p:column headerText="Unidad" 
+                        filterMatchMode="contains"
+                        sortBy="#{item.unidad}" 
+                        filterBy="#{item.unidad}" >
+                        <p:outputLabel value="#{item.unidad}"/>
+                    </p:column>
+                    <p:column headerText="Cantidad" style="text-align: right !important;"  
+                        filterMatchMode="contains"
+                        sortBy="#{item.total}" 
+                        filterBy="#{item.total}" >
+                        <p:outputLabel value="#{item.total}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cant. en Kg." style="text-align: right !important;"  
+                        filterMatchMode="contains"
+                        sortBy="#{item.totalKg}" 
+                        filterBy="#{item.totalKg}" >
+                        <p:outputLabel value="#{item.totalKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Saldo" style="text-align: right !important;" 
+                        filterMatchMode="contains"
+                        sortBy="#{item.saldo}" 
+                        filterBy="#{item.saldo}" >
+                        <p:outputLabel value="#{item.saldo}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Saldo en Kg." style="text-align: right !important;" 
+                        filterMatchMode="contains"
+                        sortBy="#{item.saldoKg}" 
+                        filterBy="#{item.saldoKg}" >
+                        <p:outputLabel value="#{item.saldoKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column style="width:30px">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                         update="@form" action="#{mbAutorizacion.prepareViewProducto()}" >
+                            <f:setPropertyActionListener value="#{item}" target="#{mbAutorizacion.itemAutorizado}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+    
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>

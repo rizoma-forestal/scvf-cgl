@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/user-4.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Proponentes}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frProponentes">
+            <!-- Formulario de búsqueda -->
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
+                     rendered="#{mbAutorizacion.persona eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                <h:panelGrid columns="5">
+                    <p:outputLabel value="CUIT" for="cuitBuscar"/>
+                    <p:inputText id="cuitBuscar" value="#{mbAutorizacion.cuitBuscar}" 
+                                     requiredMessage="Debe haber un CUIT para buscar" required="true"/>
+                    <p:commandButton title="Buscar #{config.Proponente} existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbAutorizacion.buscarPersona(config.Proponente)}" update="frProponentes,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar" resetValues="true" />
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Vista de los datos del Proponente -->
+            <p:panel id="pnForm" header="Datos del #{config.Proponente} obtenido" style="margin-bottom:10px;" rendered="#{mbAutorizacion.persona ne null}">
+                <h:panelGrid columns="2" cellpadding="1">
+                    <p:outputLabel value="Nombre completo/Razón Social: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.nombreCompleto}" style=" font-weight: bold" />
+                    <p:outputLabel value="CUIT: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.cuit}" style=" font-weight: bold" />
+                    <p:outputLabel value="Tipo de Persona: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.tipo}" style=" font-weight: bold" />
+                    <p:outputLabel value="Martillo: " />
+                    <img src="/martillos/#{mbAutorizacion.persona.nombreArchivo}" width="150" />
+                </h:panelGrid>
+                <h:panelGrid columns="2">
+                    <p:commandButton title="Agregar el #{config.Proponente} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Agregar" action="#{mbAutorizacion.addPersona(config.Proponente)}" 
+                                     rendered="#{!mbAutorizacion.viewPersona}" update="@form,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Buscar otro #{config.Proponente}" styleClass="save" icon="fa fa-fw fa-search-plus" 
+                                     rendered="#{!mbAutorizacion.viewPersona}" value="Buscar otro" 
+                                     action="#{mbAutorizacion.limpiarViewPersona()}" update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Guardar #{config.Proponente}" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Guardar" action="#{mbAutorizacion.limpiarViewPersona()}" 
+                                     rendered="#{mbAutorizacion.viewPersona or not mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Desasociar #{config.Proponente}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
+                                     value="Quitar" action="#{mbAutorizacion.deletePersona(config.Proponente)}" 
+                                     rendered="#{mbAutorizacion.viewPersona and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form,messages" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Listado de Proponentes vinculados -->
+            <p:panel id="pnTable" header="Listado de #{config.Proponentes}" style="margin-bottom:10px;" >
+                <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.lstProponentes}"
+                             var="prop"
+                             id="dtProp" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="propTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{prop.id}"/>
+                    </p:column>
+                    <p:column headerText="Nombre completo" 
+                        filterMatchMode="contains"
+                        sortBy="#{prop.nombreCompleto}" 
+                        filterBy="#{prop.nombreCompleto}" >
+                        <p:outputLabel value="#{prop.nombreCompleto}"/>
+                    </p:column>
+                    <p:column headerText="CUIT" 
+                        filterMatchMode="contains"
+                        sortBy="#{prop.cuit}" 
+                        filterBy="#{prop.cuit}" >
+                        <p:outputLabel value="#{prop.cuit}"/>
+                    </p:column>
+                    <p:column headerText="Tipo" 
+                        filterMatchMode="contains"
+                        sortBy="#{prop.tipo}" 
+                        filterBy="#{prop.tipo}" >
+                        <p:outputLabel value="#{prop.tipo}"/>
+                    </p:column>
+                    <p:column headerText="Fecha de alta" 
+                        filterMatchMode="contains"
+                        sortBy="#{prop.fechaAlta}" 
+                        filterBy="#{prop.fechaAlta}" >
+                        <p:outputLabel value="#{prop.fechaAlta}" >
+                            <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                        </p:outputLabel>
+                    </p:column>  
+                    <p:column style="width:30px">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                         update="@form" action="#{mbAutorizacion.prepareViewPersona()}" >
+                            <f:setPropertyActionListener value="#{prop}" target="#{mbAutorizacion.persona}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>

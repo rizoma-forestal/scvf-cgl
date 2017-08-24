@@ -1,0 +1,430 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/resume.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Datos generales" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frOrigen">
+            <p:panel id="pnBuscar" styleClass="centro" header="Buscar Guía existente o Crear nueva" rendered="#{mbGuia.guia eq null}" >
+                <h:panelGrid columns="5">
+                    <p:outputLabel value="Número" for="numeroBuscar"/>
+                    <p:inputMask placeholder="#{config.maskGuia}" id="numeroBuscar" value="#{mbGuia.guiaNumero}" 
+                                 style="text-transform: uppercase" requiredMessage="Debe ingresar el Número" 
+                                 required="true" mask="#{config.maskGuia}" />
+                    <p:commandButton title="Buscar Guía existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbGuia.buscar()}" update="pMenuIndex,frame,frOrigen,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar" resetValues="true" />
+                    </p:commandButton>
+                    <p:commandButton title="Crear una nueva Guía" styleClass="save" icon="fa fa-fw fa-plus"
+                                     value="Crear nueva" process="@this" action="#{mbGuia.prepareNew()}" update="@form,pMenuIndex" />
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnForm" header="Formulario" style="margin-bottom:10px;" rendered="#{mbGuia.guia ne null}">
+                <p:fieldset toggleable="true" legend="Tipo de Guía" style="margin-bottom:20px">
+                    <p:outputLabel value="Seleccione el Tipo de Guía a confeccionar." style="font-style: italic; font-size: small" />
+                    <h:panelGrid columns="2" cellpadding="5">
+                        <p:outputLabel value="Tipo de Guía" for="cmbTipos"/>
+                        <p:selectOneMenu id="cmbTipos" value="#{mbGuia.guia.tipo}" required="true" 
+                                         requiredMessage="Debe seleccionar un Tipo de Guía." >
+                            <f:selectItem itemLabel="Seleccione un Tipo de Guía" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{mbGuia.lstTiposGuia}" 
+                                           var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo}"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="Productor" style="margin-bottom:20px">
+                    <p:outputLabel value="Ingrese el CUIT del Productor para seleccionar la fuente de los Productos, sin '-' ni '.'" style="font-style: italic; font-size: small" />
+                    <h:panelGrid columns="4" cellpadding="5">
+                        <p:outputLabel value="CUIT" for="dlg_cuit"/>
+                        <p:inputNumber id="dlg_cuit" value="#{mbGuia.cuitBuscar}" thousandSeparator="" decimalPlaces="0" 
+                                   requiredMessage="Debe haber un CUIT para buscar" required="true" />
+                        <p:commandButton title="Buscar Fuentes de Productos" value="Buscar" icon="fa fa-fw fa-search" 
+                                         action="#{mbGuia.buscarFuentesProductos()}" update="pnForm,fsAutFuentes,messages"/>
+                        <p:commandButton title="Limpiar el CUIT a buscar" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                         action="#{mbGuia.limpiarCuit()}" update="pnForm"/>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgDatosProductor" columns="2" cellpadding="5" rendered="#{mbGuia.productor ne null}">
+                        <p:outputLabel value="Tipo: " for="perTipo"/>
+                        <p:outputLabel id="perTipo" value="#{mbGuia.productor.tipo}" style="font-weight: bold"/>
+                        <p:outputLabel value="Razón Social: " rendered="#{mbGuia.productor.tipo eq 'Persona Jurídica'}"/>
+                        <p:outputLabel value="Nombre completo: " rendered="#{mbGuia.productor.tipo eq 'Persona Física'}"/>
+                        <p:outputLabel id="perNomCompleto" value="#{mbGuia.productor.nombreCompleto}" style="font-weight: bold"/>
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset id="fsAutFuentes" toggleable="true" legend="Fuentes de Productos" style="margin-bottom:20px" rendered="#{mbGuia.lstAutorizaciones ne null}">
+                    <p:outputLabel value="Seleccione una de las Fuentes de productos listadas haciendo clic en el botón de la columna 'Ver'." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.autSelected eq null and mbGuia.lstAutorizaciones.size() ne 0}" />
+                    <p:outputLabel value="Para registrar la Fuente seleccionada, haga clic en el botón 'Guardar', o en 'Ver otra' para ver el detalle de otra fuente disponible." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.autSelected ne null}" />
+                    <p:outputLabel value="Los Datos Generales fueron completados, puede guardar la Guía mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Cancelar'." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null}" />
+                    <p:outputLabel value="El Productor seleccionado no posée Fuentes de Productos disponibles." 
+                                   style="font-size: 30px !important; color: #610B21" rendered="#{mbGuia.lstAutorizaciones.size() eq 0 and mbGuia.lstGuiasMadre eq null}" />
+                    <h:panelGrid columns="1" rendered="#{mbGuia.autSelected eq null and mbGuia.lstAutorizaciones.size() ne 0}" >
+                        <p:dataTable styleClass="table" value="#{mbGuia.lstAutorizaciones}"
+                                     filteredValue="#{mbGuia.lstAutFilters}"
+                             var="aut"
+                             id="dtAutorizaciones"
+                             widgetVar="autsTable"
+                             rows="5"
+                             paginator="true"      
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('dtAutorizaciones').clearFilters()" update="dtAutorizaciones"/>
+                            </f:facet>
+                            <p:column headerText="Tipo" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.tipo.nombre}" 
+                                filterBy="#{aut.tipo.nombre}" >
+                                <p:outputLabel value="#{aut.tipo.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Número." 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.numero}" 
+                                filterBy="#{aut.numero}" >
+                                <p:outputLabel value="#{aut.numero}"/>
+                            </p:column>
+                            <p:column headerText="Fecha" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.fechaInstrumento}" 
+                                filterBy="#{aut.fechaInstrumento}" >
+                                <p:outputLabel value="#{aut.fechaInstrumento}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Intervencion" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.intervencion.nombre}" 
+                                filterBy="#{aut.intervencion.nombre}" >
+                                <p:outputLabel value="#{aut.intervencion.nombre}" />
+                            </p:column> 
+                            <p:column headerText="Uso Suelo" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.usoSuelo.nombre}" 
+                                filterBy="#{aut.usoSuelo.nombre}" >
+                                <p:outputLabel value="#{aut.usoSuelo.nombre}" />
+                            </p:column> 
+                            <p:column headerText="Fecha vencimiento" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.fechaVencAutoriz}" 
+                                filterBy="#{aut.fechaVencAutoriz}" >
+                                <p:outputLabel value="#{aut.fechaVencAutoriz}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Ver" style="width:30px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver Detalle" process="@this" 
+                                                 update="@form" action="#{mbGuia.verDetalleFuente(config.Autorizacion)}" >
+                                    <f:setPropertyActionListener value="#{aut}" target="#{mbGuia.autSelected}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                    
+                    <p:panel id="pnFrmAutView" header="Detalle" rendered="#{mbGuia.view and mbGuia.autSelected ne null}" >
+                        <h:panelGrid id="pgAutDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="aut_id"/>
+                            <p:outputLabel id="aut_id" value="#{mbGuia.autSelected.id}"/>
+                            <p:outputLabel value="Tipo: " for="aut_tipo"/>
+                            <p:outputLabel id="aut_tipo" value="#{mbGuia.autSelected.tipo.nombre}"/>
+                            <p:outputLabel value="Número: " for="aut_num"/>
+                            <p:outputLabel id="aut_num" value="#{mbGuia.autSelected.numero}"/>
+                            <p:outputLabel value="Fecha: " for="aut_fecha"/>
+                            <p:outputLabel id="aut_fecha" value="#{mbGuia.autSelected.fechaInstrumento}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Intervención: " for="aut_interv"/>
+                            <p:outputLabel id="aut_interv" value="#{mbGuia.autSelected.intervencion.nombre}"/>
+                            <p:outputLabel value="Uso del suelo: " for="aut_uso"/>
+                            <p:outputLabel id="aut_uso" value="#{mbGuia.autSelected.usoSuelo.nombre}"/>
+                            <p:outputLabel value="Número Exp.: " for="aut_numExp"/>
+                            <p:outputLabel id="aut_numExp" value="#{mbGuia.autSelected.numExp}"/>
+                            <p:outputLabel value="Fecha ingreso: " for="aut_fechaIng"/>
+                            <p:outputLabel id="aut_fechaIng" value="#{mbGuia.autSelected.fechaIngExpte}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Sup. Total (Hs.): " for="aut_supTot"/>
+                            <p:outputLabel id="aut_supTot" value="#{mbGuia.autSelected.supTotal}"/>
+                            <p:outputLabel value="Sup. Solicitada (Hs.): " for="aut_supSol"/>
+                            <p:outputLabel id="aut_supSol" value="#{mbGuia.autSelected.supSolicitada}"/>
+                            <p:outputLabel value="Sup. Autorizada (Hs.): " for="aut_supAut"/>
+                            <p:outputLabel id="aut_supAut" value="#{mbGuia.autSelected.supAutorizada}"/>
+                            <p:outputLabel value="Fecha Vencimiento: " for="aut_fechaVenc"/>
+                            <p:outputLabel id="aut_fechaVenc" value="#{mbGuia.autSelected.fechaVencAutoriz}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Estado: " for="aut_estado"/>
+                            <p:outputLabel id="aut_estado" value="#{mbGuia.autSelected.estado.nombre}"/>
+                            <p:outputLabel value="Observaciones: " for="aut_obs"/>
+                            <p:outputLabel id="aut_obs" value="#{mbGuia.autSelected.obs}"/>
+                        </h:panelGrid>
+                        <h:panelGrid id="pgAutProductos" columns="1" >
+                            <p:outputLabel value="Productos Autorizados" style="font-weight: bold" />
+                            <p:dataTable styleClass="table" value="#{mbGuia.lstItemsOrigen}"
+                                         var="itemOrigen"
+                                         id="dtAutItemsOrigen" >
+                                <p:column headerText="id" style="width:50px">
+                                    <p:outputLabel value="#{itemOrigen.id}"/>
+                                </p:column>
+                                <p:column headerText="Especie local" >
+                                    <p:outputLabel value="#{itemOrigen.nombreVulgar}"/>
+                                </p:column>
+                                <p:column headerText="Nombre científico" >
+                                    <p:outputLabel value="#{itemOrigen.nombreCientifico}"/>
+                                </p:column>
+                                <p:column headerText="Clase" >
+                                    <p:outputLabel value="#{itemOrigen.clase}"/>
+                                </p:column>
+                                <p:column headerText="Unidad" >
+                                    <p:outputLabel value="#{itemOrigen.unidad}"/>
+                                </p:column>
+                                <p:column headerText="Saldo disp." style="text-align: right !important;" >
+                                    <p:outputLabel value="#{itemOrigen.saldo}" >
+                                        <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbGuia.view}" />
+                        <h:panelGrid id="pgAutDatosAdmin" columns="2" rendered="#{mbGuia.view}" >
+                            <p:outputLabel value="Fecha Alta: " for="aut_fechaAlta"/>
+                            <p:outputLabel id="aut_fechaAlta" value="#{mbGuia.autSelected.fechaAlta}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Usuario: " for="aut_us"/>
+                            <p:outputLabel id="aut_us" value="#{mbGuia.autSelected.usuario.nombreCompleto}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-download" title="Registrar la Autorización como Fuente de Productos" 
+                                             rendered="#{mbGuia.guia.numFuente eq null}" value="Guardar" update="@form,messages" 
+                                             action="#{mbGuia.guardarFuente(config.Autorizacion)}" />
+                            <p:commandButton icon="fa fa-fw fa-share" title="Ver el detalle de otra Fuente" 
+                                             rendered="#{mbGuia.guia.numFuente eq null}" value="Ver Otra" update="@form" 
+                                             action="#{mbGuia.cancelarFuenteSelected(config.Autorizacion)}" />
+                            <p:outputLabel value="FUENTE SELECCIONADA" style="color: #3B8980; font-weight: bold" rendered="#{mbGuia.guia.numFuente ne null}"/>
+                            <p:commandButton icon="fa fa-fw fa-close" title="Cancelar la Fuente seleccionada" 
+                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form" 
+                                             action="#{mbGuia.deleteFuenteGuardada(config.Autorizacion)}" />
+                        </h:panelGrid>
+                    </p:panel>
+                </p:fieldset>
+                
+                
+                <p:fieldset id="fsGuiaFuentes" toggleable="true" legend="Fuentes de Productos" style="margin-bottom:20px" 
+                            rendered="#{mbGuia.lstGuiasMadre ne null}">
+                    <p:outputLabel value="Seleccione una de las Fuentes de productos listadas haciendo clic en el botón de la columna 'Ver'." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guiaSelected eq null and mbGuia.lstGuiasMadre.size() ne 0}" />
+                    <p:outputLabel value="Para registrar la Fuente seleccionada, haga clic en el botón 'Guardar', o en 'Ver otra' para ver el detalle de otra fuente disponible." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guiaSelected ne null}" />
+                    <p:outputLabel value="Los Datos Generales fueron completados, puede guardar la Guía mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Cancelar'." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null}" />
+                    <p:outputLabel value="El Productor seleccionado no posée Fuentes de Productos disponibles para el tipo de Guía seleccionado." 
+                                   style="font-size: 30px !important; color: #610B21" rendered="#{mbGuia.lstGuiasMadre.size() eq 0 and mbGuia.lstAutorizaciones eq null}" />
+                    <h:panelGrid columns="1" rendered="#{mbGuia.guiaSelected eq null and mbGuia.lstGuiasMadre.size() ne 0}" >
+                        <p:dataTable styleClass="table" value="#{mbGuia.lstGuiasMadre}"
+                                     filteredValue="#{mbGuia.lstGuiasMadreFilters}"
+                             var="guia"
+                             id="dtGuia" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="guiaTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('guiaTable').clearFilters()" update="dtGuia"/>
+                                <p:commandButton id="toggler" type="button" value="Columnas" icon="ui-icon-calculator" style="margin-left: 10px" />
+                                <p:columnToggler datasource="dtGuia" trigger="toggler" />
+                            </f:facet>
+                            <p:column headerText="id" style="width:25px">
+                                <p:outputLabel value="#{guia.id}"/>
+                            </p:column>
+                            <p:column headerText="Guia" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.tipo.nombre}" 
+                                filterBy="#{guia.tipo.nombre}" >
+                                <p:outputLabel value="#{guia.tipo.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Número" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.codigo}" 
+                                filterBy="#{guia.codigo}" >
+                                <p:outputLabel value="#{guia.codigo}"/>
+                            </p:column>
+                            <p:column  headerText="Alta" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.fechaAlta}" 
+                                filterBy="#{guia.fechaAlta}" >
+                                <p:outputLabel value="#{guia.fechaAlta}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Emisión" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.fechaEmisionGuia}" 
+                                filterBy="#{guia.fechaEmisionGuia}" >
+                                <p:outputLabel value="#{guia.fechaEmisionGuia}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Vencimiento" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.fechaVencimiento}" 
+                                filterBy="#{guia.fechaVencimiento}" >
+                                <p:outputLabel value="#{guia.fechaVencimiento}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Titular" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.origen.nombreCompleto} - #{guia.origen.cuit}" 
+                                filterBy="#{guia.origen.nombreCompleto} - #{guia.origen.cuit}" >
+                                <p:outputLabel value="#{guia.origen.nombreCompleto} - #{guia.origen.cuit}" />
+                            </p:column>  
+                            <p:column headerText="Procedencia" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.origen.localidad} - #{guia.origen.departamento}" 
+                                filterBy="#{guia.origen.localidad} - #{guia.origen.departamento}" >
+                                <p:outputLabel value="#{guia.origen.localidad} - #{guia.origen.departamento}" />
+                            </p:column>
+                            <p:column headerText="Fuente" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" 
+                                filterBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" >
+                                <p:outputLabel value="#{guia.tipoFuente.nombre} - #{guia.numFuente}" />
+                            </p:column>
+                            <p:column headerText="Estado" 
+                                filterMatchMode="contains"
+                                sortBy="#{guia.estado.nombre}" 
+                                filterBy="#{guia.estado.nombre}" >
+                                <p:outputLabel value="#{guia.estado.nombre}" />
+                            </p:column>
+
+                            <p:column style="width:30px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="@form" action="#{mbGuia.verDetalleFuente(config.GuiaMadre)}" >
+                                    <f:setPropertyActionListener value="#{guia}" target="#{mbGuia.guiaSelected}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                    
+                    <p:panel id="pnFrmGuiaView" header="Detalle" rendered="#{mbGuia.view and mbGuia.guiaSelected ne null}" >
+                        <h:panelGrid id="pgGuiaDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="guia_id"/>
+                            <p:outputLabel id="guia_id" value="#{mbGuia.guiaSelected.id}"/>
+                            <p:outputLabel value="Tipo: " for="guia_tipo"/>
+                            <p:outputLabel id="guia_tipo" value="#{mbGuia.guiaSelected.tipo.nombre}"/>
+                            <p:outputLabel value="Número: " for="guia_num"/>
+                            <p:outputLabel id="guia_num" value="#{mbGuia.guiaSelected.codigo}"/>
+                            <p:outputLabel value="Emisión: " for="guia_fechaEmision"/>
+                            <p:outputLabel id="guia_fechaEmision" value="#{mbGuia.guiaSelected.fechaEmisionGuia}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Vencimiento: " for="guia_fechaVenc"/>
+                            <p:outputLabel id="guia_fechaVenc" value="#{mbGuia.guiaSelected.fechaVencimiento}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Estado: " />
+                            <p:outputLabel value="#{mbGuia.guiaSelected.estado.nombre}" />
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbGuia.view}" />
+                        <h:panelGrid id="pgGuiaInmueble" columns="2" >
+                            <p:outputLabel value="Nombre Inmueble de origen: " />
+                            <p:outputLabel value="#{mbGuia.guiaSelected.origen.inmNombre}" />
+                            <p:outputLabel value="Id Catastral: " />
+                            <p:outputLabel value="#{mbGuia.guiaSelected.origen.inmCatastro}" />
+                            <p:outputLabel value="Localidad: " />
+                            <p:outputLabel value="#{mbGuia.guiaSelected.origen.localidad}" />
+                            <p:outputLabel value="Departamento: " />
+                            <p:outputLabel value="#{mbGuia.guiaSelected.origen.departamento}" />
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbGuia.view}" />
+                        <h:panelGrid id="pgGuiaFuente" columns="2" >
+                            <p:outputLabel value="Tipo de Fuente de productos: " />
+                            <p:outputLabel value="#{mbGuia.guiaSelected.tipoFuente.nombre}" />
+                            <p:outputLabel value="Número de Fuente de productos: " />
+                            <p:outputLabel value="#{mbGuia.guiaSelected.numFuente}" />
+                        </h:panelGrid>
+                        <h:panelGrid id="pgGuiaProductos" columns="1" >
+                            <p:outputLabel value="Productos Autorizados" style="font-weight: bold" />
+                            <p:dataTable styleClass="table" value="#{mbGuia.lstItemsOrigen}"
+                                         var="itemOrigen"
+                                         id="dtGuiaItemsOrigen" >
+                                <p:column headerText="id" style="width:50px">
+                                    <p:outputLabel value="#{itemOrigen.id}"/>
+                                </p:column>
+                                <p:column headerText="Especie local" >
+                                    <p:outputLabel value="#{itemOrigen.nombreVulgar}"/>
+                                </p:column>
+                                <p:column headerText="Nombre científico" >
+                                    <p:outputLabel value="#{itemOrigen.nombreCientifico}"/>
+                                </p:column>
+                                <p:column headerText="Clase" >
+                                    <p:outputLabel value="#{itemOrigen.clase}"/>
+                                </p:column>
+                                <p:column headerText="Unidad" >
+                                    <p:outputLabel value="#{itemOrigen.unidad}"/>
+                                </p:column>
+                                <p:column headerText="Saldo disp." style="text-align: right !important;" >
+                                    <p:outputLabel value="#{itemOrigen.saldo}" >
+                                        <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbGuia.view}" />
+                        <h:panelGrid id="pgGuiaDatosAdmin" columns="2" rendered="#{mbGuia.view}" >
+                            <p:outputLabel value="Fecha Alta: " for="guia_fechaAlta"/>
+                            <p:outputLabel id="guia_fechaAlta" value="#{mbGuia.guiaSelected.fechaAlta}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Usuario: " for="guia_us"/>
+                            <p:outputLabel id="guia_us" value="#{mbGuia.guiaSelected.usuario.nombreCompleto}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-download" title="Registrar la Guía como Fuente de Productos" 
+                                             rendered="#{mbGuia.guia.numFuente eq null}" value="Guardar" update="@form,messages" 
+                                             action="#{mbGuia.guardarFuente(config.GuiaMadre)}" />
+                            <p:commandButton icon="fa fa-fw fa-share" title="Ver el detalle de otra Fuente" 
+                                             rendered="#{mbGuia.guia.numFuente eq null}" value="Ver Otra" update="@form" 
+                                             action="#{mbGuia.cancelarFuenteSelected(config.GuiaMadre)}" />
+                            <p:outputLabel value="FUENTE SELECCIONADA" style="color: #3B8980; font-weight: bold" rendered="#{mbGuia.guia.numFuente ne null}"/>
+                            <p:commandButton icon="fa fa-fw fa-close" title="Cancelar la Fuente seleccionada" 
+                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form" 
+                                             action="#{mbGuia.deleteFuenteGuardada(config.GuiaMadre)}" />
+                        </h:panelGrid>
+                    </p:panel>
+                </p:fieldset>
+                
+                
+                <p:fieldset id="fsCompletar" toggleable="true" style="margin-bottom:20px" rendered="#{mbGuia.guia.numFuente ne null}">
+                    <h:panelGrid columns="3" >
+                        <p:commandButton icon="fa fa-fw fa-save" title="Guardar los datos generales de la Guía para continuar el registro" 
+                                             value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" />
+                        <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                         rendered="#{mbGuia.guia.id eq null}" >
+                            <p:ajax listener="#{mbGuia.limpiarCuit()}" update="pnForm" resetValues="true" />
+                        </p:commandButton>
+                        <p:commandButton title="Recuperar los datos de Tipo de Guía y CUIT modificados" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                         rendered="#{mbGuia.guia.id ne null}" >
+                            <p:ajax update="pnForm" resetValues="true" />
+                        </p:commandButton>
+                        <p:commandButton title="Volver a la vista de los datos generales" styleClass="save" icon="fa fa-fw fa-close" value="Cerrar" 
+                                         rendered="#{mbGuia.guia.id ne null}"
+                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" />
+                    </h:panelGrid>
+                </p:fieldset>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

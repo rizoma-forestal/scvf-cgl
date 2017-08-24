@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/camionaje-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Transporte" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frTransporte">
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar Vehículo" rendered="#{mbGuia.vehiculo.id eq 0 or mbGuia.buscarVehNuevo or mbGuia.vehiculo eq null}" >
+                <p:outputLabel value="Ingrese la Matrícula del Vehículo para seleccionarlo." style="font-style: italic; font-size: small" />
+                <h:panelGrid columns="4" cellpadding="5">
+                    <p:outputLabel value="Matrícula" for="matBus"/>
+                    <p:inputText id="matBus" value="#{mbGuia.matBuscar}" style="text-transform: uppercase"  
+                                     requiredMessage="Debe haber una Matrícula para buscar" required="true"/>
+                    <p:commandButton title="Buscar Vehículo" value="Buscar" icon="fa fa-fw fa-search" 
+                                     action="#{mbGuia.buscarVehiculo()}" update="frTransporte,messages"/>
+                    <p:commandButton title="Limpiar la Matrícula a buscar" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                     action="#{mbGuia.limpiarMatricula()}" update="frTransporte" resetValues="true"/>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnSeleccionado" styleClass="centro" header="Vehículo seleccionado" rendered="#{mbGuia.vehiculo.id ne null}" >
+                <h:panelGrid id="pgEtiqVehGral" columns="2" cellpadding="2">
+                    <p:outputLabel value="Matrícula: " />
+                    <p:outputLabel value="#{mbGuia.vehiculo.matricula}" style="font-weight: bold" />
+                    <p:outputLabel value="Marca: " />
+                    <p:outputLabel value="#{mbGuia.vehiculo.marca}" style="font-weight: bold" />
+                    <p:outputLabel value="Modelo: " />
+                    <p:outputLabel value="#{mbGuia.vehiculo.modelo}" style="font-weight: bold" />
+                    <p:outputLabel value="Año: " />
+                    <p:outputLabel value="#{mbGuia.vehiculo.anio}" style="font-weight: bold" />
+                </h:panelGrid>
+                <p:separator />
+                <h:panelGrid id="pgEtiqVehTit" columns="2" cellpadding="2">
+                    <p:outputLabel value="Nombre Titular: " />
+                    <p:outputLabel value="#{mbGuia.vehiculo.titular.nombreCompleto}" style="font-weight: bold" />
+                    <p:outputLabel value="Cuit Titular: " />
+                    <p:outputLabel value="#{mbGuia.vehiculo.titular.cuit}" style="font-weight: bold" />
+                </h:panelGrid>
+                <p:separator />
+                <h:panelGrid id="pgCamposEdit" columns="2" cellpadding="2" rendered="#{mbGuia.transporte.id eq null or mbGuia.editTransporte}" >
+                    <p:outputLabel value="Acoplado: " for="acoplado" />
+                    <p:inputText id="acoplado" value="#{mbGuia.transporte.acoplado}" style="text-transform: uppercase" />
+                    <p:outputLabel value="Nombre conductor: " for="nomConductor" />
+                    <p:inputText id="nomConductor" value="#{mbGuia.transporte.condNombre}" style="text-transform: uppercase; width: 250px" 
+                                 required="true" requiredMessage="Debe ingresar el nombre completo del Conductor" />
+                    <p:outputLabel value="DNI conductor: " for="dniConductor" />
+                    <p:inputNumber id="dniConductor" value="#{mbGuia.transporte.condDni}" thousandSeparator="" decimalPlaces="0" maxValue="99999999"
+                                   required="true" requiredMessage="Debe ingresar el DNI del Conductor" />
+                </h:panelGrid>
+                <p:separator />
+                <h:panelGrid id="pgBotones" columns="3" cellpadding="2">
+                    <p:commandButton title="Guardar el Transporte para la Guía" value="Guardar" icon="fa fa-fw fa-save" 
+                                     action="#{mbGuia.saveTransporte()}" update="frTransporte,pMenuIndex,frame,messages"/>
+                    <p:commandButton title="Limpiar los campos editables" value="Limpiar" icon="fa fa-fw fa-refresh" process="@this"  
+                                     action="#{mbGuia.limpiarTransporte()}" update="frTransporte" resetValues="true" />
+                    <p:commandButton title="Buscar otro Vehículo" value="Buscar otro" icon="fa fa-fw fa-plus" process="@this" 
+                                     action="#{mbGuia.prepareBuscarNuevoTransp()}" update="frTransporte" resetValues="true"/>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnView" styleClass="centro" header="Datos registrados" rendered="#{mbGuia.guia.transporte.vehiculo ne null and not mbGuia.editTransporte}" >
+                <h:panelGrid id="pgGralView" columns="2" cellpadding="2">
+                    <p:outputLabel value="Matrícula: " />
+                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.matricula}" style="font-weight: bold" />
+                    <p:outputLabel value="Marca: " />
+                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.marca}" style="font-weight: bold" />
+                    <p:outputLabel value="Modelo: " />
+                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.modelo}" style="font-weight: bold" />
+                    <p:outputLabel value="Año: " />
+                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.anio}" style="font-weight: bold" />
+                </h:panelGrid>
+                <p:separator />
+                <h:panelGrid id="pgTitView" columns="2" cellpadding="2" >
+                    <p:outputLabel value="Acoplado: " />
+                    <p:outputLabel value="#{mbGuia.guia.transporte.acoplado}" style="font-weight: bold" />
+                    <p:outputLabel value="Nombre conductor: " />
+                    <p:outputLabel value="#{mbGuia.guia.transporte.condNombre}" style="font-weight: bold" />
+                    <p:outputLabel value="DNI conductor: " />
+                    <p:outputLabel value="#{mbGuia.guia.transporte.condDni}" style="font-weight: bold" />
+                </h:panelGrid>
+                <h:panelGrid id="pgBotEdit" columns="3" cellpadding="2">
+                    <p:commandButton title="Editar los datos del Transporte" value="Editar" icon="fa fa-fw fa-pencil" 
+                                     action="#{mbGuia.prepareEditTranporte()}" rendered="#{mbGuia.guia.estado.habilitaEdicionComp}" update="frTransporte,messages"/>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>

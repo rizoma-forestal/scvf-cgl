@@ -1,0 +1,300 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/newspaper.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="Listado de #{config.Autorizaciones}" />
+                </h:panelGrid>
+                
+                <h:form prependId="false" id="frListAut">
+                    <!-- Vista detalle -->
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbAutorizacion.view}" >
+                        <h:panelGrid id="pgDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="id"/>
+                            <p:outputLabel id="id" value="#{mbAutorizacion.autorizacion.id}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Tipo: " for="tipo"/>
+                            <p:outputLabel id="tipo" value="#{mbAutorizacion.autorizacion.tipo.nombre}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Número: " for="num"/>
+                            <p:outputLabel id="num" value="#{mbAutorizacion.autorizacion.numero}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Fecha: " for="fecha"/>
+                            <p:outputLabel id="fecha" value="#{mbAutorizacion.autorizacion.fechaInstrumento}" style=" font-weight: bold" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Intervención: " for="interv"/>
+                            <p:outputLabel id="interv" value="#{mbAutorizacion.autorizacion.intervencion.nombre}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Uso del suelo: " for="uso"/>
+                            <p:outputLabel id="uso" value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Número Exp.: " for="numExp"/>
+                            <p:outputLabel id="numExp" value="#{mbAutorizacion.autorizacion.numExp}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Fecha ingreso: " for="fechaIng"/>
+                            <p:outputLabel id="fechaIng" value="#{mbAutorizacion.autorizacion.fechaIngExpte}" style=" font-weight: bold" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Sup. Total (Hs.): " for="supTot"/>
+                            <p:outputLabel id="supTot" value="#{mbAutorizacion.autorizacion.supTotal}" style=" font-weight: bold" >
+                                <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                            <p:outputLabel value="Sup. Solicitada (Hs.): " for="supSol"/>
+                            <p:outputLabel id="supSol" value="#{mbAutorizacion.autorizacion.supSolicitada}" style=" font-weight: bold" >
+                                <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                            <p:outputLabel value="Sup. Autorizada (Hs.): " for="supAut"/>
+                            <p:outputLabel id="supAut" value="#{mbAutorizacion.autorizacion.supAutorizada}" style=" font-weight: bold" >
+                                <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                            <p:outputLabel value="Fecha Vencimiento: " for="fechaVenc"/>
+                            <p:outputLabel id="fechaVenc" value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" style=" font-weight: bold" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Estado: " for="estado"/>
+                            <p:outputLabel id="estado" value="#{mbAutorizacion.autorizacion.estado.nombre}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Observaciones: " for="obs"/>
+                            <p:outputLabel id="obs" value="#{mbAutorizacion.autorizacion.obs}" style=" font-weight: bold"/>
+                        </h:panelGrid>  
+                        <p:separator rendered="#{mbAutorizacion.view}" />
+                        <h:panelGrid id="pgPersonas" columns="1" >
+                            <p:outputLabel value="Personas vinculadas" style="font-weight: bold" />
+                            <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.personas}"
+                                         var="pers"
+                                         id="dtPersonas" 
+                                         widgetVar="persTable" >
+                                <p:column headerText="Id" style="width:50px">
+                                    <p:outputLabel value="#{pers.id}"/>
+                                </p:column>
+                                <p:column headerText="Nombre completo" >
+                                    <p:outputLabel value="#{pers.nombreCompleto}"/>
+                                </p:column>
+                                <p:column headerText="CUIT" style="width:200px" >
+                                    <p:outputLabel value="#{pers.cuit}"/>
+                                </p:column>
+                                <p:column filterBy="#{pers.rolPersona.nombre}" headerText="Rol" filterMatchMode="equals" style="width:120px" >
+                                    <f:facet name="filter">
+                                        <p:selectOneMenu onchange="PF('persTable').filter()" >
+                                            <f:selectItem itemLabel="Todos" itemValue="" />
+                                            <f:selectItem itemLabel="Proponentes" itemValue="#{config.Proponente}" />
+                                            <f:selectItem itemLabel="Técnicos" itemValue="#{config.Tecnico}" />
+                                            <f:selectItem itemLabel="Apoderados" itemValue="#{config.Apoderado}" />
+                                        </p:selectOneMenu>
+                                    </f:facet>
+                                    <p:outputLabel value="#{pers.rolPersona.nombre}" />
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbAutorizacion.view}" />
+                        <h:panelGrid id="pgInm" columns="1" >
+                            <p:outputLabel value="Inmuebles vinculados" style="font-weight: bold" />
+                            <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.inmuebles}"
+                                         var="inm"
+                                         id="dtInmuebles" 
+                                         widgetVar="inmTable" >
+                                <p:column headerText="Id" style="width:50px">
+                                    <p:outputLabel value="#{inm.id}"/>
+                                </p:column>
+                                <p:column headerText="IdCatastral" >
+                                    <p:outputLabel value="#{inm.idCatastral}"/>
+                                </p:column>
+                                <p:column headerText="Nombre" >
+                                    <p:outputLabel value="#{inm.nombre}"/>
+                                </p:column>
+                                <p:column headerText="Localidad" >
+                                    <p:outputLabel value="#{inm.localidad}"/>
+                                </p:column>
+                                <p:column headerText="Superficie" style="text-align: right !important; width: 150px" >
+                                    <p:outputLabel value="#{inm.superficie}" >
+                                        <f:convertNumber type="currency"  currencySymbol=""/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        
+                        
+                        <p:separator rendered="#{mbAutorizacion.view}" />
+                        <h:panelGrid id="pgAutItems" columns="1" >
+                            <p:outputLabel value="Productos autorizados" style="font-weight: bold" />
+                            <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.items}"
+                                         var="item"
+                                         id="dtAutItems" >
+                                <p:column headerText="id" style="width:50px">
+                                    <p:outputLabel value="#{item.id}"/>
+                                </p:column>
+                                <p:column headerText="Especie local" >
+                                    <p:outputLabel value="#{item.nombreVulgar}"/>
+                                </p:column>
+                                <p:column headerText="Nombre científico" >
+                                    <p:outputLabel value="#{item.nombreCientifico}"/>
+                                </p:column>
+                                <p:column headerText="Clase" >
+                                    <p:outputLabel value="#{item.clase}"/>
+                                </p:column>
+                                <p:column headerText="Unidad" >
+                                    <p:outputLabel value="#{item.unidad}"/>
+                                </p:column>
+                                <p:column headerText="Total aut." style="text-align: right !important;" >
+                                    <p:outputLabel value="#{item.total}" >
+                                        <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Total aut. (Kg)." style="text-align: right !important;" >
+                                    <p:outputLabel value="#{item.totalKg}" >
+                                        <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Saldo disp." style="text-align: right !important;" >
+                                    <p:outputLabel value="#{item.saldo}" >
+                                        <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Saldo disp. (Kg)" style="text-align: right !important;" >
+                                    <p:outputLabel value="#{item.saldoKg}" >
+                                        <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbAutorizacion.view}" />
+                        <h:panelGrid columns="1" rendered="#{mbAutorizacion.lstGuias.size() ne 0}" >
+                            <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" 
+                                             update="pnViewGuias" oncomplete="PF('dlgVerGuias').show();"/>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbAutorizacion.view}" />
+                        <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbAutorizacion.view}" >
+                            <p:outputLabel value="Fecha Alta: " for="fechaAlta"/>
+                            <p:outputLabel id="fechaAlta" value="#{mbAutorizacion.autorizacion.fechaAlta}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Usuario: " for="us"/>
+                            <p:outputLabel id="us" value="#{mbAutorizacion.autorizacion.usuario.nombreCompleto}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-share" value="Cerrar" process="@this" update="frListAut" action="#{mbAutorizacion.prepareList()}" />
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Diálogo para ver las Guáis vinculadas a la Autorización -->
+                    <p:dialog header="Guías emitidas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
+                        <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
+                            <h:panelGrid columns="2" >
+                                <p:dataTable styleClass="table" value="#{mbAutorizacion.lstGuias}"
+                                     var="guia"
+                                     id="dtViewGuias">
+                                    <p:column headerText="Id" style="width: 30px" >                              
+                                        <p:outputLabel value="#{guia.id}"/>
+                                    </p:column>
+                                    <p:column headerText="Tipo" >                              
+                                        <p:outputLabel value="#{guia.tipo.nombre}"/>
+                                    </p:column> 
+                                    <p:column headerText="Número" >                              
+                                        <p:outputLabel value="#{guia.codigo}"/>
+                                    </p:column> 
+                                    <p:column headerText="Titular" >
+                                        <p:outputLabel value="#{guia.origen.nombreCompleto} - #{guia.origen.cuit}" />
+                                    </p:column>  
+                                    <p:column headerText="Emisión" >
+                                        <p:outputLabel value="#{guia.fechaEmisionGuia}" >
+                                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Vencimiento" >
+                                        <p:outputLabel value="#{guia.fechaVencimiento}" >
+                                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Estado" >
+                                        <p:outputLabel value="#{guia.estado.nombre}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerGuias').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </p:dialog>
+
+                    <!-- Listado -->
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbAutorizacion.listado}"
+                                     filteredValue="#{mbAutorizacion.listadoFilter}"
+                             var="aut"
+                             id="dtAut" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="autTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('autTable').clearFilters()" update="dtAut"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{aut.id}"/>
+                            </p:column>
+                            <p:column headerText="Tipo" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.tipo.nombre}" 
+                                filterBy="#{aut.tipo.nombre}" >
+                                <p:outputLabel value="#{aut.tipo.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Número" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.numero}" 
+                                filterBy="#{aut.numero}" >
+                                <p:outputLabel value="#{aut.numero}"/>
+                            </p:column>
+                            <p:column headerText="Fecha" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.fechaInstrumento}" 
+                                filterBy="#{aut.fechaInstrumento}" >
+                                <p:outputLabel value="#{aut.fechaInstrumento}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Intervencion" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.intervencion.nombre}" 
+                                filterBy="#{aut.intervencion.nombre}" >
+                                <p:outputLabel value="#{aut.intervencion.nombre}" />
+                            </p:column> 
+                            <p:column headerText="Uso Suelo" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.usoSuelo.nombre}" 
+                                filterBy="#{aut.usoSuelo.nombre}" >
+                                <p:outputLabel value="#{aut.usoSuelo.nombre}" />
+                            </p:column>  
+                            <p:column headerText="Estado" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.estado.nombre}" 
+                                filterBy="#{aut.estado.nombre}" >
+                                <p:outputLabel value="#{aut.estado.nombre}" />
+                            </p:column>
+                            <p:column headerText="Fecha vencimiento" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.fechaVencAutoriz}" 
+                                filterBy="#{aut.fechaVencAutoriz}" >
+                                <p:outputLabel value="#{aut.fechaVencAutoriz}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width:30px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="@form" action="#{mbAutorizacion.prepareViewDetalle()}" >
+                                    <f:setPropertyActionListener value="#{aut}" target="#{mbAutorizacion.autorizacion}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>
+

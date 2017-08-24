@@ -1,0 +1,270 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.Productos}" />
+                </h:panelGrid>
+                
+                <!-- Diálogo para agegar las Tasas al Producto -->
+                <p:dialog header="Agregue las tasas que corresponda" widgetVar="dlgAgregarTasa" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frAgregarTasa">
+                        <p:panel id="pnDlg" style="margin-bottom:10px; width: 550px">
+                            <h:panelGrid columns="2" >
+                                <p:outputLabel value="Tasa" for="cmbTasas"/>   
+                                <p:selectOneMenu id="cmbTasas" value="#{mbProducto.prodTasa.tipo}" required="true" 
+                                                 requiredMessage="Debe seleccionar una Tasa." >
+                                    <f:selectItem itemLabel="Seleccione una Tasa" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbProducto.lstTiposTasas}" 
+                                                   var="tipoTasa" itemLabel="#{tipoTasa.nombre}" itemValue="#{tipoTasa}"/>
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Monto a pagar ($/U): " for="monto"/>
+                                <p:inputNumber id="monto" value="#{mbProducto.prodTasa.monto}" decimalPlaces="2" minValue="1" 
+                                               decimalSeparator="," thousandSeparator="." required="true" 
+                                               requiredMessage="Debe ingresar un monto a pagar." />
+                            </h:panelGrid>
+                            <h:panelGrid columns="2" >
+                                <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" 
+                                                 action="#{mbProducto.agregarTasaProd()}" update="frAgregarTasa,messages"/>
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" resetValues="true" 
+                                                 action="#{mbProducto.limpiarFormTasaProd()}" update="pnDlg"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="1" >
+                                <p:dataTable styleClass="table" value="#{mbProducto.producto.tasas}"
+                                     var="tasa"
+                                     id="dtTasas">
+                                    <p:column headerText="Nombre" >                              
+                                        <p:outputLabel value="#{tasa.tipo.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Monto ($/U)" style="text-align: right !important;" >
+                                        <p:outputLabel value="#{tasa.monto}" >
+                                            <f:convertNumber type="currency"  currencySymbol=""/>
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column style="width:30px">
+                                        <p:commandButton icon="fa fa-fw fa-toggle-off" title="Eliminar" action="#{mbProducto.desagregarTasaProd()}" 
+                                                         process="@this" update="frAgregarTasa" >
+                                            <f:setPropertyActionListener value="#{tasa}" target="#{mbProducto.prodTasa}" /> 
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgAgregarTasa').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <!-- Diálogo para ver las Tasas al Producto -->
+                <p:dialog header="Tasas del producto" widgetVar="dlgVerTasas" minHeight="40" closable="false">
+                    <p:panel id="pnViewTasas" style="margin-bottom:10px; width: 550px">
+                        <h:panelGrid columns="2" >
+                            <p:dataTable styleClass="table" value="#{mbProducto.producto.tasas}"
+                                 var="tasa"
+                                 id="dtViewTasas">
+                                <p:column headerText="Id" style="width: 30px" >                              
+                                    <p:outputLabel value="#{tasa.id}"/>
+                                </p:column>
+                                <p:column headerText="Nombre" >                              
+                                    <p:outputLabel value="#{tasa.tipo.nombre}"/>
+                                </p:column> 
+                                <p:column headerText="Monto ($/U)" style="text-align: right !important;" >
+                                    <p:outputLabel value="#{tasa.monto}" >
+                                        <f:convertNumber type="currency"  currencySymbol=""/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <f:facet name="footer">
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerTasas').hide();"/>
+                        </f:facet>
+                    </p:panel>
+                </p:dialog>
+                                
+                <!-- Formulario para el abm de productos -->   
+                <h:form prependId="false" id="frProductos">
+                    <!-- Campos ocultos -->
+                    <p:inputText type="hidden" id="id" value="#{mbProducto.producto.id}" />
+                    <p:inputText type="hidden" id="fechaAlta" value="#{mbProducto.producto.fechaAlta}" >
+                        <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                    </p:inputText>
+                    <p:inputText type="hidden" id="habilitado" value="#{mbProducto.producto.habilitado}" />
+                    
+                    <!-- Formulario new y edit -->
+                    <p:panel id="pnFrmNew" header="Crear/Editar" rendered="#{not mbProducto.view}" collapsed="#{not mbProducto.edit}" toggleable="true" >
+                        <p:growl id="messages" showDetail="false" />
+                        <h:panelGrid columns="2">
+                            <p:outputLabel value="Especie local" for="cmbEspecies"/>   
+                            <p:selectOneMenu id="cmbEspecies" value="#{mbProducto.producto.especieLocal}" required="true" 
+                                             requiredMessage="Debe seleccionar una Especie local." >
+                                <f:selectItem itemLabel="Seleccione una Especie local" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbProducto.lstProdEspecie}" 
+                                               var="especie" itemLabel="#{especie.nombreVulgar}" itemValue="#{especie}"/>
+                            </p:selectOneMenu>
+                            <p:outputLabel value="Clase" for="cmbClases"/>   
+                            <p:selectOneMenu id="cmbClases" value="#{mbProducto.producto.clase}" required="true" 
+                                             requiredMessage="Debe seleccionar una Clase." >
+                                <f:selectItem itemLabel="Seleccione una Clase" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbProducto.lstProdClases}" 
+                                               var="clase" itemLabel="#{clase.nombre}-#{clase.unidad.abreviatura}" itemValue="#{clase}"/>
+                            </p:selectOneMenu>
+                            <p:outputLabel value="Equivalencia en Kg." for="eqJg"/>
+                            <p:inputNumber id="eqJg" value="#{mbProducto.producto.equivalKg}" decimalPlaces="2" minValue="0"  
+                                 required="true" requiredMessage="Debe ingresar la equivalencia en Kg. para la Unidad." 
+                                 decimalSeparator="," thousandSeparator="." />
+                        </h:panelGrid>
+                        <h:panelGrid columns="1">
+                            <p:commandButton value="Agregar Tasas" icon="fa fa-fw fa-external-link" process="@this" 
+                                             update="dtTasas" action="#{mbProducto.prepareAddTasa()}" oncomplete="PF('dlgAgregarTasa').show();"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbProducto.saveProducto()}" update="frProductos"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbProducto.limpiarFormProducto()}" update="pnFrmNew"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Formulario view -->
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbProducto.view}" >
+                        <h:panelGrid id="pgDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="v_id"/>
+                            <p:outputLabel id="v_id" value="#{mbProducto.producto.id}"/>
+                            <p:outputLabel value="Especie local: " for="v_especie"/>
+                            <p:outputLabel id="v_especie" value="#{mbProducto.producto.especieLocal.nombreVulgar}"/>
+                            <p:outputLabel value="Clase: " for="v_clase"/>
+                            <p:outputLabel id="v_clase" value="#{mbProducto.producto.clase.nombre}"/>
+                            <p:outputLabel value="Unidad: " for="v_unidad"/>
+                            <p:outputLabel id="v_unidad" value="#{mbProducto.producto.clase.unidad.abreviatura}"/>
+                            <p:outputLabel value="Equivalencia en Kg." />
+                            <p:outputLabel value="#{mbProducto.producto.equivalKg}" >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                            <h:panelGrid id="pgBoton" columns="2" >
+                                <p:commandButton value="Ver Tasas" icon="fa fa-fw fa-external-link" process="@this" 
+                                             update="pnViewTasas" oncomplete="PF('dlgVerTasas').show();"/>
+                            </h:panelGrid>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbProducto.view}" />
+                        <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbProducto.view}" >
+                            <p:outputLabel value="Fecha de Alta: " for="v_fechaAlta"/>
+                            <p:outputLabel id="v_fechaAlta" value="#{mbProducto.producto.fechaAlta}" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Ultimo Usuario: " for="v_ultUsuario"/>
+                            <p:outputLabel id="v_ultUsuario" value="#{mbProducto.producto.usuario.nombreCompleto}" />
+                            <p:outputLabel value="Habilitado: " for="v_habilitado"/>
+                            <p:outputLabel id="v_habilitado" value="#{mbProducto.producto.habilitado}" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbProducto.prepareNewEdit()}" />
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbProducto.lstProductos}"
+                                     filteredValue="#{mbProducto.lstProdFilters}"
+                             var="prod"
+                             id="dtProductos" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="prodTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('prodTable').clearFilters()" update="dtProductos"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{prod.id}"/>
+                            </p:column>
+                            <p:column headerText="Especie local" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.especieLocal.nombreVulgar}" 
+                                filterBy="#{prod.especieLocal.nombreVulgar}" >
+                                <p:outputLabel value="#{prod.especieLocal.nombreVulgar}"/>
+                            </p:column>
+                            <p:column headerText="Clase" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.clase.nombre}" 
+                                filterBy="#{prod.clase.nombre}" >
+                                <p:outputLabel value="#{prod.clase.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Unidad" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.clase.unidad.abreviatura}" 
+                                filterBy="#{prod.clase.unidad.abreviatura}" >
+                                <p:outputLabel value="#{prod.clase.unidad.abreviatura}"/>
+                            </p:column>
+                            <p:column headerText="Equival. Kg." style="text-align: right !important;" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.equivalKg}" 
+                                filterBy="#{prod.equivalKg}" >
+                                <p:outputLabel value="#{prod.equivalKg}" >
+                                    <f:convertNumber type="currency"  currencySymbol=""/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Fecha de alta" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.fechaAlta}" 
+                                filterBy="#{prod.fechaAlta}" >
+                                <p:outputLabel value="#{prod.fechaAlta}" >
+                                    <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                                </p:outputLabel>
+                            </p:column>                            
+                            <p:column filterBy="#{prod.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('prodTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{prod.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:110px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="@form" action="#{mbProducto.prepareView()}" >
+                                    <f:setPropertyActionListener value="#{prod}" target="#{mbProducto.producto}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbProducto.prepareNewEdit()}" >
+                                    <f:setPropertyActionListener value="#{prod}" target="#{mbProducto.producto}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbProducto.deshabilitarProducto()}" 
+                                                 process="@this" update="@form" rendered="#{prod.habilitado}" >
+                                    <f:setPropertyActionListener value="#{prod}" target="#{mbProducto.producto}" /> 
+                                    <p:confirm header="Confirmar" 
+                                               message="¿Desea deshabilitar el Producto seleccionado: #{prod.especieLocal.nombreVulgar} - #{prod.clase.nombre} - #{prod.clase.unidad.abreviatura}?" 
+                                               icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbProducto.habilitarProducto()}" 
+                                                 process="@this" update="@form" rendered="#{not prod.habilitado}" >
+                                    <f:setPropertyActionListener value="#{prod}" target="#{mbProducto.producto}" /> 
+                                    <p:confirm header="Confirmar" 
+                                               message="¿Desea habilitar el Producto seleccionado: #{prod.especieLocal.nombreVulgar} - #{prod.clase.nombre} - #{prod.clase.unidad.abreviatura}?" 
+                                               icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>
+

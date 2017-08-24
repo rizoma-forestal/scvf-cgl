@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.ProdEspeciesLocal}" />
+                </h:panelGrid>
+                <h:form prependId="false" id="frEspecies">
+                    <p:panel id="pnFrm" header="Crear/Editar" collapsed="#{not mbProducto.edit}" toggleable="true" >
+                        <p:growl id="messages" showDetail="false" />
+                        <h:panelGrid columns="2">
+                            <p:inputText type="hidden" id="id" value="#{mbProducto.prodEspecie.id}" />
+                            <p:inputText type="hidden" id="hab" value="#{mbProducto.prodEspecie.habilitado}" />
+                            <p:outputLabel value="Familia " for="cmbFam"/>   
+                            <p:selectOneMenu id="cmbFam" value="#{mbProducto.familiaSelected}" required="true" 
+                                             requiredMessage="Debe seleccionar una Familia" converter="omnifaces.SelectItemsConverter"  >
+                                <f:selectItem itemLabel="Seleccione la Familia" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbProducto.listFamilias}" 
+                                               var="fam" itemLabel="#{fam.nombre}" itemValue="#{fam}"/>
+                                <p:ajax listener="#{mbProducto.familiaChangeListener()}" update="cmbGenero,cmbEspecies" />
+                            </p:selectOneMenu> 
+                            <p:outputLabel value="Género" for="cmbGenero"/>   
+                            <p:selectOneMenu id="cmbGenero" value="#{mbProducto.generoSelected}" required="true" 
+                                             requiredMessage="Debe seleccionar un Género" converter="omnifaces.SelectItemsConverter"  >
+                                <f:selectItem itemLabel="Seleccione el Género" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbProducto.listGeneros}" 
+                                               var="genero" itemLabel="#{genero.nombre}" itemValue="#{genero}"/>
+                                <p:ajax listener="#{mbProducto.generoChangeListener()}" update="cmbEspecies" />
+                            </p:selectOneMenu> 
+                            <p:outputLabel value="Especie" for="cmbEspecies"/>   
+                            <p:selectOneMenu id="cmbEspecies" value="#{mbProducto.especieSelected}" required="true" 
+                                             requiredMessage="Debe seleccionar una Especie" converter="omnifaces.SelectItemsConverter"  >
+                                <f:selectItem itemLabel="Seleccione la Especie" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbProducto.listEspecies}" 
+                                               var="esp" itemLabel="#{esp.nombre}" itemValue="#{esp}"/>
+                            </p:selectOneMenu>  
+                            <p:outputLabel value="Nombre vulgar" for="nomVulgar"/>
+                            <p:inputText id="nomVulgar" value="#{mbProducto.prodEspecie.nombreVulgar}" style="text-transform: uppercase; width: 300px"
+                                         requiredMessage="Debe ingresar el Nombre vulgar" required="true" />
+                            <p:outputLabel value="Observaciones" for="obs"/>
+                            <p:inputTextarea  id="obs" rows="5" cols="50" counter="display" maxlength="500" 
+                                              value="#{mbProducto.prodEspecie.obs}" counterTemplate="Restan {0} caracteres." 
+                                              autoResize="false" />
+                            <h:outputText value="" />
+                            <h:outputText id="display" style="font-size: 12px" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbProducto.saveEspecie()}" update="frEspecies"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbProducto.limpiarFormEspecie()}" update="pnFrm"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbProducto.lstProdEspecie}"
+                                     filteredValue="#{mbProducto.lstProdEspFilters}"
+                             var="especie"
+                             id="dtEspecies" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="especiesTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('especiesTable').clearFilters()" update="dtEspecies"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{especie.id}"/>
+                            </p:column>
+                            <p:column headerText="Nombre Científico"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{especie.nombreCientifico}" 
+                                filterBy="#{especie.nombreCientifico}" >
+                                <p:outputLabel value="#{especie.nombreCientifico}"/>
+                            </p:column>
+                            <p:column headerText="Nombre Vulgar"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{especie.nombreVulgar}" 
+                                filterBy="#{especie.nombreVulgar}" >
+                                <p:outputLabel value="#{especie.nombreVulgar}"/>
+                            </p:column>
+                            <p:column filterBy="#{especie.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('especiesTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{especie.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:75px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbProducto.prepareEditSrv()}" >
+                                    <f:setPropertyActionListener value="#{especie}" target="#{mbProducto.prodEspecie}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbProducto.deshabilitarEspecie()}" 
+                                                 process="@this" update="@form" rendered="#{especie.habilitado}" >
+                                    <f:setPropertyActionListener value="#{especie}" target="#{mbProducto.prodEspecie}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar la Especie local: #{especie.nombreVulgar}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbProducto.habilitarEspecie()}" 
+                                                 process="@this" update="@form" rendered="#{not especie.habilitado}" >
+                                    <f:setPropertyActionListener value="#{especie}" target="#{mbProducto.prodEspecie}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea habilitar la Especie local: #{especie.nombreVulgar}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>

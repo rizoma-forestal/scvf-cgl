@@ -1,0 +1,469 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <!-- Diálogo para obtener los datos del Vehículo desde el RUE -->
+                <p:dialog header="Datos provenientes del Registro Unico" widgetVar="dlgBuscarRue" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frBuscarRue">
+                        <p:panel id="pnDlg" style="margin-bottom:10px; width: 550px">
+                            <p:growl id="messagesBusRue" showDetail="false" />
+                            <h:panelGrid columns="5" rendered="#{not mbVehiculo.view}" >
+                                <p:outputLabel value="Matrícula" for="dlg_mat"/>
+                                <p:inputText id="dlg_mat" value="#{mbVehiculo.matBusqRue}" style="text-transform: uppercase" />
+                                <p:commandButton title="Buscar en el Registro Unico" value="Buscar" icon="fa fa-fw fa-search" 
+                                                 action="#{mbVehiculo.buscarVehiculoRue()}" update="frBuscarRue,pnContenido,messagesBusRue"/>
+                                <p:commandButton title="Limpiar el formulario de búsqueda" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                                 action="#{mbVehiculo.prepareBuscarMat()}" update="frBuscarRue,pnContenido"/>
+                                <p:commandButton title="Obtener el Vehículo como transporte para Guías" value="Descargar" icon="fa fa-fw fa-cloud-download" 
+                                                 action="#{mbVehiculo.setearVehiculoByRue()}" update="pnFrmNew" oncomplete="PF('dlgBuscarRue').hide();"
+                                                 rendered="#{mbVehiculo.vehiculoRue.id ne 0 and mbVehiculo.vehiculoRue ne null}"/>
+                            </h:panelGrid>
+                            <p:panel id="pnContenido" rendered="#{mbVehiculo.vehiculoRue.id ne 0 and mbVehiculo.vehiculoRue ne null}">
+                                <h:panelGrid columns="2">
+                                    <p:outputLabel value="Matrícula: " />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.matricula}" />
+                                    <p:outputLabel value="Marca: " />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.modelo.marca.nombre}" />
+                                    <p:outputLabel value="Modelo: " />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.modelo.nombre}" />
+                                    <p:outputLabel value="Año: " />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.anio}" />
+                                    
+                                    <p:outputLabel value="Nombre Titular: " rendered="#{mbVehiculo.vehiculoRue.empresa ne null and mbVehiculo.vehiculoRue.empresa.nombreCompleto ne null}" />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.empresa.nombreCompleto}" rendered="#{mbVehiculo.vehiculoRue.empresa ne null and mbVehiculo.vehiculoRue.empresa.nombreCompleto ne null}" />
+                                    <p:outputLabel value="Razón social Titular: " rendered="#{mbVehiculo.vehiculoRue.empresa ne null and mbVehiculo.vehiculoRue.empresa.razonSocial ne null}" />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.empresa.razonSocial}" rendered="#{mbVehiculo.vehiculoRue.empresa ne null and mbVehiculo.vehiculoRue.empresa.razonSocial ne null}" />
+                                    
+                                    <p:outputLabel value="Cuit Titular: " rendered="#{mbVehiculo.vehiculoRue.empresa ne null}" />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.empresa.cuit}" rendered="#{mbVehiculo.vehiculoRue.empresa ne null}" />
+                                    <p:outputLabel value="Fecha de alta: " />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.fechaAlta}" >
+                                        <f:convertDateTime pattern="dd-MM-yyyy"/> 
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Provincia que gestiona: " />
+                                    <p:outputLabel value="#{mbVehiculo.vehiculoRue.provinciaGestion}" />
+                                </h:panelGrid>
+                            </p:panel>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgBuscarRue').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <!-- Diálogo para registrar un Vehículo en el RUE -->
+                <p:dialog header="Ingrese los datos del Vehículo en el Registro Unico" widgetVar="dlgInsertRue" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frInsertRue">
+                        <p:panel id="pnDlgInsertar" style="margin-bottom:10px; width: 750px">
+                            <p:growl id="messagesRegRue" showDetail="false" />
+                            <p:outputLabel value="Ingrese la Matrícula del Vehículo a obtener del RUE, una vez obtenidos los datos correspondientes, 
+                                               podrá agegarlo al Componente Local mediante el botón 'Descargar'" 
+                                           style="font-style: italic; font-size: small" />
+                            <h:panelGrid id="pgSelPer" columns="2" >
+                                <p:outputLabel value="Matrícula: *" for="mat"/>
+                                <p:inputText id="mat" value="#{mbVehiculo.rueVehiculoMatricula}" style="text-transform: uppercase" />
+                                <p:outputLabel value="Marca: *" for="cmbMarcas"/>   
+                                <p:selectOneMenu id="cmbMarcas" value="#{mbVehiculo.marcaSelected}" 
+                                                 converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione la marca" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbVehiculo.listMarcas}" 
+                                                   var="marca" itemLabel="#{marca.nombre}" itemValue="#{marca}"/>
+                                    <p:ajax listener="#{mbVehiculo.marcaChangeListener()}" update="cmbModelos" />
+                                </p:selectOneMenu>   
+                                <p:outputLabel value="Modelo: *" for="cmbModelos"/>   
+                                <p:selectOneMenu id="cmbModelos" value="#{mbVehiculo.modeloSelected}" 
+                                                 converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione el modelo" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbVehiculo.listModelos}" 
+                                                   var="modelo" itemLabel="#{modelo.nombre}" itemValue="#{modelo}"/>
+                                </p:selectOneMenu>  
+                                <p:outputLabel value="Año: *" for="anio"/>
+                                <p:inputText id="anio" value="#{mbVehiculo.rueVehiculoAnio}" >
+                                    <f:convertNumber integerOnly="true" type="number" />
+                                </p:inputText>
+                                <p:outputLabel value="Titular: " for="cmbTit"/>   
+                                <p:selectOneMenu id="cmbTit" value="#{mbVehiculo.titularSelected}" converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione el titular" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbVehiculo.listTitulares}" 
+                                                   var="titular" itemLabel="#{titular.nombre}" itemValue="#{titular}"/>
+                                </p:selectOneMenu>  
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBotonesRue" columns="2" >
+                                <p:commandButton title="Guardar los datos en el RUE" value="Guardar" icon="fa fa-fw fa-cloud-upload" update="frInsertRue,messagesRegRue" 
+                                                 action="#{mbVehiculo.saveVehiculoRue()}" oncomplete="PF('dlgInsertRue').hide();"/>
+                                <p:commandButton title="Limpiar el formulario de persistencia en el RUE" value="Limpiar" icon="fa fa-fw fa-refresh" >
+                                    <p:ajax listener="#{mbVehiculo.limpiarFormVehiculoRue()}" update="pnDlgInsertar" resetValues="true" />
+                                </p:commandButton>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgInsertRue').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <!-- Diálogo para editar los datos de un Vehículo en el RUE -->
+                <p:dialog header="Actualice los datos del Vehículo en el Registro Unico" widgetVar="dlgEditRue" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frEditRue">
+                        <p:panel id="pnDlgEditar" style="margin-bottom:10px; width: 750px" rendered="#{mbVehiculo.rueEditable}">
+                            <p:growl id="messagesEditRue" showDetail="false" />
+                            <p:inputText type="hidden" id="matricula" value="#{mbVehiculo.vehiculoRue.matricula}" />
+                            <h:panelGrid id="pgDatosRueEdit" columns="2" >
+                                <p:outputLabel value="Matrícula: *" />
+                                <p:outputLabel value="#{mbVehiculo.rueVehiculoMatricula}" style="font-weight: bold" />
+                                <p:outputLabel value="Marca: *" for="cmbMarcasEdit"/>   
+                                <p:selectOneMenu id="cmbMarcasEdit" value="#{mbVehiculo.marcaSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <f:selectItem itemLabel="Seleccione la marca" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbVehiculo.listMarcas}" 
+                                                   var="marca" itemLabel="#{marca.nombre}" itemValue="#{marca}"/>
+                                    <p:ajax listener="#{mbVehiculo.marcaChangeListener()}" update="pnDlgEditar" />
+                                </p:selectOneMenu>   
+                                <p:outputLabel value="Modelo: *" for="cmbModelosEdit"/>   
+                                <p:selectOneMenu id="cmbModelosEdit" value="#{mbVehiculo.modeloSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <f:selectItem itemLabel="Seleccione el modelo" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbVehiculo.listModelos}" 
+                                                   var="modelo" itemLabel="#{modelo.nombre}" itemValue="#{modelo}"/>
+                                </p:selectOneMenu>  
+                                <p:outputLabel value="Año: *" for="anioEdit"/>
+                                <p:inputText id="anioEdit" value="#{mbVehiculo.rueVehiculoAnio}" >
+                                    <f:convertNumber integerOnly="true" type="number" />
+                                </p:inputText>
+                                <p:outputLabel value="Titular: " for="cmbTitEdit"/>   
+                                <p:selectOneMenu id="cmbTitEdit" value="#{mbVehiculo.titularSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <f:selectItem itemLabel="Seleccione el titular" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbVehiculo.listTitulares}" 
+                                                   var="titular" itemLabel="#{titular.nombre}" itemValue="#{titular}"/>
+                                </p:selectOneMenu>
+                                <p:outputLabel value="#{mbVehiculo.titularSelected.id}"/>  
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBotonesRueEdit" columns="2" rendered="#{mbVehiculo.rueEditable}" >
+                                <p:commandButton title="Guardar los datos en el RUE" value="Guardar" icon="fa fa-fw fa-cloud-upload" update="frEditRue,pnFrmNew,messagesEditRue" 
+                                                 action="#{mbVehiculo.saveVehiculoRue()}" oncomplete="PF('dlgEditRue').hide();"/>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgEditRue').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                        <p:panel id="pnDlgNoEditar" style="margin-bottom:10px; width: 750px" rendered="#{not mbVehiculo.rueEditable}">
+                            <p:outputLabel value="El Vehículo no fue registrado por esta Provincia, para modificar sus datos deberá ponerse en contacto con el Administrador central." 
+                                           style="color: #8A0829; font-size: x-large" />  
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgEditRue').hide();"/>
+                            </f:facet>
+                        </p:panel>  
+                    </h:form>
+                </p:dialog>  
+                
+                <!-- Diálogo para gestionar Marcas del RUE -->
+                <p:dialog header="Marcas de Vehículos en el Registro Unico" widgetVar="dlgMarcas" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frMarcas">
+                        <p:panel id="pnDlgMarcas" style="margin-bottom:10px; width: 500px">
+                            <p:panel id="pnMarcForm" header="Crear/Editar" style="margin-bottom:10px;">
+                                <p:growl id="messagesMarcas" showDetail="false" />
+                                <p:outputLabel value="Podrá gestionar desde aquí las Marcas de los Vehículos registrados o a registrar." 
+                                           style="font-style: italic; font-size: small" />
+                                <h:panelGrid id="pgMarcForm" columns="2" >
+                                    <p:outputLabel value="Nombre: *" for="marcaNombre"/>
+                                    <p:inputText id="marcaNombre" value="#{mbVehiculo.nombreMarcaRue}" 
+                                                 style="text-transform: uppercase; width: 250px" />
+                                </h:panelGrid>
+                                <h:panelGrid id="pgBotonesMarcas" columns="2" >
+                                    <p:commandButton value="Guardar" icon="fa fa-fw fa-plus" update="frMarcas" 
+                                                     action="#{mbVehiculo.saveMarcaRue()}" title="Guardar la Marca en el Registro Unico"/> 
+                                    <p:commandButton title="Limpiar el formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                                     process="@this" action="#{mbVehiculo.limpiarFormMarcaRue()}" update="frMarcas" resetValues="true" />
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:panel id="pnMarcTabla" header="Listado" style="margin-bottom:10px;">
+                                <p:dataTable styleClass="table" value="#{mbVehiculo.lstMarcas}"
+                                                                     filteredValue="#{mbVehiculo.lstMarcasFilters}"
+                                                             var="marca"
+                                                             id="dtMarca" 
+                                                             rows="5"
+                                                             paginator="true"      
+                                                             widgetVar="marcaTable"
+                                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                             rowsPerPageTemplate="5,10,15">
+                                    <f:facet name="header">
+                                        <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                                 onclick="PF('marcaTable').clearFilters()" update="dtMarca"/>
+                                    </f:facet>
+                                    <p:column headerText="id" style="width:50px">
+                                        <p:outputLabel value="#{marca.id}"/>
+                                    </p:column>
+                                    <p:column headerText="Nombre" 
+                                        filterMatchMode="contains"
+                                        sortBy="#{marca.nombre}" 
+                                        filterBy="#{marca.nombre}" >
+                                        <p:outputLabel value="#{marca.nombre}"/>
+                                    </p:column>
+                                    <p:column style="width:25px">
+                                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                         update="frMarcas" action="#{mbVehiculo.prepareEditMarca()}" resetValues="true" >
+                                            <f:setPropertyActionListener value="#{marca}" target="#{mbVehiculo.marcaRue}" /> 
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgMarcas').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <!-- Diálogo para gestionar Modelos del RUE -->
+                <p:dialog header="Modelos de Vehículos en el Registro Unico" widgetVar="dlgModelos" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frModelos">
+                        <p:panel id="pnDlgModelos" style="margin-bottom:10px; width: 500px">
+                            <p:panel id="pnModForm" header="Crear/Editar" style="margin-bottom:10px;">
+                                <p:growl id="messagesModelos" showDetail="false" />
+                                <p:outputLabel value="Podrá gestionar desde aquí los Modelos de los Vehículos registrados o a registrar." 
+                                           style="font-style: italic; font-size: small" />
+                                <h:panelGrid id="pgModForm" columns="2" >
+                                    <p:outputLabel value="Marca: *" for="cmbModMarcas"/>   
+                                    <p:selectOneMenu id="cmbModMarcas" value="#{mbVehiculo.marcaRueSelected}" 
+                                                     converter="omnifaces.SelectItemsConverter" >
+                                        <f:selectItem itemLabel="Seleccione la Marca" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{mbVehiculo.listMarcasRue}" 
+                                                       var="marca" itemLabel="#{marca.nombre}" itemValue="#{marca}"/>
+                                    </p:selectOneMenu>  
+                                    <p:outputLabel value="Nombre Modelo: *" for="modNombre"/>
+                                    <p:inputText id="modNombre" value="#{mbVehiculo.nombreModeloRue}" style="text-transform: uppercase; width: 250px" />
+                                </h:panelGrid>
+                                <h:panelGrid id="pgBotonesModelos" columns="2" >
+                                    <p:commandButton value="Guardar" icon="fa fa-fw fa-plus" update="frModelos" 
+                                                     action="#{mbVehiculo.saveModeloRue()}" title="Guardar el Modelo en el Registro Unico"/> 
+                                    <p:commandButton title="Limpiar el formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                                     process="@this" action="#{mbVehiculo.limpiarFormModeloRue()}" update="frModelos" resetValues="true" />
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:panel id="pnModTabla" header="Listado" style="margin-bottom:10px;">
+                                <p:dataTable styleClass="table" value="#{mbVehiculo.lstModelos}"
+                                             filteredValue="#{mbVehiculo.lstModelosFilters}"
+                                                             var="modelo"
+                                                             id="dtModelo" 
+                                                             rows="5"
+                                                             paginator="true"      
+                                                             widgetVar="modeloTable"
+                                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                             rowsPerPageTemplate="5,10,15">
+                                    <f:facet name="header">
+                                        <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                                 onclick="PF('modeloTable').clearFilters()" update="dtModelo"/>
+                                    </f:facet>
+                                    <p:column headerText="id" style="width:50px">
+                                        <p:outputLabel value="#{modelo.id}"/>
+                                    </p:column>
+                                    <p:column headerText="Marca" 
+                                        filterMatchMode="contains"
+                                        sortBy="#{modelo.marca.nombre}" 
+                                        filterBy="#{modelo.marca.nombre}" >
+                                        <p:outputLabel value="#{modelo.marca.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Nombre" 
+                                        filterMatchMode="contains"
+                                        sortBy="#{modelo.nombre}" 
+                                        filterBy="#{modelo.nombre}" >
+                                        <p:outputLabel value="#{modelo.nombre}"/>
+                                    </p:column>
+                                    <p:column style="width:25px">
+                                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                         update="frModelos" action="#{mbVehiculo.prepareEditModelo()}" >
+                                            <f:setPropertyActionListener value="#{modelo}" target="#{mbVehiculo.modeloRue}" /> 
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgModelos').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <h:form prependId="false" id="frVehiculos">
+                    <!-- Formulario new y edit -->
+                    <p:panel id="pnFrmNew" header="Agregar/Crear/Editar" rendered="#{not mbVehiculo.view}" collapsed="#{not mbVehiculo.edit}" toggleable="true" >
+                        <p:growl id="messagesLocal" showDetail="false" />
+                        <p:outputLabel value="Si el Vehículo que desea registrar localmente ya estuviera registrado en el Registro Unico de Entidades (RUE) del sistema, 
+                                       podrá seleccionarlo mediante el botón 'Buscar por Matrícula' ingresando la Matrícula correspondiente. Si desea registrarlo por primera vez en el RUE, 
+                                       deberá hacerlo mediante el botón 'Agregar Nuevo'. Recuerde que se validará la existencia de la Matrícula del Vehículo que desea registrar. 
+                                       Para ver las Marcas de Vehículos registradas y disponibles, para editarlas y/o registrar nuevas, deberá ir a 'Ver Marcas'. 
+                                       Para ver los Modelos de VEhículos registrados y disponibles, para editarlos y/o registrar nuevos, debería ir a 'Ver Modelos'" 
+                                   style="font-style: italic; font-size: small" />
+                        <h:panelGrid columns="4">  
+                            <p:commandButton value="Buscar por Matrícula" icon="fa fa-fw fa-external-link" process="@this" 
+                                             actionListener="#{mbVehiculo.prepareBuscarMat()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                            <p:commandButton rendered="#{mbVehiculo.vehiculo.id eq null}" value="Agregar nuevo" icon="fa fa-fw fa-plus" update="pgSelPer" 
+                                             oncomplete="PF('dlgInsertRue').show();" action="#{mbVehiculo.limpiarFormVehiculoRue()}"/> 
+                            <p:commandButton rendered="#{mbVehiculo.vehiculo.id eq null}" value="Ver Marcas" icon="fa fa-fw fa-external-link" 
+                                             oncomplete="PF('dlgMarcas').show();" action="#{mbVehiculo.prepareMarcasRue()}" update="pnDlgMarcas"/>  
+                            <p:commandButton rendered="#{mbVehiculo.vehiculo.id eq null}" value="Ver Modelos" icon="fa fa-fw fa-external-link" 
+                                             oncomplete="PF('dlgModelos').show();" action="#{mbVehiculo.prepareModelosRue()}" update="pnDlgModelos"/>  
+                            <p:commandButton rendered="#{mbVehiculo.vehiculo.id ne null}" value="Editar datos RUE" icon="fa fa-fw fa-pencil" 
+                                             oncomplete="PF('dlgEditRue').show();" update="frEditRue" action="#{mbVehiculo.preparaEditRue()}"/>  
+                        </h:panelGrid>
+                        <h:panelGrid columns="5" rendered="#{mbVehiculo.vehiculo.idRue ne null}">
+                            <!-- Campos ocultos -->
+                            <p:inputText type="hidden" id="id" value="#{mbVehiculo.vehiculo.id}" />
+                            <p:inputText type="hidden" id="idRue" value="#{mbVehiculo.vehiculo.idRue}" />
+                            <p:inputText type="hidden" id="fechaAlta" value="#{mbVehiculo.vehiculo.fechaAlta}" >
+                                <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                            </p:inputText>
+                            <p:inputText type="hidden" id="habilitado" value="#{mbVehiculo.vehiculo.habilitado}" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" rendered="#{mbVehiculo.vehiculo.idRue ne null}" >
+                            <p:outputLabel value="Matrícula: " />
+                            <p:outputLabel value="#{mbVehiculo.vehiculo.matricula}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Marca: " /> 
+                            <p:outputLabel value="#{mbVehiculo.vehiculo.marca}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Modelo: " /> 
+                            <p:outputLabel value="#{mbVehiculo.vehiculo.modelo}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Año: " />   
+                            <p:outputLabel value="#{mbVehiculo.vehiculo.anio}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Titular: " for="titular" rendered="#{mbVehiculo.vehiculo.titular ne null}" />   
+                            <p:outputLabel id="titular" value="#{mbVehiculo.vehiculo.titular.nombreCompleto}" 
+                                           style="color: #0F4C20; font-weight: bold" rendered="#{mbVehiculo.vehiculo.titular ne null}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" rendered="#{mbVehiculo.vehiculo.idRue ne null}">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbVehiculo.saveVehiculo()}" 
+                                             update="frVehiculos,pnFrmView"/>
+                            <p:commandButton title="Hacer doble click para limpiar el formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                             process="@this" action="#{mbVehiculo.limpiarForm()}" update="messagesLocal" >
+                                <p:ajax update="pnFrmNew" resetValues="true" />
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Formulario view -->
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbVehiculo.view}" >
+                        <h:panelGrid id="pgDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="v_id"/>
+                            <p:outputLabel id="v_id" value="#{mbVehiculo.vehiculo.id}"/>
+                            <p:outputLabel value="Matrícula: " for="v_mat" />
+                            <p:outputLabel id="v_mat" value="#{mbVehiculo.vehiculo.matricula}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Marca: " for="v_marc" /> 
+                            <p:outputLabel id="v_marc" value="#{mbVehiculo.vehiculo.marca}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Modelo: " for="v_mod" /> 
+                            <p:outputLabel id="v_mod" value="#{mbVehiculo.vehiculo.modelo}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Año: " for="v_anio" />   
+                            <p:outputLabel id="v_anio" value="#{mbVehiculo.vehiculo.anio}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Titular: " for="v_titular" rendered="#{mbVehiculo.vehiculo.titular ne null}" />   
+                            <p:outputLabel id="v_titular" value="#{mbVehiculo.vehiculo.titular.nombreCompleto}" 
+                                           style="color: #0F4C20; font-weight: bold" rendered="#{mbVehiculo.vehiculo.titular ne null}"/>
+                            <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
+                                             actionListener="#{mbVehiculo.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbVehiculo.view}" />
+                        <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbVehiculo.view}" >
+                            <p:outputLabel value="Fecha de Alta: " for="v_fechaAlta"/>
+                            <p:outputLabel id="v_fechaAlta" value="#{mbVehiculo.vehiculo.fechaAlta}" >
+                                <f:convertDateTime pattern="dd-MM-yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Ultimo Usuario: " for="v_ultUsuario"/>
+                            <p:outputLabel id="v_ultUsuario" value="#{mbVehiculo.vehiculo.usuario.nombreCompleto}" />
+                            <p:outputLabel value="Habilitado: " for="v_habilitado"/>
+                            <p:outputLabel id="v_habilitado" value="#{mbVehiculo.vehiculo.habilitado}" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbVehiculo.prepareNew()}" />
+                        </h:panelGrid>
+                    </p:panel> 
+                    
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbVehiculo.lstVehiculos}"
+                                     filteredValue="#{mbVehiculo.lstVehiculosFilter}"
+                             var="veh"
+                             id="dtDestino" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="vehTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('vehTable').clearFilters()" update="dtDestino"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{veh.id}"/>
+                            </p:column>
+                            <p:column headerText="Matrícula" 
+                                filterMatchMode="contains"
+                                sortBy="#{veh.matricula}" 
+                                filterBy="#{veh.matricula}" >
+                                <p:outputLabel value="#{veh.matricula}"/>
+                            </p:column>
+                            <p:column headerText="Marca" 
+                                filterMatchMode="contains"
+                                sortBy="#{veh.marca}" 
+                                filterBy="#{veh.marca}" >
+                                <p:outputLabel value="#{veh.marca}"/>
+                            </p:column>
+                            <p:column headerText="Modelo" 
+                                filterMatchMode="contains"
+                                sortBy="#{veh.modelo}" 
+                                filterBy="#{veh.modelo}" >
+                                <p:outputLabel value="#{veh.modelo}"/>
+                            </p:column>
+                            <p:column headerText="Año" 
+                                filterMatchMode="contains"
+                                sortBy="#{veh.anio}" 
+                                filterBy="#{veh.anio}" >
+                                <p:outputLabel value="#{veh.anio}"/>
+                            </p:column>
+                            <p:column filterBy="#{veh.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('vehTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{veh.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:100px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="@form" action="#{mbVehiculo.prepareView()}" >
+                                    <f:setPropertyActionListener value="#{veh}" target="#{mbVehiculo.vehiculo}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbVehiculo.prepareEdit()}" >
+                                    <f:setPropertyActionListener value="#{veh}" target="#{mbVehiculo.vehiculo}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbVehiculo.deshabilitar()}" 
+                                                 process="@this" update="@form" rendered="#{veh.habilitado}" >
+                                    <f:setPropertyActionListener value="#{veh}" target="#{mbVehiculo.vehiculo}" /> 
+                                    <p:confirm header="Confirmar" 
+                                               message="¿Desea deshabilitar el Vehículo seleccionado: #{veh.matricula}?" 
+                                               icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbVehiculo.habilitar()}" 
+                                                 process="@this" update="@form" rendered="#{not veh.habilitado}" >
+                                    <f:setPropertyActionListener value="#{veh}" target="#{mbVehiculo.vehiculo}" /> 
+                                    <p:confirm header="Confirmar" 
+                                               message="¿Desea habilitar el Vehículo seleccionado: #{veh.matricula}?" 
+                                               icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>

@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <a href="../../../resources/Config.properties"></a>
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.EstadosAut}" />
+                </h:panelGrid>
+                <h:form prependId="false" id="frEstadosAut">
+                    <p:panel id="pnFrm" header="Crear/Editar" collapsed="#{not mbEstadoAut.edit}" toggleable="true" >
+                        <p:growl id="messages" showDetail="false" />
+                        <h:panelGrid columns="2">
+                            <p:inputText type="hidden" id="id" value="#{mbEstadoAut.estadoAut.id}" />
+                            <p:inputText type="hidden" id="hab" value="#{mbEstadoAut.estadoAut.habilitado}" />
+                            <p:outputLabel value="Nombre" for="nombre"/>
+                            <p:inputText id="nombre" value="#{mbEstadoAut.estadoAut.nombre}" style="text-transform: uppercase; width: 250px"
+                                     requiredMessage="Debe ingresar el Nombre" required="true"/>
+                            <p:outputLabel value="Código" for="codigo"/>
+                            <p:inputText id="codigo" value="#{mbEstadoAut.estadoAut.codigo}" style="text-transform: uppercase; width: 50px"
+                                         requiredMessage="Debe ingresar el Código" required="true" >
+                                <f:validateLength minimum="1" maximum="10" />
+                            </p:inputText>
+                            <p:outputLabel value="Habilita emsión Guía " for="habEmision"/>
+                            <p:selectBooleanCheckbox id="habEmision" value="#{mbEstadoAut.estadoAut.habilitaEmisionGuia}" />
+                            <p:outputLabel value="Habilita edición: " for="habEdit"/>
+                            <p:selectBooleanCheckbox id="habEdit" value="#{mbEstadoAut.estadoAut.habilitaEdicion}" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbEstadoAut.save()}" update="frEstadosAut"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbEstadoAut.limpiarForm()}" update="pnFrm"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbEstadoAut.lstEstadosAut}"
+                                     filteredValue="#{mbEstadoAut.lstFilters}"
+                             var="estadoAut"
+                             id="dtEstadosAut" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="estadosAutTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('estadosAutTable').clearFilters()" update="dtEstadosAut"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{estadoAut.id}"/>
+                            </p:column>
+                            <p:column headerText="Nombre"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{estadoAut.nombre}" 
+                                filterBy="#{estadoAut.nombre}" >
+                                <p:outputLabel value="#{estadoAut.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Código"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{estadoAut.codigo}" 
+                                filterBy="#{estadoAut.codigo}" >
+                                <p:outputLabel value="#{estadoAut.codigo}"/>
+                            </p:column>
+                            <p:column filterBy="#{estadoAut.habilitaEmisionGuia}" headerText="Hab. Emisión Guías" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('estadosAutTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Sí" itemValue="true" />
+                                        <f:selectItem itemLabel="No" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{estadoAut.habilitaEmisionGuia ? 'Sí': 'No'}" />
+                            </p:column>
+                            <p:column filterBy="#{estadoAut.habilitaEdicion}" headerText="Hab. Edic." filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('estadosAutTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Sí" itemValue="true" />
+                                        <f:selectItem itemLabel="No" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{estadoAut.habilitaEdicion ? 'Sí': 'No'}" />
+                            </p:column>
+
+
+
+                            <p:column filterBy="#{estadoAut.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('estadosAutTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{estadoAut.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:75px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbEstadoAut.prepareNew()}" >
+                                    <f:setPropertyActionListener value="#{estadoAut}" target="#{mbEstadoAut.estadoAut}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbEstadoAut.deshabilitar()}" 
+                                                 process="@this" update="@form" rendered="#{estadoAut.habilitado}" >
+                                    <f:setPropertyActionListener value="#{estadoAut}" target="#{mbEstadoAut.estadoAut}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar el Estado de Guía seleccionado: #{estadoAut.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbEstadoAut.habilitar()}" 
+                                                 process="@this" update="@form" rendered="#{not estadoAut.habilitado}" >
+                                    <f:setPropertyActionListener value="#{estadoAut}" target="#{mbEstadoAut.estadoAut}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea habilitar el Estado de Guía seleccionado: #{estadoAut.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>
+

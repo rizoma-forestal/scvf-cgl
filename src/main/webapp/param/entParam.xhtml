@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.EntidadesParametricas}" />
+                </h:panelGrid>
+                <h:form prependId="false" id="frEntParam">
+                    <p:panel id="pnFrm" header="Crear/Editar" collapsed="#{not mbParametrica.edit}" toggleable="true" >
+                        <p:growl id="messages" showDetail="false" />
+                        <h:panelGrid columns="2">
+                            <p:inputText type="hidden" id="id" value="#{mbParametrica.parametrica.id}" />
+                            <p:inputText type="hidden" id="hab" value="#{mbParametrica.parametrica.habilitado}" />
+                            <p:outputLabel value="Nombre" for="nombre"/>
+                            <p:inputText id="nombre" value="#{mbParametrica.parametrica.nombre}" style="text-transform: uppercase; width: 250px"
+                                     requiredMessage="Debe ingresar el Nombre" required="true"/>
+                        
+                            <p:outputLabel value="Tipo" for="cmbTipoParam"/>   
+                            <p:selectOneMenu id="cmbTipoParam" value="#{mbParametrica.parametrica.tipo}" required="true" 
+                                             requiredMessage="Debe seleccionar un Tipo de Parámetro." >
+                                <f:selectItem itemLabel="Seleccione el Tipo" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbParametrica.lstTipoParam}" 
+                                               var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo}"/>
+                            </p:selectOneMenu> 
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbParametrica.saveParametrica()}" update="frEntParam"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbParametrica.limpiarFormParam()}" update="pnFrm"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbParametrica.lstParam}"
+                                     filteredValue="#{mbParametrica.lstParamFilters}"
+                             var="parametrica"
+                             id="dtEntParam" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="entParamTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('entParamTable').clearFilters()" update="dtEntParam"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{parametrica.id}"/>
+                            </p:column>
+                            <p:column headerText="Nombre"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{parametrica.nombre}" 
+                                filterBy="#{parametrica.nombre}" >
+                                <p:outputLabel value="#{parametrica.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Tipo"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{parametrica.tipo.nombre}" 
+                                filterBy="#{parametrica.tipo.nombre}" >
+                                <p:outputLabel value="#{parametrica.tipo.nombre}"/>
+                            </p:column>
+                            <p:column filterBy="#{parametrica.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('entParamTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{parametrica.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:75px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbParametrica.prepareNewEntParam()}" >
+                                    <f:setPropertyActionListener value="#{parametrica}" target="#{mbParametrica.parametrica}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbParametrica.deshabilitarParametrica()}" 
+                                                 process="@this" update="@form" rendered="#{parametrica.habilitado}" >
+                                    <f:setPropertyActionListener value="#{parametrica}" target="#{mbParametrica.parametrica}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar el Parámetro seleccionado: #{parametrica.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbParametrica.habilitarParametrica()}" 
+                                                 process="@this" update="@form" rendered="#{not parametrica.habilitado}" >
+                                    <f:setPropertyActionListener value="#{parametrica}" target="#{mbParametrica.parametrica}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea habilitar el Parámetro seleccionado: #{parametrica.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>

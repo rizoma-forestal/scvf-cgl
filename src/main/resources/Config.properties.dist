@@ -1,0 +1,159 @@
+# Parámetros dinámicos
+Server=http://localhost:8080
+ServerServicios=http://localhost:8080
+UrlTerritorial=/gestionTerritorial/rest
+UrlEspecies=/especiesVegetales/rest
+UrlEntidades=/rue/rest
+UrlTrazabilidad=/trazabilidad/rest
+UrlCtrlVerif=/ctrlVerif/rest
+
+# Parámetros de Gestión de Trazabilidad
+TrazServer=http://localhost:8080
+TrazRutaAplicacion=/trazabilidad
+
+# Parámetros provinciales
+IdProvinciaGt=10
+Provincia=[Provincia]
+AutoridadLocal=Dirección de Bosques de [Provincia]
+DependienteDe=[Area superior]
+DomicilioAutLocal=[Domicilio Autoridad local]
+CorreoAutLocal=[email@autoridadlocal.gob.ar]
+TelAutLocal=[Teléfono Autoridad local]
+
+# Claves para encriptar y desencriptar las contraseñas de los usurios
+ClaveEncriptar=bosquesnativosycomunidad
+ClaveDesencriptar=localcompleto
+
+# Definición Inmueble (o predio)
+Inmueble=Inmueble
+
+# Definición de Producto forestal para permitir su extracción
+Producto=Producto
+
+# Roles personas
+Proponente=PROPONENTE
+Tecnico=TECNICO
+Apoderado=APODERADO
+Destinatario=DESTINATARIO
+Transportista=TRANSPORTISTA
+
+
+# Tipos de Items productivos
+Autorizados=AUTORIZADOS
+Extraidos=EXTRAIDOS
+
+# Letras de Guías
+Ext=EE
+Trans=TT
+ExtYTrans=ET
+
+# Tipos de Fuente
+Autorizacion=AUTORIZACION
+GuiaMadre=GUIA MADRE
+
+# Tipos de Enitdad Guía
+TegFuente=ORIGEN
+TegDestino=DESTINO
+
+# ------------- #
+# Títulos Menús #
+# ------------- #
+# Inicio
+Inicio=Inicio
+# Administración
+Administracion=Administración
+EntidadesParametricas=Entidades Paramétricas
+TiposParametros=Tipos de Parámetros
+ProdUnidadesMedida=Unidades de medida
+ProdClases=Clases
+ProdEspeciesLocal=Especies locales
+Productos=Productos forestales
+
+# Autorizaciones
+Instrumento=Resolución
+Autorizaciones=Autorizaciones
+Gestionar=Gestionar
+Ver=Ver
+ZonasIntervencion=Zonas de Itervención
+SubZonasIntervencion=Sub zonas
+EstadosAut=Estados de Autorización
+Tecnicos=Técnicos
+Proponentes=Proponentes
+Apoderados=Apoderados
+Inmuebles=Inmuebles
+Estado=Estado
+# Guías
+Guias=Guías
+EstadosGuia=Estados de Guía
+TiposGuia=Tipos de Guía
+Copias=Copias por Tipo de Guía
+Origen=Origen
+Destino=Destino
+Destinatarios=Destinatarios
+Transporte=Transporte
+Transportistas=Transportistas
+Vehiculos=Vehículos
+Marcas=Marcas
+Modelos=Modelos
+Tasas=Tasas
+Emision=Emisión
+
+# Seguridad
+Usuarios=Usuarios
+
+# ----- #
+# Rutas #
+# ----- #
+RutaArchivos=C:\\wildfly\\resources
+SubdirTemp=C:\\wildfly\\TMP\\
+SubdirMartillos=\\martillos\\
+
+# ------------------- #
+# Tipos de parámetros #
+# ------------------- #
+UsoSuelo=USO_SUELO
+RolUsuarios=ROL_USUARIOS
+TipoNumerico=TIPO_NUMERICO
+RolPersonas=ROL_PERSONAS
+TipoInterv=TIPO_INTERVENCION
+TipoAut=TIPO_AUTORIZACION
+TipoItem=TIPO_ITEM
+TipoTasa=TIPO_TASA
+TipoFuente=TIPO_FUENTE
+TipoEntidadGuia=TIPO_ENT_GUIA
+
+# --------------------------------- #
+# Roles de Usuarios de Trazabilidad #
+# --------------------------------- #
+Transformador=TRANSFORMADOR
+Acopiador=ACOPIADOR
+
+# ------------------------- #
+# Códigos de estados de Aut #
+# ------------------------- #
+AutInicial=INI
+AutHabilitado=HAB
+AutBloqueado=BLQ
+AutSuspendido=SUS
+
+# --------------------------- #
+# Códigos de estados de Guías #
+# --------------------------- #
+GuiaInicial=CARGA INICIAL
+GuiaConProductos=CON PRODUCTOS
+GuiaLiquidada=LIQUIDADA
+GuiaEmitida=EMITIDA
+GuiaCerrada=CERRADA
+GuiaTransito=EN TRANSITO
+GuiaIntervenida=INTERVENIDA
+GuiaSecuestrada=SECUESTRADA
+GuiaExtraviada=EXTRAVIADA
+GuiaConTransporte=CON TRANSP. Y PROD.
+
+# -------- #
+# Máscaras #
+# -------- #
+maskCatastro=a-9999
+maskInstrumento=999/9999/aaaa
+maskExpediente=9999-999-a-9999
+maskGuia=aa-99999-9999

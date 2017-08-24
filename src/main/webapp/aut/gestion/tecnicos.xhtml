@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/user-7.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Tecnicos}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frTecnicos">
+            <!-- Formulario de búsqueda -->
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
+                     rendered="#{mbAutorizacion.persona eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                <h:panelGrid columns="5">
+                    <p:outputLabel value="CUIT" for="cuitBuscar"/>
+                    <p:inputText id="cuitBuscar" value="#{mbAutorizacion.cuitBuscar}" 
+                                     requiredMessage="Debe haber un CUIT para buscar" required="true"/>
+                    <p:commandButton title="Buscar #{config.Tecnico} existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbAutorizacion.buscarPersona(config.Tecnico)}" update="frTecnicos,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar" resetValues="true" />
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Vista de los datos del Tecnico -->
+            <p:panel id="pnForm" header="Datos del #{config.Tecnico} obtenido" style="margin-bottom:10px;" rendered="#{mbAutorizacion.persona ne null}">
+                <h:panelGrid columns="2" cellpadding="1">
+                    <p:outputLabel value="Nombre completo/Razón Social: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.nombreCompleto}" style=" font-weight: bold" />
+                    <p:outputLabel value="CUIT: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.cuit}" style=" font-weight: bold" />
+                    <p:outputLabel value="Tipo de Persona: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.tipo}" style=" font-weight: bold" />
+                    <p:outputLabel value="Inicio de vigencia: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.inicioVigencia}" style=" font-weight: bold" >
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </p:outputLabel>
+                    <p:outputLabel value="Fin de vigencia: " />
+                    <p:outputLabel value="#{mbAutorizacion.persona.finVigencia}" style=" font-weight: bold" >
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </p:outputLabel>
+                </h:panelGrid>
+                <h:panelGrid columns="2">
+                    <p:commandButton title="Agregar el #{config.Tecnico} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Agregar" action="#{mbAutorizacion.addPersona(config.Tecnico)}" 
+                                     rendered="#{!mbAutorizacion.viewPersona}" update="@form,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Buscar otro #{config.Tecnico}" styleClass="save" icon="fa fa-fw fa-search-plus" 
+                                     rendered="#{!mbAutorizacion.viewPersona}" value="Buscar otro" 
+                                     action="#{mbAutorizacion.limpiarViewPersona()}" update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Guardar #{config.Tecnico}" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Guardar" action="#{mbAutorizacion.limpiarViewPersona()}" 
+                                     rendered="#{mbAutorizacion.viewPersona or not mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Desasociar #{config.Tecnico}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
+                                     value="Quitar" action="#{mbAutorizacion.deletePersona(config.Tecnico)}" 
+                                     rendered="#{mbAutorizacion.viewPersona and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form,messages" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Listado de Tecnicos vinculados -->
+            <p:panel id="pnTable" header="Listado de #{config.Tecnicos}" style="margin-bottom:10px;" >
+                <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.lstTecnicos}"
+                             var="tec"
+                             id="dtTec" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="tecTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{tec.id}"/>
+                    </p:column>
+                    <p:column headerText="Nombre completo" 
+                        filterMatchMode="contains"
+                        sortBy="#{tec.nombreCompleto}" 
+                        filterBy="#{tec.nombreCompleto}" >
+                        <p:outputLabel value="#{tec.nombreCompleto}"/>
+                    </p:column>
+                    <p:column headerText="CUIT" 
+                        filterMatchMode="contains"
+                        sortBy="#{tec.cuit}" 
+                        filterBy="#{tec.cuit}" >
+                        <p:outputLabel value="#{tec.cuit}"/>
+                    </p:column>
+                    <p:column headerText="Tipo" 
+                        filterMatchMode="contains"
+                        sortBy="#{tec.tipo}" 
+                        filterBy="#{tec.tipo}" >
+                        <p:outputLabel value="#{tec.tipo}"/>
+                    </p:column>
+                    <p:column headerText="Fecha de alta" 
+                        filterMatchMode="contains"
+                        sortBy="#{tec.fechaAlta}" 
+                        filterBy="#{tec.fechaAlta}" >
+                        <p:outputLabel value="#{tec.fechaAlta}" >
+                            <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                        </p:outputLabel>
+                    </p:column>  
+                    <p:column style="width:30px">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                         update="@form" action="#{mbAutorizacion.prepareViewPersona()}" >
+                            <f:setPropertyActionListener value="#{tec}" target="#{mbAutorizacion.persona}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

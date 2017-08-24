@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/resume.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Origen}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frInstrumento">
+            <p:panel id="pnView" header="Detalle de los datos administrativos" style="margin-bottom:10px;" >
+                <h:panelGrid columns="5" styleClass="panelColumns">
+                    <p:fieldset toggleable="true" legend="Identificación" style="margin-bottom:20px">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Tipo: " />
+                            <p:outputLabel value="#{mbGuia.guia.tipo.nombre}" style=" font-weight: bold" />
+                            <p:outputLabel value="Número: " />
+                            <p:outputLabel value="#{mbGuia.guia.codigo}" style=" font-weight: bold" />
+                            <p:outputLabel value="Emisión volante: " for="fechaEmisionVolante"/>
+                            <p:outputLabel id="fechaEmisionVolante" value="#{mbGuia.guia.fechaEmisionVolante}" style=" font-weight: bold" >
+                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                            </p:outputLabel>
+                        </h:panelGrid>
+                    </p:fieldset>
+                    <p:fieldset toggleable="true" legend="Vigencia" style="margin-bottom:20px">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Emisión: " for="fechaEmision"/>
+                            <p:outputLabel id="fechaEmision" value="#{mbGuia.guia.fechaEmisionGuia}" style=" font-weight: bold" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Vencimiento: " for="fechaVenc"/>
+                            <p:outputLabel id="fechaVenc" value="#{mbGuia.guia.fechaVencimiento}" style=" font-weight: bold" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Estado: " />
+                            <p:outputLabel value="#{mbGuia.guia.estado.nombre}" style=" font-weight: bold" />
+                            <p:outputLabel value="Fecha de cierre: " for="fechaCierre"/>
+                            <p:outputLabel id="fechaCierre" value="#{mbGuia.guia.fechaCierre}" style=" font-weight: bold" >
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </p:outputLabel>
+                        </h:panelGrid>
+                    </p:fieldset>
+                    <p:fieldset toggleable="true" legend="Titular" style="margin-bottom:20px">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Tipo: " />
+                            <p:outputLabel value="#{mbGuia.guia.origen.tipoPersona}" style=" font-weight: bold" />
+                            <p:outputLabel value="Razón Social: " rendered="#{mbGuia.guia.origen.tipoPersona eq 'Persona Jurídica'}"/>
+                            <p:outputLabel value="Nombre completo: " rendered="#{mbGuia.guia.origen.tipoPersona eq 'Persona Física'}"/>
+                            <p:outputLabel value="#{mbGuia.guia.origen.nombreCompleto}" style=" font-weight: bold" />
+                            <p:outputLabel value="CUIT: " />
+                            <p:outputLabel value="#{mbGuia.guia.origen.cuit}" style=" font-weight: bold" />
+                        </h:panelGrid>
+                    </p:fieldset>
+                    <p:fieldset toggleable="true" legend="#{config.Inmueble}" style="margin-bottom:20px">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Nombre: " />
+                            <p:outputLabel value="#{mbGuia.guia.origen.inmNombre}" style=" font-weight: bold" />
+                            <p:outputLabel value="Id Catastral: " />
+                            <p:outputLabel value="#{mbGuia.guia.origen.inmCatastro}" style=" font-weight: bold" />
+                            <p:outputLabel value="Localidad: " />
+                            <p:outputLabel value="#{mbGuia.guia.origen.localidad}" style=" font-weight: bold" />
+                            <p:outputLabel value="Departamente: " />
+                            <p:outputLabel value="#{mbGuia.guia.origen.departamento}" style=" font-weight: bold" />
+                            <p:outputLabel value="Provincia " />
+                            <p:outputLabel value="#{mbGuia.guia.origen.provincia}" style=" font-weight: bold" />
+                        </h:panelGrid>
+                    </p:fieldset>
+                    <p:fieldset toggleable="true" legend="Fuente" style="margin-bottom:20px">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Tipo: " />
+                            <p:outputLabel value="#{mbGuia.guia.tipoFuente.nombre}" style=" font-weight: bold" />
+                            <p:outputLabel value="Número: " />
+                            <p:outputLabel value="#{mbGuia.guia.numFuente}" style=" font-weight: bold" />
+                        </h:panelGrid>
+                    </p:fieldset>
+                </h:panelGrid>
+
+                <h:panelGrid columns="2">
+                    <p:commandButton title="Editar el contenido de los datos generales de la Guía" styleClass="save" icon="fa fa-fw fa-pencil" 
+                                     value="Editar" action="#{mbGuia.prepareEdit()}" update="pMenuIndex,frame" 
+                                     rendered="#{mbGuia.guia.estado.habilitaEdicionFuente}" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.TiposParametros}" />
+                </h:panelGrid>
+                <h:form prependId="false" id="frTipoParam">
+                    <!-- Campos ocultos -->
+                    <p:inputText type="hidden" id="id" value="#{mbParametrica.tipoParam.id}" />
+                    <p:inputText type="hidden" id="hab" value="#{mbParametrica.tipoParam.habilitado}" />
+                    
+                    <!-- Formulario new y edit -->
+                    <p:panel id="pnFrmNew" header="Crear/Editar" rendered="#{not mbParametrica.view}" collapsed="#{not mbParametrica.edit}" toggleable="true" >
+                        <p:growl id="messages" showDetail="false" />
+                        <h:panelGrid columns="2">
+                            <p:outputLabel value="Nombre" for="nombre"/>
+                            <p:inputText id="nombre" value="#{mbParametrica.tipoParam.nombre}" style="text-transform: uppercase; width: 250px"
+                                     requiredMessage="Debe ingresar el Nombre" required="true"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbParametrica.saveTipoParam()}" update="frTipoParam"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbParametrica.limpiarFormTipoParam()}" update="pnFrmNew"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Formulario view -->
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbParametrica.view}" >
+                        <h:panelGrid id="pgDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="v_id"/>
+                            <p:outputLabel id="v_id" value="#{mbParametrica.tipoParam.id}"/>
+                            <p:outputLabel value="Nombre: " for="v_nombre"/>
+                            <p:outputLabel id="v_nombre" value="#{mbParametrica.tipoParam.nombre}"/>
+                            <p:outputLabel value="Parámetros: " for="v_param"/>
+                            <p:commandButton id="v_param" icon="fa fa-fw fa-search-plus" update="dtTipoParam" 
+                                             onclick="PF('dlgParam').show();"/>
+                            <p:outputLabel value="Habilitado: " for="v_habilitado"/>
+                            <p:outputLabel id="v_habilitado" value="#{mbParametrica.tipoParam.habilitado}" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbParametrica.prepareNewTipoParam()}" />
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <p:dialog header="Parámetros vinculados" widgetVar="dlgParam" minHeight="40" closable="false">
+                        <p:panel id="pnDlg" style="margin-bottom:10px; width: 500px">
+                            <p:dataTable styleClass="table" value="#{mbParametrica.tipoParam.parametricas}"
+                             var="parametrica">
+                            <p:column headerText="Nombre" style="width:50px">
+                                <p:outputLabel value="#{parametrica.nombre}"/>
+                            </p:column>
+                            </p:dataTable>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgParam').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </p:dialog>
+                    
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbParametrica.lstTipoParam}"
+                                     filteredValue="#{mbParametrica.lstTipoFilters}"
+                             var="tipoParam"
+                             id="dtTipoParam" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="tipoParamTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('tipoParamTable').clearFilters()" update="dtTipoParam"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{tipoParam.id}"/>
+                            </p:column>
+                            <p:column headerText="Nombre" 
+                                filterMatchMode="contains"
+                                sortBy="#{tipoParam.nombre}" 
+                                filterBy="#{tipoParam.nombre}" >
+                                <p:outputLabel value="#{tipoParam.nombre}"/>
+                            </p:column>
+                            <p:column filterBy="#{tipoParam.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('tipoParamTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{tipoParam.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:110px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="@form" action="#{mbParametrica.prepareViewTipoParam()}" >
+                                    <f:setPropertyActionListener value="#{tipoParam}" target="#{mbParametrica.tipoParam}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbParametrica.prepareNewTipoParam()}" >
+                                    <f:setPropertyActionListener value="#{tipoParam}" target="#{mbParametrica.tipoParam}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbParametrica.deshabilitarTipoParam()}" 
+                                                 process="@this" update="@form" rendered="#{tipoParam.habilitado}" >
+                                    <f:setPropertyActionListener value="#{tipoParam}" target="#{mbParametrica.tipoParam}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar el Tipo de Parámetro seleccionado: #{tipoParam.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbParametrica.habilitarTipoParam()}" 
+                                                 process="@this" update="@form" rendered="#{not tipoParam.habilitado}" >
+                                    <f:setPropertyActionListener value="#{tipoParam}" target="#{mbParametrica.tipoParam}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea habilitar el Tipo de Parámetro seleccionado: #{tipoParam.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>

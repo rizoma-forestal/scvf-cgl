@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/placeholder.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Inmuebles}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frInmuebles">
+            <!-- Formulario de búsqueda -->
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
+                     rendered="#{mbAutorizacion.inmueble eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                <h:panelGrid columns="5">
+                    <p:outputLabel value="Id Catastral" for="catastroBuscar"/>
+                    <p:inputMask placeholder="#{config.maskCatastro}" id="catastroBuscar" value="#{mbAutorizacion.catastroBuscar}" 
+                                 style="text-transform: uppercase" requiredMessage="Debe ingresar el id Catastral" 
+                                 required="true" mask="#{config.maskCatastro}" />
+                    <p:commandButton title="Buscar #{config.Inmueble} existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbAutorizacion.buscarInmueble()}" update="frInmuebles,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar" resetValues="true" />
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Vista de los datos del Inmueble -->
+            <p:panel id="pnForm" header="Datos del #{config.Inmueble} obtenido" style="margin-bottom:10px;" rendered="#{mbAutorizacion.inmueble ne null}">
+                <h:panelGrid columns="2" cellpadding="1">
+                    <p:outputLabel value="Id Catastral: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.idCatastral}" style=" font-weight: bold" />
+                    <p:outputLabel value="Nombre: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.nombre}" style=" font-weight: bold" />
+                    <p:outputLabel value="Domicilio: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.domicilio}" style=" font-weight: bold" />
+                    <p:outputLabel value="Localidad: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.localidad}" style=" font-weight: bold" />
+                    <p:outputLabel value="Departamento: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.departamento}" style=" font-weight: bold" />
+                    <p:outputLabel value="Provincia: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.provincia}" style=" font-weight: bold" />
+                    <p:outputLabel value="Superficie (Hs.): " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.superficie}" style=" font-weight: bold" >
+                        <f:convertNumber type="currency" maxFractionDigits="4" currencySymbol=""/>
+                    </p:outputLabel>
+                    <p:outputLabel value="Latitud: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.latitud}" style=" font-weight: bold" />
+                    <p:outputLabel value="Longitud: " />
+                    <p:outputLabel value="#{mbAutorizacion.inmueble.longitud}" style=" font-weight: bold" />
+
+                </h:panelGrid>
+                <h:panelGrid columns="2">
+                    <p:commandButton title="Agregar el #{config.Inmueble} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Agregar" action="#{mbAutorizacion.addInmueble()}" 
+                                     rendered="#{!mbAutorizacion.viewInmueble}" update="@form,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Buscar otro #{config.Inmueble}" styleClass="save" icon="fa fa-fw fa-search-plus" 
+                                     rendered="#{!mbAutorizacion.viewInmueble}" value="Buscar otro" 
+                                     action="#{mbAutorizacion.limpiarViewInmueble()}" update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Guardar #{config.Inmueble}" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Guardar" action="#{mbAutorizacion.limpiarViewInmueble()}" 
+                                     rendered="#{mbAutorizacion.viewInmueble or not mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Desasociar #{config.Inmueble}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
+                                     value="Quitar" action="#{mbAutorizacion.deleteInmueble()}" 
+                                     rendered="#{mbAutorizacion.viewInmueble and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     update="@form,messages" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Listado de Inmuebles vinculados -->
+            <p:panel id="pnTable" header="Listado de #{config.Inmuebles}" style="margin-bottom:10px;" >
+                <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.inmuebles}"
+                             var="inm"
+                             id="dtInm" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="inmTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{inm.id}"/>
+                    </p:column>
+                    <p:column headerText="Id Catastral" 
+                        filterMatchMode="contains"
+                        sortBy="#{inm.idCatastral}" 
+                        filterBy="#{inm.idCatastral}" >
+                        <p:outputLabel value="#{inm.idCatastral}"/>
+                    </p:column>
+                    <p:column headerText="Nombre" 
+                        filterMatchMode="contains"
+                        sortBy="#{inm.nombre}" 
+                        filterBy="#{inm.nombre}" >
+                        <p:outputLabel value="#{inm.nombre}"/>
+                    </p:column>
+                    <p:column headerText="Domicilio" 
+                        filterMatchMode="contains"
+                        sortBy="#{inm.domicilio}" 
+                        filterBy="#{inm.domicilio}" >
+                        <p:outputLabel value="#{inm.domicilio}"/>
+                    </p:column>
+                    <p:column headerText="Localidad" 
+                        filterMatchMode="contains"
+                        sortBy="#{inm.localidad}" 
+                        filterBy="#{inm.localidad}" >
+                        <p:outputLabel value="#{inm.localidad}" />
+                    </p:column> 
+                    <p:column headerText="Superficie (Hs.)" 
+                        filterMatchMode="contains"
+                        sortBy="#{inm.superficie}" 
+                        filterBy="#{inm.superficie}" >
+                        <p:outputLabel value="#{inm.superficie}" >
+                            <f:convertNumber type="currency" maxFractionDigits="4" currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>    
+                    <p:column style="width:30px">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                         update="@form" action="#{mbAutorizacion.prepareViewInmueble()}" >
+                            <f:setPropertyActionListener value="#{inm}" target="#{mbAutorizacion.inmueble}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

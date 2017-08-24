@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/users-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Destino}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frDestino">
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar destinatario" rendered="#{mbGuia.entDestino eq null}" >
+                <p:outputLabel value="Ingrese el CUIT del Destinatario para seleccionarlo, sin '-' ni '.'" style="font-style: italic; font-size: small" />
+                <h:panelGrid columns="4" cellpadding="5">
+                    <p:outputLabel value="CUIT" for="cuitBus"/>
+                    <p:inputNumber id="cuitBus" value="#{mbGuia.cuitBuscar}" thousandSeparator="" decimalPlaces="0" 
+                                   requiredMessage="Debe haber un CUIT para buscar" required="true" />
+                    <p:commandButton title="Buscar Destinatario" value="Buscar" icon="fa fa-fw fa-search" 
+                                     action="#{mbGuia.buscarDestinatario()}" update="frDestino,pnSeleccionado,messages"/>
+                    <p:commandButton title="Limpiar el CUIT a buscar" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                     action="#{mbGuia.limpiarCuitDest()}" update="frDestino,pnSeleccionado" resetValues="true"/>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnSeleccionado" styleClass="centro" header="Destinatario seleccionado" rendered="#{mbGuia.entDestino ne null}" >
+                <h:panelGrid id="pgEtiquetas" columns="2" cellpadding="2">
+                    <p:outputLabel value="Nombre completo: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.nombreCompleto}" style="font-weight: bold" />
+                    <p:outputLabel value="CUIT: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.cuit}" style="font-weight: bold" />
+                    <p:outputLabel value="Tipo: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.tipoPersona}" style="font-weight: bold" />
+                    <p:outputLabel value="E-Mail: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.email}" style="font-weight: bold" />
+                    <p:outputLabel value="Domicilio: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.inmDomicilio}" style="font-weight: bold"  />
+                    <p:outputLabel value="Provincia: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.provincia}" style="font-weight: bold"  />
+                    <p:outputLabel value="Departamento: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.departamento}" style="font-weight: bold"  />
+                    <p:outputLabel value="Localidad: " />
+                    <p:outputLabel value="#{mbGuia.entDestino.localidad}" style="font-weight: bold"  />
+                </h:panelGrid>
+
+                <h:panelGrid id="pgBotones" columns="3" cellpadding="2">
+                    <p:commandButton title="Guardar destino para la Guía" value="Guardar" icon="fa fa-fw fa-save" 
+                                     rendered="#{mbGuia.guia.destino eq null or mbGuia.cuitProcesado}" 
+                                     action="#{mbGuia.saveDestino()}" update="frDestino,pMenuIndex,frame,messages"/>
+                    <p:commandButton title="Limpiar el Destinto configurado" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                     rendered="#{mbGuia.guia.destino eq null}"  
+                                     action="#{mbGuia.limpiarFormDestino()}" update="frDestino"/>
+                    <p:commandButton title="Restaurar el Destino configurado" value="Cancelar" icon="fa fa-fw fa-close" 
+                                     rendered="#{mbGuia.editCuit}"  
+                                     action="#{mbGuia.restaurarDestino()}" update="frDestino"/>
+                    <p:commandButton title="Seleccionar un nuevo Destinatario" styleClass="save" icon="fa fa-fw fa-plus" 
+                                     value="Cambiar destinatario" action="#{mbGuia.prepareNuevoDestinatario()}" update="frDestino,pnSeleccionado" 
+                                     rendered="#{mbGuia.guia.destino ne null and not mbGuia.editCuit and mbGuia.guia.estado.habilitaEdicionComp}" />
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>

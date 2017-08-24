@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content" >
+            <p:growl id="messages" showDetail="false" />
+            <h:panelGrid columns="3">
+                <p:panel id="pMenuIndex" styleClass="pnMenuHoriz" header="Guía N° #{mbGuia.guia.codigo}" >
+                    <h:form >
+                        <p:panelMenu >
+                            <p:submenu styleClass="hMenu" label="Existentes" >
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Origen}" 
+                                            actionListener="#{mbGuia.cargarFrame('generalView.xhtml')}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Destino}"
+                                            actionListener="#{mbGuia.cargarFrame('destino.xhtml')}" rendered="#{mbGuia.guia.tipo.habilitaTransp}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Transporte}"
+                                            actionListener="#{mbGuia.cargarFrame('transporte.xhtml')}" rendered="#{mbGuia.guia.tipo.habilitaTransp}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Productos}"
+                                            actionListener="#{mbGuia.cargarFrame('productos.xhtml')}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Tasas}"
+                                            actionListener="#{mbGuia.cargarFrame('tasas.xhtml')}" rendered="#{mbGuia.guia.tipo.abonaTasa}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Emision}"
+                                            actionListener="#{mbGuia.cargarFrame('emision.xhtml')}" rendered="#{mbGuia.guia.estado.habilitaEmision}" />
+                            </p:submenu>
+                            <p:submenu styleClass="hMenu" label="Auditorías" >
+
+                            </p:submenu>
+                        </p:panelMenu>
+                    </h:form>
+                </p:panel>
+                <br></br>
+                <p:panel id="frame" styleClass="pnPrincipal" >
+                    <ui:include src="#{mbGuia.page}" />
+                </p:panel>
+
+            </h:panelGrid>
+
+        </ui:define>
+    </ui:composition>
+</html>
+

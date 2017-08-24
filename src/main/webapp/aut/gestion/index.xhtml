@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content" >
+            <p:growl id="messages" showDetail="false" />
+            <h:panelGrid columns="2">
+                <p:panel id="pMenuIndex" styleClass="pnMenuHoriz" header="Inst. N° #{mbAutorizacion.autorizacion.numero}" >
+                    <h:form >
+                        <p:panelMenu >
+                            <p:submenu styleClass="hMenu" label="Existentes" >
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Instrumento}" 
+                                            actionListener="#{mbAutorizacion.cargarFrame('instrumentoView.xhtml')}" />
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Proponentes}"
+                                            actionListener="#{mbAutorizacion.cargarFrame('proponentes.xhtml')}" />
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Apoderados}"
+                                            actionListener="#{mbAutorizacion.cargarFrame('apoderados.xhtml')}" />
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Tecnicos}"
+                                            actionListener="#{mbAutorizacion.cargarFrame('tecnicos.xhtml')}" />
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Inmuebles}"
+                                            actionListener="#{mbAutorizacion.cargarFrame('inmuebles.xhtml')}" />
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Productos}"
+                                            actionListener="#{mbAutorizacion.cargarFrame('productos.xhtml')}" />
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Estado}"
+                                            actionListener="#{mbAutorizacion.cargarFrame('estado.xhtml')}" />
+                            </p:submenu>
+                            <p:submenu styleClass="hMenu" label="Auditorías" >
+
+                            </p:submenu>
+                        </p:panelMenu>
+                    </h:form>
+                </p:panel>
+                <br></br>
+                <p:panel id="frame" styleClass="pnPrincipal" >
+                    <ui:include src="#{mbAutorizacion.page}" />
+                </p:panel>
+
+            </h:panelGrid>
+
+        </ui:define>
+    </ui:composition>
+</html>
+

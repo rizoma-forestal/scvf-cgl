@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/loginTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:growl id="messages" showDetail="false" />
+            <p:panel id="pnGralLogin" styleClass="panelLogin" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/users-1.png" width="50" height="50" style="float: left;" />
+                    <p:outputLabel styleClass="titPanel" value="Actualizar Clave" />
+                </h:panelGrid>
+                <p:panel id="pnInstructivoLogin" >
+                    <p:outputLabel value="Por favor, actualice la clave con una de su elección. Luego será redireccionado a nuevo inicio de sesión con la nueva clave." 
+                                   style="font-style: italic; font-size: small" />
+                </p:panel>
+                <br></br>
+                <h:form prependId="false" id="frNewClave">
+                    <p:panel id="pnFrmNewClave" style="position:relative; width:60%; left:20%;" >
+                        
+                        <h:panelGrid columns="2" cellpadding="10" style="position:relative; left:12%" >
+                            <p:outputLabel value="Nueva clave" for="nuevaClave"/>
+                            <p:password id="nuevaClave" value="#{mbSesion.newClave}" style=" width: 120px" 
+                                     requiredMessage="Debe ingresar la nueva clave" required="true" />
+                            <p:outputLabel value="Repita la clave ingresada" for="nuevaClave_2"/>
+                            <p:password id="nuevaClave_2" value="#{mbSesion.newClave2}" style=" width: 120px" 
+                                     requiredMessage="Debe repetir la clave ingresada arriba" required="true"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="pnBotones" style="position:relative; width:60%; left:20%;" >
+                        <h:panelGrid columns="2" style="position:relative; width:40%; left:30%">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-play-circle" value="Actualizar" action="#{mbSesion.actualizarClave()}" ajax="false" title="Actualizar clave" />
+                            <p:commandButton icon="fa fa-fw fa-refresh" update="frNewClave" value="Limpiar" ajax="true" action="#{mbSesion.limpiarFormNewClave()}" resetValues="true" title="Limpiar formulario" />
+                        </h:panelGrid>
+                    </p:panel>
+                </h:form>    
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>
+

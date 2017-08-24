@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.ProdUnidadesMedida}" />
+                </h:panelGrid>
+                <h:form prependId="false" id="frUnidades">
+                    <p:panel id="pnFrm" header="Crear/Editar" collapsed="#{not mbProducto.edit}" toggleable="true" >
+                        <p:growl id="messages" showDetail="false" />
+                        <h:panelGrid columns="2">
+                            <p:inputText type="hidden" id="id" value="#{mbProducto.prodUnidad.id}" />
+                            <p:inputText type="hidden" id="hab" value="#{mbProducto.prodUnidad.habilitado}" />
+                            <p:outputLabel value="Nombre" for="nombre"/>
+                            <p:inputText id="nombre" value="#{mbProducto.prodUnidad.nombre}" style="text-transform: uppercase; width: 250px"
+                                         requiredMessage="Debe ingresar el Nombre" required="true" />
+                            <p:outputLabel value="Abreviatura" for="abrev"/>
+                            <p:inputText id="abrev" value="#{mbProducto.prodUnidad.abreviatura}" style="text-transform: uppercase; width: 50px"
+                                         requiredMessage="Debe ingresar la Abreviatura" required="true" >
+                                <f:validateLength minimum="1" maximum="10" />
+                            </p:inputText>
+                            <p:outputLabel value="Tipo numérico" for="cmbTipoNum"/>   
+                            <p:selectOneMenu id="cmbTipoNum" value="#{mbProducto.prodUnidad.tipoNum}" required="true" 
+                                             requiredMessage="Debe seleccionar un Tipo numérico." >
+                                <f:selectItem itemLabel="Seleccione el Tipo numérico" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbProducto.lstTipoNumerico}" 
+                                               var="tipoNum" itemLabel="#{tipoNum.nombre}" itemValue="#{tipoNum}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbProducto.saveUnidad()}" update="frUnidades"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbProducto.limpiarFormUnidad()}" update="pnFrm"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbProducto.lstProdUnidades}"
+                                     filteredValue="#{mbProducto.lstProdUnidFilters}"
+                             var="unidad"
+                             id="dtUnidades" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="unidadesTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('unidadesTable').clearFilters()" update="dtUnidades"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{unidad.id}"/>
+                            </p:column>
+                            <p:column headerText="Nombre"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{unidad.nombre}" 
+                                filterBy="#{unidad.nombre}" >
+                                <p:outputLabel value="#{unidad.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Abreviatura"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{unidad.abreviatura}" 
+                                filterBy="#{unidad.abreviatura}" >
+                                <p:outputLabel value="#{unidad.abreviatura}"/>
+                            </p:column>
+                            <p:column headerText="Tipo num"                                 
+                                filterMatchMode="contains"
+                                sortBy="#{unidad.tipoNum.nombre}" 
+                                filterBy="#{unidad.tipoNum.nombre}" >
+                                <p:outputLabel value="#{unidad.tipoNum.nombre}"/>
+                            </p:column>
+                            <p:column filterBy="#{unidad.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('unidadesTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{unidad.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:75px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbProducto.prepareNewEdit()}" >
+                                    <f:setPropertyActionListener value="#{unidad}" target="#{mbProducto.prodUnidad}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbProducto.deshabilitarUnidad()}" 
+                                                 process="@this" update="@form" rendered="#{unidad.habilitado}" >
+                                    <f:setPropertyActionListener value="#{unidad}" target="#{mbProducto.prodUnidad}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar la Unidad de Clase de Producto forestal: #{unidad.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbProducto.habilitarUnidad()}" 
+                                                 process="@this" update="@form" rendered="#{not unidad.habilitado}" >
+                                    <f:setPropertyActionListener value="#{unidad}" target="#{mbProducto.prodUnidad}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea habilitar la Unidad de Clase de Producto forestal: #{unidad.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>
+

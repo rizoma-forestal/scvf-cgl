@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/file-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Emisión de la Guía" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frEmision">
+            <p:panel id="pnCodigoRecibo" header="Recibo de pago de tasas" rendered="#{mbGuia.guia.tipo.abonaTasa and mbGuia.guia.codRecibo eq null}" >
+                <p:outputLabel value="Ingrese el código del recibo de pagos de las Tasas liquidadas para la Guía, como paso previo para su emisión." 
+                               style="font-style: italic; font-size: small" />
+                <h:panelGrid columns="2" >
+                    <p:outputLabel value="Código de recibo" for="codRecibo"/>
+                    <p:inputText id="codRecibo" value="#{mbGuia.guia.codRecibo}" 
+                                 requiredMessage="Debe ingresar el código del recibo de pago de Tasas" required="true"/>
+                    <p:commandButton title="Registrar el código de recibo de pagos de Tasas" value="Registrar" icon="fa fa-fw fa-save" 
+                                     action="#{mbGuia.registrarCodRecibo()}" update="frEmision,pMenuIndex,frame,messages"/>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnGeneralGuia" header="Emisión de Guía" rendered="#{not mbGuia.guia.tipo.abonaTasa or mbGuia.guia.codRecibo ne null}" >
+                <h:panelGrid id="pgDatosGrales" columns="2" >
+                    <p:outputLabel value="Tipo de Guía: " for="tipo"/>
+                    <p:outputLabel id="tipo" value="#{mbGuia.guia.tipo.nombre}" 
+                                   style=" font-weight: bold"/>
+                    <p:outputLabel value="Número de Guía: " for="numero"/>
+                    <p:outputLabel id="numero" value="#{mbGuia.guia.codigo}" 
+                                   style=" font-weight: bold"/>
+                    <p:outputLabel value="Nombre completo del Titular: " for="titNombre"/>
+                    <p:outputLabel id="titNombre" value="#{mbGuia.guia.origen.nombreCompleto}" 
+                                   style=" font-weight: bold"/>
+                    <p:outputLabel value="Cuit del Titular: " for="titCuit"/>
+                    <p:outputLabel id="titCuit" value="#{mbGuia.guia.origen.cuit}" 
+                                   style=" font-weight: bold"/>
+                    <p:outputLabel value="Productos: " />
+                    <p:dataTable id="dtSubZonas" value="#{mbGuia.guia.items}" var="item" styleClass="table" style="width: 500px" >
+                        <p:column headerText="Especie" >
+                            <p:outputLabel value="#{item.nombreVulgar}"/>
+                        </p:column>
+                        <p:column headerText="Clase" >
+                            <p:outputLabel value="#{item.clase}"/>
+                        </p:column>
+                        <p:column headerText="Cantidad" style="text-align: right !important">
+                            <p:outputLabel value="#{item.total}" >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Unidad" >
+                            <p:outputLabel value="#{item.unidad}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+                <h:panelGrid id="pgBoton" columns="1" >
+                    <p:commandButton title="Emitir un archivo pdf con con los datos registrados de la Guía" value="Emitir Guía" icon="fa fa-fw fa-file-pdf-o" 
+                                     action="#{mbGuia.emitir()}" ajax="false" update="frEmision,pMenuIndex,frame,messages" 
+                                     rendered="#{not mbGuia.guia.estado.habilitaFuenteProductos}"/>
+                </h:panelGrid>
+                <h:panelGrid id="pgTexto" columns="2" >
+                    <p:outputLabel value="Guía emitida con fecha: " style="font-size: 20px !important; color: #8A0829" 
+                                   rendered="#{mbGuia.guia.estado.habilitaFuenteProductos and mbGuia.msgErrorEmision eq null and mbGuia.msgExitoEmision eq null}" />
+                    <p:outputLabel value="#{mbGuia.guia.fechaEmisionGuia}" 
+                                   style="font-size: 20px !important; color: #8A0829" 
+                                   rendered="#{mbGuia.guia.estado.habilitaFuenteProductos and mbGuia.msgErrorEmision eq null and mbGuia.msgExitoEmision eq null}" >
+                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{mbGuia.msgErrorEmision}" style="font-size: 16px !important; font-weight: bold; color: red" 
+                                   rendered="#{mbGuia.msgErrorEmision ne null}" />
+                    <p:outputLabel value="#{mbGuia.msgExitoEmision}" style="font-size: 16px !important; font-weight: bold; color: #0F8164" 
+                                   rendered="#{mbGuia.msgExitoEmision ne null}" />
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>            
+

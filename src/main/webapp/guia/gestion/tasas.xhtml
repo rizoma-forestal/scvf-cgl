@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/price-tag-5.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Liquidación de Tasas ($)" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frTasas">
+            <p:panel id="pnTablaDetalle" header="Tasas a liquidar por unidad de Producto" >
+                <h:panelGrid  columns="1" >
+                    <p:dataTable styleClass="table" value="#{mbGuia.lstDetallesTasas}"
+                                 var="dt"
+                                 id="dtTi">
+                        <p:column headerText="Especie">
+                            <p:outputLabel value="#{dt.nombreProd}" />
+                        </p:column>
+                        <p:column headerText="Clase" style="width: 120px">
+                            <p:outputLabel value="#{dt.clase}" />
+                        </p:column>
+                        <p:columns value="#{mbGuia.lstNombresTasas}" var="nomTasa" style="text-align: right !important; width: 70px">
+                            <f:facet name="header" >
+                                <h:outputText value="#{nomTasa}" />
+                            </f:facet>
+                            <p:outputLabel value="#{mbGuia.getLiqUnitarioByTasa(dt.nombreProd, nomTasa)}"  >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                        </p:columns>
+                    </p:dataTable>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnTablaTotal" header="Sub Totales a liquidar por Item productivo" >
+                <h:panelGrid  columns="1" >
+                    <p:dataTable styleClass="table" value="#{mbGuia.lstDetallesTasas}"
+                                 var="detTasa"
+                                 id="dtTasasItem">
+                        <p:column headerText="Especie">
+                            <p:outputLabel value="#{detTasa.nombreProd}" />
+                        </p:column>
+                        <p:column headerText="Clase" style="width: 120px">
+                            <p:outputLabel value="#{detTasa.clase}" />
+                        </p:column>
+                        <p:column headerText="Cantidad" style="text-align: right !important; width: 70px">
+                            <p:outputLabel value="#{detTasa.cantidad}"  >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Unidad" style="width: 70px">
+                            <p:outputLabel value="#{detTasa.unidad}" />
+                        </p:column>
+                        <p:columns value="#{mbGuia.lstNombresTasas}" var="nomTasa" style="text-align: right !important; width: 70px">
+                            <f:facet name="header">
+                                <h:outputText value="#{nomTasa}" />
+                            </f:facet>
+                            <p:outputLabel value="#{mbGuia.getLiqTotalByTasa(detTasa.nombreProd, nomTasa)}"  >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                        </p:columns>
+                        <p:column headerText="Total" style="text-align: right !important; width: 70px">
+                            <p:outputLabel value="#{detTasa.total}" >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnLiquidacion" header="Totales a abonar" >
+                <h:panelGrid  columns="1" >
+                    <p:dataTable styleClass="table" value="#{mbGuia.liquidaciones}"
+                                 var="liq"
+                                 id="dtLiquidacion">
+                        <p:columns value="#{mbGuia.lstNombresTasas}" var="nomTasa" style="text-align: right !important;">
+                            <f:facet name="header">
+                                <h:outputText value="#{nomTasa}" />
+                            </f:facet>
+                            <p:outputLabel value="#{mbGuia.getLiqTotales(nomTasa)}"  >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                        </p:columns>
+                        <p:column headerText="Total" style="text-align: right !important;">
+                            <p:outputLabel value="#{mbGuia.getTotalLiquidado()}" >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnBotones" >
+                <h:panelGrid  columns="4" >
+                    <p:commandButton title="Generar volante de pago" styleClass="save" icon="fa fa-fw fa-file-pdf-o" 
+                                     value="Generar Volante" action="#{mbGuia.generarVolante()}"
+                                     update="pMenuIndex,frame,frTasas" ajax="false" rendered="#{mbGuia.guia.estado.habilitaLiquidacion}" />
+                    <p:outputLabel value="Volante emitido con fecha: " style="font-size: 20px !important; color: #8A0829" rendered="#{not mbGuia.guia.estado.habilitaLiquidacion}" />
+                    <p:outputLabel value="#{mbGuia.guia.fechaEmisionVolante}" 
+                                   style="font-size: 20px !important; color: #8A0829" rendered="#{not mbGuia.guia.estado.habilitaLiquidacion}" >
+                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                    </p:outputLabel>
+                    <p:outputLabel value=" Abonado con recibo: " style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guia.codRecibo ne null}" />
+                    <p:outputLabel value="#{mbGuia.guia.codRecibo}" style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guia.codRecibo ne null}" />
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

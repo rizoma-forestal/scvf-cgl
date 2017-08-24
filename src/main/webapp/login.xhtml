@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/loginTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:growl id="messages" showDetail="false" />
+            <p:panel id="pnGralLogin" styleClass="panelLogin" rendered="#{not mbSesion.logeado}" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/users-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="Iniciar Sesión" />
+                </h:panelGrid>
+                <p:panel id="pnInstructivoLogin" >
+                    <p:outputLabel value="Ingrese su DNI y clave. Si es la primera vez que inicia sesión será reenviado a un formulario para actualizar la clave con una de su elección." 
+                                   style="font-style: italic; font-size: small" />
+                </p:panel>
+                <br></br>
+                <h:form prependId="false" id="frLogin">
+                    <p:panel id="pnFrmLogin" style="position:relative; width:60%; left:20%;" >
+                        
+                        <h:panelGrid columns="2" cellpadding="10" style="position:relative; left:20%" >
+                            <p:outputLabel value="DNI" for="lg_dni"/>
+                            <p:inputNumber id="lg_dni" value="#{mbSesion.dni}" decimalPlaces="0" thousandSeparator="" maxValue="99999999"
+                                     requiredMessage="Debe ingresar el DNI" required="true"/>
+                            <p:outputLabel value="Clave" for="lg_clave"/>
+                            <p:password id="lg_clave" value="#{mbSesion.clave}" style=" width: 120px" 
+                                     requiredMessage="Debe ingresar la Clave" required="true"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="pnBotones" style="position:relative; width:60%; left:20%;" >
+                        <h:panelGrid columns="2" style="position:relative; width:40%; left:30%">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-play-circle" value="Iniciar" action="#{mbSesion.login()}" ajax="false" title="Iniciar sesión" />
+                            <p:commandButton icon="fa fa-fw fa-refresh" update="frLogin" value="Limpiar" ajax="true" action="#{mbSesion.limpiarFormLogin()}" resetValues="true" title="Limpiar formulario" />
+                        </h:panelGrid>
+                    </p:panel>
+                </h:form>    
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>
+

@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/parque.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Productos}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frProductos">
+            <!-- Formulario de configuración del Producto -->
+            <p:panel id="pnFormNewDesc" header="Asignar cantidad del #{config.Producto} seleccionado" style="margin-bottom:10px;" rendered="#{mbGuia.descontandoProd or mbGuia.editandoItem}" >
+                <h:panelGrid columns="2" cellpadding="1">
+                    <p:outputLabel value="Id: " for="id"/>
+                    <p:outputLabel id="id" value="#{mbGuia.itemAsignado.idProd}"/>
+                    <p:outputLabel value="Especie local: " for="especie"/>
+                    <p:outputLabel id="especie" value="#{mbGuia.itemAsignado.nombreVulgar}"/>
+                    <p:outputLabel value="Clase: " for="clase"/>
+                    <p:outputLabel id="clase" value="#{mbGuia.itemAsignado.clase}"/>
+                    <p:outputLabel value="Unidad: " for="unidad"/>
+                    <p:outputLabel id="unidad" value="#{mbGuia.itemAsignado.unidad}"/>
+                    <p:outputLabel value="Total autorizado: " for="total"/>
+                    <p:outputLabel id="total" value="#{mbGuia.itemAsignado.totalOrigen}" style="text-align: right !important;" >
+                        <f:convertNumber type="currency"  currencySymbol=""/>
+                    </p:outputLabel>
+                    <p:outputLabel value="Saldo actual: " for="saldo"/>
+                    <p:outputLabel id="saldo" value="#{mbGuia.itemAsignado.saldoOrigen}" >
+                        <f:convertNumber type="currency"  currencySymbol=""/>
+                    </p:outputLabel>
+                    <p:outputLabel value="Cantidad a descontar: " for="cantidad"/>
+                    <p:inputNumber decimalSeparator="," thousandSeparator="." id="cantidad" value="#{mbGuia.itemAsignado.total}" decimalPlaces="4" minValue="1"  
+                                 required="true" requiredMessage="Debe ingresar la cantidad a descontar." />
+                </h:panelGrid>
+                <h:panelGrid columns="3">
+                    <p:commandButton title="Agregar a la Guía la el #{config.Producto} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Agregar" action="#{mbGuia.addProducto()}" 
+                                     update="frProductos,pMenuIndex,frame,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Buscar otro #{config.Producto}" styleClass="save" icon="fa fa-fw fa-search-plus" 
+                                     value="Buscar otro" 
+                                     action="#{mbGuia.limpiarDescuento()}" update="@form" rendered="#{mbGuia.descontandoProd}" >
+                    </p:commandButton>
+                    <p:commandButton title="Eliminar el #{config.Producto} seleccionado" styleClass="save" icon="fa fa-fw fa-minus-circle" 
+                                     value="Eliminar" 
+                                     action="#{mbGuia.deleteProducto()}" update="@form,pMenuIndex,frame,messages" rendered="#{mbGuia.editandoItem}" >
+                    </p:commandButton>
+                    <p:commandButton title="Cancelar la edición del #{config.Producto}" styleClass="save" icon="fa fa-fw fa-close" 
+                                     value="Cancelar" 
+                                     action="#{mbGuia.limpiarEdicion()}" update="@form" rendered="#{mbGuia.editandoItem}" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Listado de Productos disponibles -->
+            <p:panel id="pnTableDisp" header="Listado de #{config.Productos} disponibles" style="margin-bottom:10px;" rendered="#{not mbGuia.descontandoProd and not mbGuia.editandoItem}" >
+                <p:dataTable styleClass="table" value="#{mbGuia.lstItemsAutorizados}"
+                             var="itemOrigen"
+                             id="dtItemsOrigen" >
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{itemOrigen.id}"/>
+                    </p:column>
+                    <p:column headerText="Especie local" >
+                        <p:outputLabel value="#{itemOrigen.nombreVulgar}"/>
+                    </p:column>
+                    <p:column headerText="Nombre científico" >
+                        <p:outputLabel value="#{itemOrigen.nombreCientifico}"/>
+                    </p:column>
+                    <p:column headerText="Clase" >
+                        <p:outputLabel value="#{itemOrigen.clase}"/>
+                    </p:column>
+                    <p:column headerText="Unidad" >
+                        <p:outputLabel value="#{itemOrigen.unidad}"/>
+                    </p:column>
+                    <p:column headerText="Cantidad" style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemOrigen.total}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cant. en Kg." style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemOrigen.totalKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Saldo" style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemOrigen.saldo}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Saldo en Kg." style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemOrigen.saldoKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column style="width:30px" rendered="#{mbGuia.guia.estado.habilitaEdicionComp}">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-arrow-circle-down" title="Descontar Productos" process="@this" 
+                                         update="@form" action="#{mbGuia.descontarProducto()}" disabled="#{itemOrigen.descontado}" >
+                            <f:setPropertyActionListener value="#{itemOrigen}" target="#{mbGuia.itemFuente}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            
+            <!-- Listado de Productos asignados -->
+            <p:panel id="pnTableAisg" header="Listado de #{config.Productos} asignados" style="margin-bottom:10px;" 
+                     rendered="#{mbGuia.lstItemsAsignados.size() ne 0 and not mbGuia.editandoItem and not mbGuia.descontandoProd}" >
+                <p:dataTable styleClass="table" value="#{mbGuia.lstItemsAsignados}"
+                             var="itemAsignado"
+                             id="dtItemsAsignados" >
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{itemAsignado.id}"/>
+                    </p:column>
+                    <p:column headerText="Especie local" >
+                        <p:outputLabel value="#{itemAsignado.nombreVulgar}"/>
+                    </p:column>
+                    <p:column headerText="Nombre científico" >
+                        <p:outputLabel value="#{itemAsignado.nombreCientifico}"/>
+                    </p:column>
+                    <p:column headerText="Clase" >
+                        <p:outputLabel value="#{itemAsignado.clase}"/>
+                    </p:column>
+                    <p:column headerText="Unidad" >
+                        <p:outputLabel value="#{itemAsignado.unidad}"/>
+                    </p:column>
+                    <p:column headerText="Cantidad asignada" style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemAsignado.total}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cantidad en Kg." style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemAsignado.totalKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column style="width:30px" rendered="#{mbGuia.guia.estado.habilitaEdicionComp}">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Descontar el Item asignado" process="@this" 
+                                         update="@form" action="#{mbGuia.prepareEditItem()}" >
+                            <f:setPropertyActionListener value="#{itemAsignado}" target="#{mbGuia.itemAsignado}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>

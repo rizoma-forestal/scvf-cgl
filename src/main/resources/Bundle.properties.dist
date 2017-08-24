@@ -1,0 +1,27 @@
+# Archivo de configuraciones estáticas
+Aplicacion=SACVeFor - Gestión local
+
+RutaAplicacion=/gestionLocal
+
+TimeZone=America/Buenos_Aires
+
+# Claves para encriptar y desencriptar las contraseñas de los usurios a validar para el acceso de la API REST
+ClaveEncriptar=ministeriodeambiente
+ClaveDesencriptar=zorbazorbas
+
+# Rutas
+EntidadesParametricas=faces/param
+VerAut=faces/aut/list
+GestionarAut=faces/aut/gestion
+ZonasIntervencion=faces/aut/zonas
+EstadosAutorizacion=faces/aut/estados
+ParamGuias=faces/guia/param
+Personas=faces/aut/personas
+Inmuebles=faces/aut/inmuebles
+Seguridad=faces/seg
+Productos=faces/prod
+Inmuebles=faces/aut/inm
+VerGuias=faces/guia/list
+GestionarGuias=faces/guia/gestion
+Transporte=faces/guia/transporte
+PersonasGuias=faces/guia/personas

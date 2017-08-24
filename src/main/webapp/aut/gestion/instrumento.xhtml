@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/newspaper.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Instrumento}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frInstrumento">
+            <p:panel id="pnBuscar" styleClass="centro" header="Buscar Autorización existente o Crear nueva" rendered="#{mbAutorizacion.autorizacion eq null}" >
+                <h:panelGrid columns="5">
+                    <p:outputLabel value="Número" for="numeroBuscar"/>
+                    <p:inputMask placeholder="#{config.maskInstrumento}" id="numeroBuscar" value="#{mbAutorizacion.autNumero}" 
+                                 style="text-transform: uppercase" requiredMessage="Debe ingresar el Número" 
+                                 required="true" mask="#{config.maskInstrumento}" />
+                    <p:commandButton title="Buscar Autorización existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbAutorizacion.buscar()}" update="pMenuIndex,frame,frInstrumento,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar,pnForm" resetValues="true" />
+                    </p:commandButton>
+                    <p:commandButton title="Crear una nueva Autorización" styleClass="save" icon="fa fa-fw fa-plus"
+                                     value="Crear nueva" process="@this" action="#{mbAutorizacion.prepareNew()}" update="@form,pMenuIndex" />
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnForm" header="Formulario" style="margin-bottom:10px;" rendered="#{mbAutorizacion.autorizacion ne null}">
+                <p:fieldset toggleable="true" legend="Instrumento Legal Aprobatorio" style="margin-bottom:20px">
+                    <p:outputLabel value="Ingrese el número y fecha del Instrumento aprobatorio de la extracción." style="font-style: italic; font-size: small" />
+                    <h:panelGrid columns="4" cellpadding="5">
+                        <p:outputLabel value="Número:" for="numero"/>
+                        <p:inputMask id="numero" value="#{mbAutorizacion.autorizacion.numero}" mask="#{config.maskInstrumento}" requiredMessage="Debe ingresar el Número" 
+                                 required="true" style="text-transform: uppercase" placeholder="#{config.maskInstrumento}" />
+                        <p:outputLabel value="Fecha:" for="fechaInst" />
+                        <p:calendar required="true" requiredMessage="Debe ingresar la fecha del Instrumento aprobatorio" 
+                                    id="fechaInst" value="#{mbAutorizacion.autorizacion.fechaInstrumento}" />
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="Expediente" style="margin-bottom:20px" >
+                    <p:outputLabel value="Ingrese el número y fecha del Expediente de solicitud de Autorización." style="font-style: italic; font-size: small" />
+                    <h:panelGrid columns="4" cellpadding="5">
+                        <p:outputLabel value="Número:" for="numeroExp"/>
+                        <p:inputMask id="numeroExp" value="#{mbAutorizacion.autorizacion.numExp}" mask="#{config.maskExpediente}" requiredMessage="Debe ingresar el Número del Expediente" 
+                                 required="true" style="text-transform: uppercase" placeholder="#{config.maskExpediente}" />
+                        <p:outputLabel value="Fecha de ingreso:" for="fechaExp" />
+                        <p:calendar required="true" requiredMessage="Debe ingresar la fecha de ingreso del Expediente" 
+                                    id="fechaExp" value="#{mbAutorizacion.autorizacion.fechaIngExpte}" />
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="Autorización" style="margin-bottom:20px" >
+                    <p:outputLabel value="Seleccione el Tipo de Intervención autorizada y, si existiera, la fecha la fecha de vencimiento de la Autorización." style="font-style: italic; font-size: small" />
+                    <h:panelGrid columns="4" cellpadding="5">
+                        <p:outputLabel value="Tipo de intervención:" for="cmbTipoInterv"/>
+                        <p:selectOneMenu id="cmbTipoInterv" value="#{mbAutorizacion.autorizacion.intervencion}" required="true" 
+                                         requiredMessage="Debe seleccionar el tipo de intervención autorizada." >
+                            <f:selectItem itemLabel="Seleccione el Tipo de Intervención" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{mbAutorizacion.lstIntervenciones}" 
+                                           var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo}"/>
+                        </p:selectOneMenu> 
+                        <p:outputLabel value="Fecha vencimiento:" for="fechaVenc" />
+                        <p:calendar id="fechaVenc" value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" />
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="Predio" style="margin-bottom:20px" >
+                    <p:outputLabel value="La superficie solicitada no podrá ser mayor a la total. La autorizada no podrá ser mayor a la solicitada." style="font-style: italic; font-size: small" />
+                    <h:panelGrid columns="6" cellpadding="5">
+                        <p:outputLabel value="Sup. Total:" for="supTotal"/>
+                        <p:inputNumber id="supTotal" value="#{mbAutorizacion.autorizacion.supTotal}" decimalPlaces="4" minValue="0" 
+                                       decimalSeparator="," thousandSeparator="."  
+                                       required="true" requiredMessage="Debe ingresar la superficie total" />
+                        <p:outputLabel value="Sup. Solicitada:" for="supSolic"/>
+                        <p:inputNumber id="supSolic" value="#{mbAutorizacion.autorizacion.supSolicitada}" decimalPlaces="4" minValue="0" 
+                                       decimalSeparator="," thousandSeparator="." 
+                                       required="true" requiredMessage="Debe ingresar la superficie solicitada" />
+                        <p:outputLabel value="Sup. Autorizada:" for="supAut"/>
+                        <p:inputNumber id="supAut" value="#{mbAutorizacion.autorizacion.supAutorizada}" decimalPlaces="4" minValue="0"
+                                       decimalSeparator="," thousandSeparator="." 
+                                       required="true" requiredMessage="Debe ingresar la superficie autorizada" />
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" cellpadding="5">
+                        <p:outputLabel value="Uso del suelo:" for="cmbUsoSuelo"/>
+                        <p:selectOneMenu id="cmbUsoSuelo" value="#{mbAutorizacion.autorizacion.usoSuelo}" required="true" 
+                                         requiredMessage="Debe seleccionar el uso del suelo del predio." >
+                            <f:selectItem itemLabel="Seleccione el Uso del suelo" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{mbAutorizacion.lstUsosSuelo}" 
+                                           var="uso" itemLabel="#{uso.nombre}" itemValue="#{uso}"/>
+                        </p:selectOneMenu> 
+                    </h:panelGrid>
+                    <p:outputLabel value="Seleccione la/s Zona/s a la/s que esté afectado el predio. En los casos que correspondan podrá seleccionar la/s sub Zona/s asociadas del listado contiguo. " style="font-style: italic; font-size: small" />
+                    <h:panelGrid id="pgZonas" columns="3" cellpadding="5">
+                        <p:dataTable id="dtZonas" value="#{mbAutorizacion.lstZonas}" var="zona" styleClass="table" style="width: 200px" >
+                            <p:column headerText="Zonas" >
+                                <p:outputLabel value="#{zona.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Sel." style="width: 30px" >
+                                <p:commandButton process="@this" icon="fa fa-fw fa-plus-circle" title="Agregar" rendered="#{not zona.selected}"
+                                                 update="pgZonas" action="#{mbAutorizacion.addZona()}" >
+                                    <f:setPropertyActionListener value="#{zona}" target="#{mbAutorizacion.zonaSelected}" /> 
+                                </p:commandButton>
+                                <p:commandButton process="@this" icon="fa fa-fw fa-minus-circle" title="Quitar" rendered="#{zona.selected}"
+                                                 update="pgZonas" action="#{mbAutorizacion.deleteZona()}" >
+                                    <f:setPropertyActionListener value="#{zona}" target="#{mbAutorizacion.zonaSelected}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable id="dtSubZonasVerde" value="#{mbAutorizacion.lstSubZonasVerde}" var="subZona" styleClass="table" 
+                                     style="width: 350px" rendered="#{mbAutorizacion.verdeSelected}" >
+                            <p:column headerText="SubZonas Verde" >
+                                <p:outputLabel value="#{subZona.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Sel." style="width: 30px" >
+                                <p:commandButton process="@this" icon="fa fa-fw fa-plus-circle" title="Agregar" rendered="#{not subZona.selected}"
+                                                 update="pgZonas" action="#{mbAutorizacion.addSubZona()}" >
+                                    <f:setPropertyActionListener value="#{subZona}" target="#{mbAutorizacion.subZonaSelected}" /> 
+                                </p:commandButton>
+                                <p:commandButton process="@this" icon="fa fa-fw fa-minus-circle" title="Quitar" rendered="#{subZona.selected}"
+                                                 update="pgZonas" action="#{mbAutorizacion.deleteSubZona()}" >
+                                    <f:setPropertyActionListener value="#{subZona}" target="#{mbAutorizacion.subZonaSelected}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable id="dtSubZonasAmarilla" value="#{mbAutorizacion.lstSubZonasAmarilla}" var="subZona" styleClass="table" 
+                                     style="width: 350px" rendered="#{mbAutorizacion.amarillaSelected}" >
+                            <p:column headerText="SubZonas Amarilla" >
+                                <p:outputLabel value="#{subZona.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Sel." style="width: 30px" >
+                                <p:commandButton process="@this" icon="fa fa-fw fa-plus-circle" title="Agregar" rendered="#{not subZona.selected}"
+                                                 update="pgZonas" action="#{mbAutorizacion.addSubZona()}" >
+                                    <f:setPropertyActionListener value="#{subZona}" target="#{mbAutorizacion.subZonaSelected}" /> 
+                                </p:commandButton>
+                                <p:commandButton process="@this" icon="fa fa-fw fa-minus-circle" title="Quitar" rendered="#{subZona.selected}"
+                                                 update="pgZonas" action="#{mbAutorizacion.deleteSubZona()}" >
+                                    <f:setPropertyActionListener value="#{subZona}" target="#{mbAutorizacion.subZonaSelected}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="General" style="margin-bottom:20px" >
+                    <p:outputLabel value="Podrá ingresar aquí las observaciones que considere necesarias. " style="font-style: italic; font-size: small" />
+                    <h:panelGrid id="pgObs" columns="3" cellpadding="5">
+                        <p:outputLabel value="Observaciones" for="obs"/>
+                        <p:inputTextarea  id="obs" rows="5" cols="50" counter="display" maxlength="500" 
+                                          value="#{mbAutorizacion.autorizacion.obs}" counterTemplate="Restan {0} caracteres." 
+                                          autoResize="false" />
+                        <h:outputText value="" />
+                        <h:outputText id="display" style="font-size: 12px" />
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset id="fsCompletar" toggleable="true" style="margin-bottom:20px" >
+                    <h:panelGrid columns="3">
+                        <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbAutorizacion.save()}" 
+                                         update="pMenuIndex,frame,messages" >
+                        </p:commandButton>
+                        <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                         rendered="#{mbAutorizacion.autorizacion.id eq null}" >
+                            <p:ajax listener="#{mbAutorizacion.limpiarForm()}" update="pnForm" resetValues="true" />
+                        </p:commandButton>
+                        <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                         rendered="#{mbAutorizacion.autorizacion.id ne null}" >
+                            <p:ajax listener="#{mbAutorizacion.cargarZonas()}" update="pnForm" resetValues="true" />
+                        </p:commandButton>
+                        <p:commandButton title="Volver a la vista de los datos" styleClass="save" icon="fa fa-fw fa-close" value="Cerrar" 
+                                         rendered="#{mbAutorizacion.autorizacion.id ne null}"
+                                         action="#{mbAutorizacion.prepareView()}" update="pMenuIndex,frame" />
+                    </h:panelGrid>
+                </p:fieldset>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

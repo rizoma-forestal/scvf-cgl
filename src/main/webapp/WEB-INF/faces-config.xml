@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<faces-config version="2.2"
+              xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
+    
+    <application>
+        <resource-bundle>
+            <base-name>/Bundle</base-name>
+            <var>bundle</var>
+        </resource-bundle>
+        <resource-bundle>
+            <base-name>/Config</base-name>
+            <var>config</var>
+        </resource-bundle>
+    </application>
+    <managed-bean>
+        <description>Bean de respaldo para gestionar las entidades Parametrica y TipoParam</description>
+        <managed-bean-name>mbParametrica</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbParametrica</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para gestionar las entidades ZonaIntervencion y SubZona</description>
+        <managed-bean-name>mbZona</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbZona</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para las paramétricas de guìas: TipoGuia y EstadoGuia</description>
+        <managed-bean-name>mbParamGuia</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbParamGuia</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para la gestión de Estados de una Autorización</description>
+        <managed-bean-name>mbEstadoAut</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbEstadoAut</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de gestión de Usuarios</description>
+        <managed-bean-name>mbUsuario</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbUsuario</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para la gestión de las entidades vinculadas a los productos forestales: Unidades de medida, Clases, Especies locales y Productos</description>
+        <managed-bean-name>mbProducto</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbProducto</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para el manejo de Inuebles</description>
+        <managed-bean-name>mbInmueble</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbInmueble</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para operar las personas vinculadas a una Autorización y a una Guía.</description>
+        <managed-bean-name>mbPersona</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbPersona</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para la gestión de Autorizaciones</description>
+        <managed-bean-name>mbAutorizacion</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbAutorizacion</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para la gestión de Guías</description>
+        <managed-bean-name>mbGuia</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbGuia</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para la gestión de Vehículos de transporte de productos</description>
+        <managed-bean-name>mbVehiculo</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbVehiculo</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para la gestión de la sesión del usuario</description>
+        <managed-bean-name>mbSesion</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbSesion</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+</faces-config>

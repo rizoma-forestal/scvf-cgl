@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/newspaper.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Instrumento}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frInstrumento">
+            <p:panel id="pnView" header="Detalle de los datos administrativos" style="margin-bottom:10px;" >
+                <p:fieldset toggleable="true" legend="Instrumento Legal Aprobatorio" style="margin-bottom:20px">
+                    <h:panelGrid columns="2" cellpadding="1">
+                        <p:outputLabel value="Número: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.numero}" style=" font-weight: bold" />
+                        <p:outputLabel value="Fecha: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.fechaInstrumento}" style=" font-weight: bold" >
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="Expediente" style="margin-bottom:20px" >
+                    <h:panelGrid columns="2" cellpadding="1">
+                        <p:outputLabel value="Número: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.numExp}" style=" font-weight: bold" />
+                        <p:outputLabel value="Fecha de ingreso: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.fechaIngExpte}" style=" font-weight: bold" >
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="Autorización" style="margin-bottom:20px" >
+                    <h:panelGrid columns="2" cellpadding="1">
+                        <p:outputLabel value="Tipo de intervención: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.intervencion.nombre}" style=" font-weight: bold" />
+                        <p:outputLabel value="Fecha vencimiento: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" style=" font-weight: bold" >
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+                </p:fieldset>
+                
+                <p:fieldset toggleable="true" legend="Predio" style="margin-bottom:20px" >
+                    <h:panelGrid columns="2" cellpadding="1">
+                        <p:outputLabel value="Sup. Total (hs): " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.supTotal}" style=" font-weight: bold" >
+                            <f:convertNumber type="currency" maxFractionDigits="4" currencySymbol=""/>
+                        </p:outputLabel>
+                        <p:outputLabel value="Sup. Solicitada: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.supSolicitada}" style=" font-weight: bold" >
+                            <f:convertNumber type="currency" maxFractionDigits="4" currencySymbol=""/>
+                        </p:outputLabel>
+                        <p:outputLabel value="Sup. Autorizada: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.supAutorizada}" style=" font-weight: bold" >
+                            <f:convertNumber type="currency" maxFractionDigits="4" currencySymbol=""/>
+                        </p:outputLabel>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" cellpadding="1">
+                        <p:outputLabel value="Uso del suelo: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold" />
+                    </h:panelGrid>
+                    <h:panelGrid id="pgZonas" columns="1" cellpadding="1">
+                        <p:dataTable id="dtSubZonas" value="#{mbAutorizacion.autorizacion.subZonas}" var="subZona" styleClass="table" style="width: 500px" >
+                            <p:column headerText="Zona" style="width: 150px" >
+                                <p:outputLabel value="#{subZona.zona.codigo} - #{subZona.zona.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Sub Zonas" >
+                                <p:outputLabel value="#{subZona.nombre}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                </p:fieldset>
+                <p:fieldset toggleable="true" legend="General" style="margin-bottom:20px" >
+                    <p:outputLabel value="Observaciones: " />
+                    <p:outputLabel value="#{mbAutorizacion.autorizacion.obs}" style="width: 500px; font-weight: bold" />
+                </p:fieldset>
+                <h:panelGrid columns="2">
+                    <p:commandButton title="Editar el contenido de los datos administrativos" styleClass="save" icon="fa fa-fw fa-pencil" 
+                                     value="Editar" action="#{mbAutorizacion.prepareEdit()}" update="pMenuIndex,frame" 
+                                     rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>

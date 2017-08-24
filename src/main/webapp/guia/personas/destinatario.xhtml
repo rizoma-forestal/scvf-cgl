@@ -1,0 +1,439 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.Destinatarios}" />
+                </h:panelGrid>
+                <!-- Diálogo para obtener los datos de la Persona desde el RUE -->
+                <p:dialog header="Datos provenientes del Registro Unico" widgetVar="dlgBuscarRue" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frBuscarRue">
+                        <p:panel id="pnDlg" style="margin-bottom:10px; width: 550px">
+                            <p:growl id="messagesBusRue" showDetail="false" />
+                            <p:outputLabel value="Ingrese el CUIT de la Persona a obtener del RUE, una vez obtenidos los datos correspondientes, 
+                                               podrá agegarlo al Componente Local mediante el botón 'Descargar'" 
+                                           style="font-style: italic; font-size: small" />
+                            <h:panelGrid columns="5" rendered="#{not mbPersona.view}" >
+                                <p:outputLabel value="CUIT" for="dlg_cuit"/>
+                                <p:inputNumber id="dlg_cuit" value="#{mbPersona.cuitBusqRue}" thousandSeparator="" decimalPlaces="0" />
+                                <p:commandButton title="Buscar en el Registro Unico" value="Buscar" icon="fa fa-fw fa-search" 
+                                                 action="#{mbPersona.buscarPersonaRue()}" update="frBuscarRue,pnContenido,messagesBusRue"/>
+                                <p:commandButton title="Limpiar el formulario de búsqueda" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                                 action="#{mbPersona.prepareBuscarCuit()}" update="frBuscarRue,pnContenido"/>
+                                <p:commandButton title="Obtener la Persona como #{config.Destinatario} de Guías" value="Descargar" icon="fa fa-fw fa-cloud-download" 
+                                                 action="#{mbPersona.setearPersonaByRue(config.Destinatario)}" update="pnFrmNew" oncomplete="PF('dlgBuscarRue').hide();"
+                                                 rendered="#{mbPersona.personaRue.id ne 0 and mbPersona.personaRue ne null}"/>
+                            </h:panelGrid>
+                            <p:panel id="pnContenido" rendered="#{mbPersona.personaRue.id ne 0 and mbPersona.personaRue ne null}">
+                                <h:panelGrid columns="2">
+                                    <p:outputLabel value="Tipo: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.tipo.nombre}" />
+                                    <p:outputLabel value="Nombre Completo: " rendered="#{mbPersona.personaRue.tipo.nombre eq 'Persona Física'}" />
+                                    <p:outputLabel value="#{mbPersona.personaRue.nombreCompleto}" rendered="#{mbPersona.personaRue.tipo.nombre eq 'Persona Física'}" />
+                                    <p:outputLabel value="Razón Social: " rendered="#{mbPersona.personaRue.tipo.nombre eq 'Persona Jurídica'}" />
+                                    <p:outputLabel value="#{mbPersona.personaRue.razonSocial}" rendered="#{mbPersona.personaRue.tipo.nombre eq 'Persona Jurídica'}" />
+                                    <p:outputLabel value="Tipo Sociedad: " rendered="#{mbPersona.personaRue.tipo.nombre eq 'Persona Jurídica'}" />
+                                    <p:outputLabel value="#{mbPersona.personaRue.tipoSociedad.sigla}" rendered="#{mbPersona.personaRue.tipo.nombre eq 'Persona Jurídica'}" />
+                                    <p:outputLabel value="Correo electrónico: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.correoElectronico}" />
+                                    
+                                    <p:outputLabel value="Calle: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.domicilio.calle}" />
+                                    <p:outputLabel value="N°: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.domicilio.numero}" />
+                                    <p:outputLabel value="Piso : " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.domicilio.piso}" />
+                                    <p:outputLabel value="Depto.: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.domicilio.depto}" />
+                                    <p:outputLabel value="Loc.: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.domicilio.localidad}" />
+                                    <p:outputLabel value="Dep.: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.domicilio.departamento}" />
+                                    <p:outputLabel value="Prov.: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.domicilio.provincia}" />
+                                    <p:outputLabel value="Fecha de alta: " />
+                                    <p:outputLabel value="#{mbPersona.personaRue.fechaAlta}" >
+                                        <f:convertDateTime pattern="dd-MM-yyyy"/> 
+                                    </p:outputLabel>
+                                </h:panelGrid>
+                            </p:panel>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgBuscarRue').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <!-- Diálogo para registrar una Persona en el RUE -->
+                <p:dialog header="Ingrese los datos del #{config.Destinatario} en el Registro Unico" widgetVar="dlgInsertRue" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frInsertRue">
+                        <p:panel id="pnDlgInsertar" style="margin-bottom:10px; width: 750px">
+                            <p:growl id="messagesRegRue" showDetail="false" />
+                            <h:panelGrid id="pgSelPer" columns="2" >
+                                <p:outputLabel value="Tipo de Persona: " for="cmbTipoPers"/>   
+                                <p:selectOneMenu id="cmbTipoPers" value="#{mbPersona.rueTipoPers}" >
+                                    <f:selectItem itemLabel="Seleccione el Tipo de Persona" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.tiposPersona}" 
+                                                   var="tipoPers" itemLabel="#{tipoPers.nombre}" itemValue="#{tipoPers}"/>
+                                    <p:ajax listener="#{mbPersona.tipoPersChangeListener()}" update="pnDlgInsertar" />
+                                </p:selectOneMenu>                            
+                            </h:panelGrid>
+ 
+                            <h:panelGrid id="pgPerFis" columns="4" rendered="#{mbPersona.rueTipoPers.toString() eq 'Persona Física'}" >
+                                <p:outputLabel value="Nombre completo: *" for="nomComp" />
+                                <p:inputText id="nomComp" value="#{mbPersona.rueNombreCompleto}" 
+                                             style="text-transform: uppercase" size="50" />
+                            </h:panelGrid>
+                            <h:panelGrid id="pgPerJur" columns="2" rendered="#{mbPersona.rueTipoPers.toString() eq 'Persona Jurídica'}" >
+                                <p:outputLabel value="Razón social: *" for="razSoc" />
+                                <p:inputText id="razSoc" value="#{mbPersona.rueRazonSocial}" 
+                                             style="text-transform: uppercase" size="50" />
+                                <p:outputLabel value="Tipo Sociedad: *" for="cmbTipoSoc"/>   
+                                <p:selectOneMenu id="cmbTipoSoc" value="#{mbPersona.tipoSocSelected}" converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione el Tipo de Sociedad" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.listTipoSoc}" 
+                                                   var="tipoSoc" itemLabel="#{tipoSoc.nombre}" itemValue="#{tipoSoc}"/>
+                                </p:selectOneMenu> 
+                            </h:panelGrid>
+                            <h:panelGrid id="pgPerComun" columns="2" 
+                                         rendered="#{mbPersona.rueTipoPers.toString() eq 'Persona Jurídica' or mbPersona.rueTipoPers.toString() eq 'Persona Física'}" >
+                                <p:outputLabel value="CUIT: " for="cuit"/>
+                                <p:inputNumber id="cuit" value="#{mbPersona.rueCuit}" thousandSeparator="" decimalPlaces="0" 
+                                   requiredMessage="Debe ingresar el CUIT" required="true" />
+                                <p:outputLabel value="Correo electrónico: " for="email"/>
+                                <p:inputText id="email" value="#{mbPersona.rueCorreoElectronico}" size="50"
+                                             requiredMessage="Debe ingresar el Correo electrónico" required="true" 
+                                             validatorMessage="Formato de correo electrónico inválido" >
+                                    <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                                </p:inputText>
+                                <p:outputLabel value="Tipo de Entidad: " for="cmbTipoEnt"/>   
+                                <p:selectOneMenu id="cmbTipoEnt" value="#{mbPersona.tipoEntidadSelected}" required="true" converter="omnifaces.SelectItemsConverter"
+                                                 requiredMessage="Debe seleccionar un Tipo de Entidad." >
+                                    <f:selectItem itemLabel="Seleccione el Tipo de Entidad" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.listTipoEntidad}" 
+                                                   var="tipoEnt" itemLabel="#{tipoEnt.nombre}" itemValue="#{tipoEnt}"/>
+                                </p:selectOneMenu> 
+                            </h:panelGrid>
+                            
+                            <p:panel id="pnDom" header="Domicilio" style="margin-bottom:10px;" collapsed="true" 
+                                     toggleable="true" rendered="#{mbPersona.rueTipoPers.toString() eq 'Persona Jurídica' or mbPersona.rueTipoPers.toString() eq 'Persona Física'}" >
+                                <h:panelGrid id="pgPerDom" columns="2" >
+                                    <p:outputLabel value="Calle" for="calle"/>
+                                    <p:inputText id="calle" value="#{mbPersona.rueCalle}" style="text-transform: uppercase" size="50" />
+                                    <p:outputLabel value="N°" for="numero"/>
+                                    <p:inputText id="numero" value="#{mbPersona.rueNumero}" size="10" />
+                                    <p:outputLabel value="Piso" for="piso"/>
+                                    <p:inputText id="piso" value="#{mbPersona.ruePiso}" size="10" />
+                                    <p:outputLabel value="Depto." for="depto"/>
+                                    <p:inputText id="depto" value="#{mbPersona.rueDepto}" size="10" />
+
+                                    <p:outputLabel value="Provincia " for="cmbProv"/>   
+                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Provincia" id="cmbProv" 
+                                                     value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                        <f:selectItem itemLabel="Seleccione la Provincia" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{mbPersona.listProvincias}" 
+                                                       var="prov" itemLabel="#{prov.nombre}" itemValue="#{prov}"/>
+                                        <p:ajax listener="#{mbPersona.provinciaChangeListener()}" update="cmbDepto,cmbLocalidades" />
+                                    </p:selectOneMenu> 
+                                    <p:outputLabel value="Departamento" for="cmbDepto"/>   
+                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Departamiento"  id="cmbDepto" 
+                                                     value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                        <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{mbPersona.listDepartamentos}" 
+                                                       var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
+                                        <p:ajax listener="#{mbPersona.deptoChangeListener()}" update="cmbLocalidades" />
+                                    </p:selectOneMenu>  
+                                    <p:outputLabel value="Localidad" for="cmbLocalidades"/>   
+                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Localidad"  id="cmbLocalidades" 
+                                                     value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                        <f:selectItem itemLabel="Seleccione la Localidad" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{mbPersona.listLocalidades}" 
+                                                       var="loc" itemLabel="#{loc.nombre}" itemValue="#{loc}"/>
+                                    </p:selectOneMenu>  
+                                </h:panelGrid>
+                            </p:panel>
+                            <h:panelGrid id="pgBotonesRue" columns="2" 
+                                         rendered="#{mbPersona.rueTipoPers.toString() eq 'Persona Jurídica' or mbPersona.rueTipoPers.toString() eq 'Persona Física'}" >
+                                <p:commandButton title="Guardar los datos en el RUE" value="Guardar" icon="fa fa-fw fa-cloud-upload" update="frInsertRue,messagesRegRue" 
+                                                 action="#{mbPersona.savePerRue(config.Destinatario)}" oncomplete="PF('dlgInsertRue').hide();"/>
+                                <p:commandButton title="Limpiar el formulario de persistencia en el RUE" value="Limpiar" icon="fa fa-fw fa-refresh" >
+                                    <p:ajax listener="#{mbPersona.limpiarFormPerRue()}" update="pnDlgInsertar" resetValues="true" />
+                                </p:commandButton>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgInsertRue').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <!-- Diálogo para editar los datos de una Persona en el RUE -->
+                <p:dialog header="Actualice los datos del #{config.Destinatario} en el Registro Unico" widgetVar="dlgEditRue" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frEditRue">
+                        <p:panel id="pnDlgEditar" style="margin-bottom:10px; width: 750px" rendered="#{mbPersona.personaRue ne null and mbPersona.rueEditable}">
+                            <p:growl id="messagesEditRue" showDetail="false" />
+                            <h:panelGrid id="pgPerFisEdit" columns="4" rendered="#{mbPersona.personaRue.tipo.toString() eq 'Persona Física'}" >
+                                <p:outputLabel value="Nombre completo: *" for="nomCompEdit" />
+                                <p:inputText id="nomCompEdit" value="#{mbPersona.personaRue.nombreCompleto}" 
+                                             style="text-transform: uppercase" size="50" />
+                            </h:panelGrid>
+                            <h:panelGrid id="pgPerJurEdit" columns="2" rendered="#{mbPersona.personaRue.tipo.toString() eq 'Persona Jurídica'}" >
+                                <p:outputLabel value="Razón social: *" for="razSocEdit" />
+                                <p:inputText id="razSocEdit" value="#{mbPersona.personaRue.razonSocial}" 
+                                             style="text-transform: uppercase" size="50" />
+                                <p:outputLabel value="Tipo Sociedad: *" for="cmbTipoSocEdit"/>   
+                                <p:selectOneMenu id="cmbTipoSocEdit" value="#{mbPersona.tipoSocSelected}" converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione el Tipo de Sociedad" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.listTipoSoc}" 
+                                                   var="tipoSoc" itemLabel="#{tipoSoc.nombre}" itemValue="#{tipoSoc}"/>
+                                </p:selectOneMenu> 
+                            </h:panelGrid>
+                            <h:panelGrid id="pgPerComunEdit" columns="2" 
+                                         rendered="#{mbPersona.personaRue.tipo.toString() eq 'Persona Jurídica' or mbPersona.personaRue.tipo.toString() eq 'Persona Física'}" >
+                                <p:outputLabel value="CUIT: " for="cuitEdit"/>
+                                <p:inputText id="cuitEdit" value="#{mbPersona.personaRue.cuit}" 
+                                             requiredMessage="Debe ingresar el CUIT" required="true" >
+                                </p:inputText>
+                                <p:outputLabel value="Correo electrónico: " for="emailEdit"/>
+                                <p:inputText id="emailEdit" value="#{mbPersona.personaRue.correoElectronico}" size="50"
+                                             requiredMessage="Debe ingresar el Correo electrónico" required="true" 
+                                             validatorMessage="Formato de correo electrónico inválido" >
+                                    <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                                </p:inputText>
+                                <p:outputLabel value="Tipo de Entidad: " for="cmbTipoEntEdit"/>   
+                                <p:selectOneMenu id="cmbTipoEntEdit" value="#{mbPersona.tipoEntidadSelected}" required="true" converter="omnifaces.SelectItemsConverter"
+                                                 requiredMessage="Debe seleccionar un Tipo de Entidad." >
+                                    <f:selectItem itemLabel="Seleccione el Tipo de Entidad" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.listTipoEntidad}" 
+                                                   var="tipoEnt" itemLabel="#{tipoEnt.nombre}" itemValue="#{tipoEnt}"/>
+                                </p:selectOneMenu> 
+                            </h:panelGrid>
+                            <p:panel id="pnDomEdit" header="Domicilio" style="margin-bottom:10px;" collapsed="true" toggleable="true" >
+                                <h:panelGrid id="pgPerDomEdit" columns="2" >
+                                    <p:outputLabel value="Calle" for="calleEdit"/>
+                                    <p:inputText id="calleEdit" value="#{mbPersona.personaRue.domicilio.calle}" style="text-transform: uppercase" size="50" />
+                                    <p:outputLabel value="N°" for="numeroEdit"/>
+                                    <p:inputText id="numeroEdit" value="#{mbPersona.personaRue.domicilio.numero}" size="10" />
+                                    <p:outputLabel value="Piso" for="pisoEdit"/>
+                                    <p:inputText id="pisoEdit" value="#{mbPersona.personaRue.domicilio.piso}" size="10" />
+                                    <p:outputLabel value="Depto." for="deptoEdit"/>
+                                    <p:inputText id="deptoEdit" value="#{mbPersona.personaRue.domicilio.depto}" size="10" />
+
+                                    <p:outputLabel value="Provincia " for="cmbProvEdit"/>   
+                                    <p:selectOneMenu id="cmbProvEdit" value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                        <f:selectItem itemLabel="Seleccione la Provincia" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{mbPersona.listProvincias}" 
+                                                       var="prov" itemLabel="#{prov.nombre}" itemValue="#{prov}"/>
+                                        <p:ajax listener="#{mbPersona.provinciaChangeListener()}" update="cmbDeptoEdit,cmbLocalidadesEdit" />
+                                    </p:selectOneMenu> 
+                                    <p:outputLabel value="Departamento" for="cmbDeptoEdit"/>   
+                                    <p:selectOneMenu id="cmbDeptoEdit" value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                        <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{mbPersona.listDepartamentos}" 
+                                                       var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
+                                        <p:ajax listener="#{mbPersona.deptoChangeListener()}" update="cmbLocalidadesEdit" />
+                                    </p:selectOneMenu>  
+                                    <p:outputLabel value="Localidad" for="cmbLocalidadesEdit"/>   
+                                    <p:selectOneMenu id="cmbLocalidadesEdit" value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                        <f:selectItem itemLabel="Seleccione la Localidad" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems value="#{mbPersona.listLocalidades}" 
+                                                       var="loc" itemLabel="#{loc.nombre}" itemValue="#{loc}"/>
+                                    </p:selectOneMenu>  
+                                </h:panelGrid>
+                            </p:panel>
+                            <h:panelGrid id="pgBotonesRueEdit" columns="2" rendered="#{mbPersona.rueEditable}" >
+                                <p:commandButton title="Guardar los datos en el RUE" value="Guardar" icon="fa fa-fw fa-cloud-upload" update="frEditRue,pnFrmNew,messagesEditRue" 
+                                                 action="#{mbPersona.savePerRue(config.Destinatario)}" oncomplete="PF('dlgEditRue').hide();"/>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgEditRue').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                        <p:panel id="pnDlgNoEditar" style="margin-bottom:10px; width: 750px" rendered="#{mbPersona.personaRue ne null and not mbPersona.rueEditable}">
+                            <p:outputLabel value="La Persona no fue registrada por esta Provincia, para modificar sus datos deberá ponerse en contacto con el Administrador central." 
+                                           style="color: #8A0829; font-size: x-large" />  
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgEditRue').hide();"/>
+                            </f:facet>
+                        </p:panel>  
+                    </h:form>
+                </p:dialog> 
+                
+                <h:form prependId="false" id="frDestinatarios">
+                    <!-- Formulario new y edit -->
+                    <p:panel id="pnFrmNew" header="Agregar/Crear/Editar" rendered="#{not mbPersona.view}" collapsed="#{not mbPersona.edit}" toggleable="true" >
+                        <p:growl id="messagesLocal" showDetail="false" />
+                        <p:outputLabel value="Si el Destinatario que desea registrar localmente ya estuviera registrado en el Registro Unico de Entidades (RUE) del sistema, 
+                                       podrá seleccionarlo mediante el botón 'Buscar por CUIT' ingresando el CUIT correspondiente. Si desea registrarlo por primera vez en el RUE, 
+                                       deberá hacerlo mediante el botón 'Agregar Nuevo'. Recuerde que se validará la existencia del CUIT del Destinatario que desea registrar." 
+                                   style="font-style: italic; font-size: small" />
+                        <h:panelGrid columns="2">  
+                            <p:commandButton value="Buscar por CUIT" icon="fa fa-fw fa-external-link" process="@this" 
+                                             actionListener="#{mbPersona.prepareBuscarCuit()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                            <p:commandButton rendered="#{mbPersona.persona.id eq null}" value="Agregar nuevo" icon="fa fa-fw fa-plus" 
+                                             oncomplete="PF('dlgInsertRue').show();" action="#{mbPersona.prepareNewInsertRue()}"/>  
+                            <p:commandButton rendered="#{mbPersona.persona.id ne null}" value="Editar datos RUE" icon="fa fa-fw fa-pencil" 
+                                             oncomplete="PF('dlgEditRue').show();" update="frEditRue" action="#{mbPersona.preparaEditRue()}"/>  
+                        </h:panelGrid>
+                        <h:panelGrid columns="5" rendered="#{mbPersona.persona.idRue ne null}">
+                            <!-- Campos ocultos -->
+                            <p:inputText type="hidden" id="id" value="#{mbPersona.persona.id}" />
+                            <p:inputText type="hidden" id="idRue" value="#{mbPersona.persona.idRue}" />
+                            <p:inputText type="hidden" id="fechaAlta" value="#{mbPersona.persona.fechaAlta}" >
+                                <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                            </p:inputText>
+                            <p:inputText type="hidden" id="habilitado" value="#{mbPersona.persona.habilitado}" />
+                            <p:inputText type="hidden" id="rol" value="#{mbPersona.persona.rolPersona}" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}" >
+                            <p:outputLabel value="CUIT: " />
+                            <p:outputLabel value="#{mbPersona.persona.cuit}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Nombre completo" /> 
+                            <p:outputLabel value="#{mbPersona.persona.nombreCompleto}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Tipo" />   
+                            <p:outputLabel value="#{mbPersona.persona.tipo}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="E-Mail" />  
+                            <p:outputLabel value="#{mbPersona.persona.email}" style="color: #0F4C20; font-weight: bold"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveDestinatario()}" 
+                                             update="frDestinatarios,pnFrmView"/>
+                            <p:commandButton title="Hacer doble click para limpiar el formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                             process="@this" action="#{mbPersona.limpiarForm()}" update="messagesLocal" >
+                                <p:ajax update="pnFrmNew" resetValues="true" />
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Formulario view -->
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbPersona.view}" >
+                        <h:panelGrid id="pgDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="v_id"/>
+                            <p:outputLabel id="v_id" value="#{mbPersona.persona.id}"/>
+                            <p:outputLabel value="Nombre completo: " for="v_nombreCompleto"/>
+                            <p:outputLabel id="v_nombreCompleto" value="#{mbPersona.persona.nombreCompleto}"/>
+                            <p:outputLabel value="CUIT: " for="v_cuit"/>
+                            <p:outputLabel id="v_cuit" value="#{mbPersona.persona.cuit}"/>
+                            <p:outputLabel value="Tipo: " for="v_tipo"/>
+                            <p:outputLabel id="v_tipo" value="#{mbPersona.persona.tipo}"/>
+                            <p:outputLabel value="Tipo: " for="v_email"/>
+                            <p:outputLabel id="v_email" value="#{mbPersona.persona.email}"/>
+                            <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
+                                             actionListener="#{mbPersona.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbPersona.view}" />
+                        <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbPersona.view}" >
+                            <p:outputLabel value="Fecha de Alta: " for="v_fechaAlta"/>
+                            <p:outputLabel id="v_fechaAlta" value="#{mbPersona.persona.fechaAlta}" >
+                                <f:convertDateTime pattern="dd-MM-yyyy" />
+                            </p:outputLabel>
+                            <p:outputLabel value="Ultimo Usuario: " for="v_ultUsuario"/>
+                            <p:outputLabel id="v_ultUsuario" value="#{mbPersona.persona.usuario.nombreCompleto}" />
+                            <p:outputLabel value="Habilitado: " for="v_habilitado"/>
+                            <p:outputLabel id="v_habilitado" value="#{mbPersona.persona.habilitado}" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbPersona.prepareNew()}" />
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbPersona.lstDestinatarios}"
+                                     filteredValue="#{mbPersona.lstDestFilter}"
+                             var="destino"
+                             id="dtDestino" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="destinoTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('destinoTable').clearFilters()" update="dtDestino"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{destino.id}"/>
+                            </p:column>
+                            <p:column headerText="Nombre completo" 
+                                filterMatchMode="contains"
+                                sortBy="#{destino.nombreCompleto}" 
+                                filterBy="#{destino.nombreCompleto}" >
+                                <p:outputLabel value="#{destino.nombreCompleto}"/>
+                            </p:column>
+                            <p:column headerText="CUIT" 
+                                filterMatchMode="contains"
+                                sortBy="#{destino.cuit}" 
+                                filterBy="#{destino.cuit}" >
+                                <p:outputLabel value="#{destino.cuit}"/>
+                            </p:column>
+                            <p:column headerText="Tipo" 
+                                filterMatchMode="contains"
+                                sortBy="#{destino.tipo}" 
+                                filterBy="#{destino.tipo}" >
+                                <p:outputLabel value="#{destino.tipo}"/>
+                            </p:column>
+                            <p:column headerText="Fecha de alta" 
+                                filterMatchMode="contains"
+                                sortBy="#{destino.fechaAlta}" 
+                                filterBy="#{destino.fechaAlta}" >
+                                <p:outputLabel value="#{destino.fechaAlta}" >
+                                    <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                                </p:outputLabel>
+                            </p:column>                            
+                            <p:column filterBy="#{destino.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('destinoTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitados" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{destino.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:110px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="@form" action="#{mbPersona.prepareView()}" >
+                                    <f:setPropertyActionListener value="#{destino}" target="#{mbPersona.persona}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbPersona.prepareEdit()}" >
+                                    <f:setPropertyActionListener value="#{destino}" target="#{mbPersona.persona}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbPersona.deshabilitar()}" 
+                                                 process="@this" update="@form" rendered="#{destino.habilitado}" >
+                                    <f:setPropertyActionListener value="#{destino}" target="#{mbPersona.persona}" /> 
+                                    <p:confirm header="Confirmar" 
+                                               message="¿Desea deshabilitar el #{config.Destinatario} seleccionado: #{destino.nombreCompleto}?" 
+                                               icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbPersona.habilitar()}" 
+                                                 process="@this" update="@form" rendered="#{not destino.habilitado}" >
+                                    <f:setPropertyActionListener value="#{destino}" target="#{mbPersona.persona}" /> 
+                                    <p:confirm header="Confirmar" 
+                                               message="¿Desea habilitar el #{config.Destinatario} seleccionado: #{destino.nombreCompleto}?" 
+                                               icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>
+
