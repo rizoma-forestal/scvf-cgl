@@ -105,12 +105,12 @@
                                     <f:setPropertyActionListener value="#{especie}" target="#{mbProducto.prodEspecie}" /> 
                                 </p:commandButton>
                                 <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbProducto.deshabilitarEspecie()}" 
-                                                 process="@this" update="@form" rendered="#{especie.habilitado}" >
+                                                 process="@this" update="dtEspecies" rendered="#{especie.habilitado}" >
                                     <f:setPropertyActionListener value="#{especie}" target="#{mbProducto.prodEspecie}" /> 
                                     <p:confirm header="Confirmar" message="¿Desea deshabilitar la Especie local: #{especie.nombreVulgar}?" icon="ui-icon-alert" />
                                 </p:commandButton>
                                 <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbProducto.habilitarEspecie()}" 
-                                                 process="@this" update="@form" rendered="#{not especie.habilitado}" >
+                                                 process="@this" update="dtEspecies" rendered="#{not especie.habilitado}" >
                                     <f:setPropertyActionListener value="#{especie}" target="#{mbProducto.prodEspecie}" /> 
                                     <p:confirm header="Confirmar" message="¿Desea habilitar la Especie local: #{especie.nombreVulgar}?" icon="ui-icon-alert" />
                                 </p:commandButton>

@@ -11,6 +11,10 @@
         </ui:define>
         <ui:define name="content"  >
             <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.Vehiculos}" />
+                </h:panelGrid>
                 <!-- Diálogo para obtener los datos del Vehículo desde el RUE -->
                 <p:dialog header="Datos provenientes del Registro Unico" widgetVar="dlgBuscarRue" minHeight="40" closable="false">
                     <h:form prependId="false" id="frBuscarRue">
@@ -299,7 +303,7 @@
                                        podrá seleccionarlo mediante el botón 'Buscar por Matrícula' ingresando la Matrícula correspondiente. Si desea registrarlo por primera vez en el RUE, 
                                        deberá hacerlo mediante el botón 'Agregar Nuevo'. Recuerde que se validará la existencia de la Matrícula del Vehículo que desea registrar. 
                                        Para ver las Marcas de Vehículos registradas y disponibles, para editarlas y/o registrar nuevas, deberá ir a 'Ver Marcas'. 
-                                       Para ver los Modelos de VEhículos registrados y disponibles, para editarlos y/o registrar nuevos, debería ir a 'Ver Modelos'" 
+                                       Para ver los Modelos de Vehículos registrados y disponibles, para editarlos y/o registrar nuevos, debería ir a 'Ver Modelos'" 
                                    style="font-style: italic; font-size: small" />
                         <h:panelGrid columns="4">  
                             <p:commandButton value="Buscar por Matrícula" icon="fa fa-fw fa-external-link" process="@this" 

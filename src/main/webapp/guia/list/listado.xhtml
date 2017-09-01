@@ -157,7 +157,7 @@
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view}" />
+                        <p:separator rendered="#{mbGuia.view and mbGuia.lstGuiasHijas.size() ne 0}" />
                         <h:panelGrid columns="1" rendered="#{mbGuia.lstGuiasHijas.size() ne 0}" >
                             <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" 
                                              update="pnViewGuias" oncomplete="PF('dlgVerGuias').show();"/>

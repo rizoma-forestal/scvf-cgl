@@ -159,11 +159,13 @@
                                 filterBy="#{inm.localidad}" >
                                 <p:outputLabel value="#{inm.localidad}" />
                             </p:column> 
-                            <p:column headerText="Superficie (Hs.)" 
+                            <p:column headerText="Superficie (Hs.)" style="text-align: right !important;" 
                                 filterMatchMode="contains"
                                 sortBy="#{inm.superficie}" 
                                 filterBy="#{inm.superficie}" >
-                                <p:outputLabel value="#{inm.superficie}" />
+                                <p:outputLabel value="#{inm.superficie}" >
+                                    <f:convertNumber type="currency"  currencySymbol=""/>
+                                </p:outputLabel>
                             </p:column>  
                             <p:column filterBy="#{inm.habilitado}" headerText="Estado" filterMatchMode="equals" >
                                 <f:facet name="filter">
