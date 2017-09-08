@@ -29,7 +29,7 @@
                                                    var="tipoTasa" itemLabel="#{tipoTasa.nombre}" itemValue="#{tipoTasa}"/>
                                 </p:selectOneMenu>
                                 <p:outputLabel value="Monto a pagar ($/U): " for="monto"/>
-                                <p:inputNumber id="monto" value="#{mbProducto.prodTasa.monto}" decimalPlaces="2" minValue="1" 
+                                <p:inputNumber id="monto" value="#{mbProducto.prodTasa.monto}" decimalPlaces="2" minValue="0" 
                                                decimalSeparator="," thousandSeparator="." required="true" 
                                                requiredMessage="Debe ingresar un monto a pagar." />
                             </h:panelGrid>
@@ -141,6 +141,8 @@
                             <p:outputLabel id="v_id" value="#{mbProducto.producto.id}"/>
                             <p:outputLabel value="Especie local: " for="v_especie"/>
                             <p:outputLabel id="v_especie" value="#{mbProducto.producto.especieLocal.nombreVulgar}"/>
+                            <p:outputLabel value="Nombre científico: " for="v_nomCient"/>
+                            <p:outputLabel id="v_nomCient" value="#{mbProducto.producto.especieLocal.nombreCientifico}"/>
                             <p:outputLabel value="Clase: " for="v_clase"/>
                             <p:outputLabel id="v_clase" value="#{mbProducto.producto.clase.nombre}"/>
                             <p:outputLabel value="Unidad: " for="v_unidad"/>
