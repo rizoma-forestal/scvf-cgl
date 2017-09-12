@@ -12,13 +12,17 @@ TrazServer=http://localhost:8080
 TrazRutaAplicacion=/trazabilidad
 
 # Parámetros provinciales
-IdProvinciaGt=10
+IdProvinciaGt=0
+Gobierno=Gobierno de la Provincia de [Provincia]
 Provincia=[Provincia]
 AutoridadLocal=Dirección de Bosques de [Provincia]
 DependienteDe=[Area superior]
 DomicilioAutLocal=[Domicilio Autoridad local]
 CorreoAutLocal=[email@autoridadlocal.gob.ar]
 TelAutLocal=[Teléfono Autoridad local]
+
+# Información general
+InfoGral=La presente es una versión de pruebas, para la cual solo habrá un rol de Usuarios: ADMINISTRADOR, con el cual se realizarán todas las operaciones, para luego, en función de las pruebas realizadas, definir los roles y sus correspondientes operaciones asociadas para cada caso.
 
 # Claves para encriptar y desencriptar las contraseñas de los usurios
 ClaveEncriptar=bosquesnativosycomunidad
@@ -156,4 +160,4 @@ GuiaConTransporte=CON TRANSP. Y PROD.
 maskCatastro=a-9999
 maskInstrumento=999/9999/aaaa
 maskExpediente=9999-999-a-9999
-maskGuia=aa-99999-9999
+maskGuia=aa-9-99999-9999
