@@ -1048,8 +1048,19 @@ public class MbPersona implements Serializable {
     public void preparaEditRue(){
         rueEditable = true;
         personaRue = buscarPersonaRueById();
+        //si no tiene domicilio, asigno un domicilio vacío
+        if(personaRue.getDomicilio() == null){
+            Domicilio dom = new Domicilio();
+            dom.setId(Long.valueOf(-1));
+            dom.setCalle("");
+            dom.setNumero("");
+            dom.setPiso("");
+            dom.setDepto("");
+            personaRue.setDomicilio(dom);
+        }
+
         if(Objects.equals(personaRue.getIdProvinciaGt(), Long.valueOf(ResourceBundle.getBundle("/Config").getString("IdProvinciaGt")))){
-            if(personaRue.getDomicilio() != null){
+            if(personaRue.getDomicilio().getId() > 0){
                 cargarEntidadesTerr(personaRue.getDomicilio().getIdLocalidadGt());
             }else{
                 cargarProvincias();
@@ -1335,7 +1346,7 @@ public class MbPersona implements Serializable {
             // lleno el listado de los combos
             listLocalidades = new ArrayList<>();
             for(CentroPoblado loc : listSrv){
-                local = new EntidadServicio(loc.getId(), loc.getNombre());
+                local = new EntidadServicio(loc.getId(), loc.getNombre() + " - " + loc.getCentroPobladoTipo().getNombre());
                 listLocalidades.add(local);
             }
             
@@ -1499,10 +1510,10 @@ public class MbPersona implements Serializable {
      */
     private String validarDomicilio(String rolPersona) {
         String result = "";
-        
+
         // defino los campos a validar según sea edición o insert
         if(personaRue.getId() != 0){
-            if(personaRue.getDomicilio() != null || rolPersona.equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
+            if(personaRue.getDomicilio().getId() != 0 || rolPersona.equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
                 // se está editando la Persona con domicilio, valido los datos obligarorios
                 result = "Está ingresando un domicilio.";
                 if(personaRue.getDomicilio().getCalle().equals("")) result = result + " Debe ingresar una Calle.";
@@ -1516,6 +1527,12 @@ public class MbPersona implements Serializable {
                     // pongo la calle en mayúsculas
                     String calle = personaRue.getDomicilio().getCalle();
                     personaRue.getDomicilio().setCalle(calle.toUpperCase());
+                    // seteo el resto de los elementos
+                    personaRue.getDomicilio().setIdLocalidadGt(localSelected.getId());
+                    personaRue.getDomicilio().setDepartamento(deptoSelected.getNombre());
+                    personaRue.getDomicilio().setProvincia(provSelected.getNombre());
+                    personaRue.getDomicilio().setLocalidad(localSelected.getNombre());
+                    
                     result = "";
                 }
             }

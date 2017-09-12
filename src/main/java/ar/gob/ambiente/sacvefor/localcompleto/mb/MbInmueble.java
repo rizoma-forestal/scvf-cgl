@@ -385,7 +385,7 @@ public class MbInmueble {
             // lleno el listado de los combos
             listLocalidades = new ArrayList<>();
             for(CentroPoblado loc : listSrv){
-                local = new EntidadServicio(loc.getId(), loc.getNombre());
+                local = new EntidadServicio(loc.getId(), loc.getNombre() + " - " + loc.getCentroPobladoTipo().getNombre());
                 listLocalidades.add(local);
             }
             
