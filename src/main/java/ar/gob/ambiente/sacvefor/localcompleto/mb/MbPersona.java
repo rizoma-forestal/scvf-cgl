@@ -85,8 +85,6 @@ public class MbPersona implements Serializable {
     private ParametricaFacade paramFacade;
     @EJB
     private TipoParamFacade tipoParamFacade;
-    @EJB
-    private UsuarioFacade usuarioFacade;
     
     // Clientes REST para la gestión del API de Personas
     private PersonaClient personaClient;  
@@ -500,7 +498,13 @@ public class MbPersona implements Serializable {
      */
     public void provinciaChangeListener(){
         localSelected = new EntidadServicio();
-        getDepartamentosSrv(provSelected.getId());
+        if(provSelected != null){
+            getDepartamentosSrv(provSelected.getId());
+        }else{
+            deptoSelected = new EntidadServicio();
+            provSelected = new EntidadServicio();
+        }
+        
     }    
     
     /**
@@ -915,6 +919,7 @@ public class MbPersona implements Serializable {
                     }else{
                         nom = personaRue.getRazonSocial().toUpperCase();
                         personaRue.setRazonSocial(nom);
+                        personaRue.setTipoSociedad(obtenerTipoSociedad());
                     }
                 }
                  // continúo para cualquier caso con el Tipo de Entidad, la idProvincia y el nombre de la Provincia
@@ -1044,19 +1049,24 @@ public class MbPersona implements Serializable {
     
     /**
      * Método para preparar la edición de un Vehículo en el RUE
+     * Si la Persona persistida en el RUE no tiene Domicilio,
+     * Creo y le asigno un Domicilio temporal para su posible seteo
+     * y cargo las entidades provincias como para la creación de un domicilio nuevo.
+     * Si la Persona tiene Domicilio persisitido cargo las entidades territoriales
+     * en función del idLocalidad que tenga asignado el Domicilio en el RUE.
      */
     public void preparaEditRue(){
         rueEditable = true;
         personaRue = buscarPersonaRueById();
-        //si no tiene domicilio, asigno un domicilio vacío
+        //si no tiene domicilio, asigno un domicilio temporal y le reseteo los datos String
         if(personaRue.getDomicilio() == null){
-            Domicilio dom = new Domicilio();
-            dom.setId(Long.valueOf(-1));
-            dom.setCalle("");
-            dom.setNumero("");
-            dom.setPiso("");
-            dom.setDepto("");
-            personaRue.setDomicilio(dom);
+            Domicilio domTemp = new Domicilio();
+            //dom.setId(Long.valueOf(-1));
+            domTemp.setCalle("");
+            domTemp.setNumero("");
+            domTemp.setPiso("");
+            domTemp.setDepto("");
+            personaRue.setDomicilio(domTemp);
         }
 
         if(Objects.equals(personaRue.getIdProvinciaGt(), Long.valueOf(ResourceBundle.getBundle("/Config").getString("IdProvinciaGt")))){
@@ -1505,47 +1515,61 @@ public class MbPersona implements Serializable {
 
     /**
      * Método para validar el domicilio según sea una edición o una inserción.
-     * En cualquier caso, devuelve "" si validó o un mensaje si no validó
+     * Si se trata de una edición, verifico el rol de la Persona:
+     * Si es Destinatario, el Domicilio es obligatorio.
+     * Para los roles de Persona restantes valid los datos y opero según las tres alternativas posibles:
+     * 1: Domicilio completo, 2: Domicilio vacío, 3: Domicilio incompleto.
+     * caso 1 => seteo el Domicilio;
+     * caso 2 => elimino el Domicilio de la Persona;
+     * caso 3 => seteo el mensaje de error;
+     * En cualquier caso, devuelve "" si validó o un mensaje si no validó.
      * @return 
      */
     private String validarDomicilio(String rolPersona) {
-        String result = "";
+        String result = "", valid;
 
         // defino los campos a validar según sea edición o insert
         if(personaRue.getId() != 0){
-            if(personaRue.getDomicilio().getId() != 0 || rolPersona.equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
-                // se está editando la Persona con domicilio, valido los datos obligarorios
-                result = "Está ingresando un domicilio.";
-                if(personaRue.getDomicilio().getCalle().equals("")) result = result + " Debe ingresar una Calle.";
-                if(personaRue.getDomicilio().getNumero().equals("")) result = result + " Debe ingresar un Némero de puerta.";
-                if(localSelected == null) result = result + " Debe seleccionar una Localidad.";
-                if(deptoSelected == null) result = result + " Debe seleccionar un Departamento.";
-                if(provSelected == null) result = result + " Debe seleccionar una Provincia.";
-                if(!result.equals("Está ingresando un domicilio.")){
-                    result = result + " No se ha podido validar el Domicilio";
+            if(rolPersona.equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
+                // si se trata de un Destinatario, el Domicilio es obligatorio, valido que esté completo
+                valid = setearErrorDomEdit();
+                if(!valid.equals("")){
+                    // si está incompleto termino de armar el mensaje.
+                    result = valid + " No se ha podido validar el Domicilio";
                 }else{
-                    // pongo la calle en mayúsculas
-                    String calle = personaRue.getDomicilio().getCalle();
-                    personaRue.getDomicilio().setCalle(calle.toUpperCase());
-                    // seteo el resto de los elementos
-                    personaRue.getDomicilio().setIdLocalidadGt(localSelected.getId());
-                    personaRue.getDomicilio().setDepartamento(deptoSelected.getNombre());
-                    personaRue.getDomicilio().setProvincia(provSelected.getNombre());
-                    personaRue.getDomicilio().setLocalidad(localSelected.getNombre());
-                    
+                    // si está completo, devuelvo el mensaje vacío.
+                    setearDom();
                     result = "";
+                }
+            }else{
+                /**
+                 * si no es Destinatario, actúo según el Domicilio estuviera o no persisitido con anterioridad, 
+                 * dado que al prepararlo para la edición, en cualquier caso, ya se le asignó un Domicilio, persistido o no.
+                 */
+                if(!personaRue.getDomicilio().getCalle().equals("") &&
+                            !personaRue.getDomicilio().getNumero().equals("") &&
+                            localSelected != null && deptoSelected != null && provSelected != null){
+                    // si el Domicilio está completo lo seteo y devuelvo el mensaje vación
+                    setearDom();
+                    result = "";
+                }else if(personaRue.getDomicilio().getCalle().equals("") &&
+                            personaRue.getDomicilio().getNumero().equals("") &&
+                            localSelected == null && deptoSelected == null && provSelected == null){
+                    // si el domicilio está vacío, lo elimino de la Persona y devuelvo el mensaje vació
+                    personaRue.setDomicilio(null);
+                    result = "";
+                }else{
+                    // si el domicilio está incompleto, seteo el mensaje de error y lo devuelvo
+                    valid = setearErrorDomEdit();
+                    result = valid + " No se ha podido validar el Domicilio";
                 }
             }
         }else if(!rueCalle.equals("") || !rueNumero.equals("") || rolPersona.equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
             // se considera que hay domicilio seteado, valido los datos obligarorios
-            result = "Está ingresando un domicilio.";
-            if(rueCalle.equals("")) result = result + " Debe ingresar una Calle.";
-            if(rueNumero.equals("")) result = result + " Debe ingresar un Némero de puerta.";
-            if(localSelected == null) result = result + " Debe seleccionar una Localidad.";
-            if(deptoSelected == null) result = result + " Debe seleccionar un Departamento.";
-            if(provSelected == null) result = result + " Debe seleccionar una Provincia.";
-            if(!result.equals("Está ingresando un domicilio.")){
-                result = result + " No se ha podido validar el Domicilio";
+            valid = setearErrorDomNuevo();
+            if(!valid.equals("")){
+                // si está incompleto termino de armar el mensaje.
+                result = valid + " No se ha podido validar el Domicilio";
             }else{
                 result = "";
                 // instancio el domicilio
@@ -1561,6 +1585,9 @@ public class MbPersona implements Serializable {
                 // asigno el domicilio a la PersonaRue
                 personaRue.setDomicilio(dom);
             }
+        }else{
+            // si no hay domicilio seteado lo quito
+            personaRue.setDomicilio(null);
         }
         
         return result;
@@ -1624,5 +1651,58 @@ public class MbPersona implements Serializable {
                     + "servicio REST del RUE", ex.getMessage()});
             return null;
         }
+    }
+
+    /**
+     * Método para setear el mensaje de error de validación de Domicilio durante la edición.
+     * Valida que los datos obligatorios estén completos, en cuyo caso arma un mensaje específico.
+     * O devuelve una cadena vacía si el Domicilio está completo
+     */
+    private String setearErrorDomEdit() {
+        String result = "Está ingresando un domicilio.";
+        if(personaRue.getDomicilio().getCalle().equals("")) result = result + " Debe ingresar una Calle.";
+        if(personaRue.getDomicilio().getNumero().equals("")) result = result + " Debe ingresar un Némero de puerta.";
+        if(localSelected == null) result = result + " Debe seleccionar una Localidad.";
+        if(deptoSelected == null) result = result + " Debe seleccionar un Departamento.";
+        if(provSelected == null) result = result + " Debe seleccionar una Provincia.";
+        if(!result.equals("Está ingresando un domicilio.")){
+            result = result + " No se ha podido validar el Domicilio";
+        }else{
+            result = "";
+        }
+        return result;
+    }
+
+    /**
+     * Método que setea el Domicilio para ser persistido en el RUE al editar la Persona
+     */
+    private void setearDom() {
+        // pongo la calle en mayúsculas
+        String calle = personaRue.getDomicilio().getCalle();
+        personaRue.getDomicilio().setCalle(calle.toUpperCase());
+        // seteo el resto de los elementos
+        personaRue.getDomicilio().setIdLocalidadGt(localSelected.getId());
+        personaRue.getDomicilio().setDepartamento(deptoSelected.getNombre());
+        personaRue.getDomicilio().setProvincia(provSelected.getNombre());
+        personaRue.getDomicilio().setLocalidad(localSelected.getNombre());
+    }
+    /**
+     * Método para setear el mensaje de error de validación de Domicilio nuevo.
+     * Valida que los datos obligatorios estén completos, en cuyo caso arma un mensaje específico.
+     * O devuelve una cadena vacía si el Domicilio está completo    
+     */
+    private String setearErrorDomNuevo() {
+        String result = "Está ingresando un domicilio.";
+        if(rueCalle.equals("")) result = result + " Debe ingresar una Calle.";
+        if(rueNumero.equals("")) result = result + " Debe ingresar un Némero de puerta.";
+        if(localSelected == null) result = result + " Debe seleccionar una Localidad.";
+        if(deptoSelected == null) result = result + " Debe seleccionar un Departamento.";
+        if(provSelected == null) result = result + " Debe seleccionar una Provincia.";
+        if(!result.equals("Está ingresando un domicilio.")){
+            result = result + " No se ha podido validar el Domicilio";
+        }else{
+            result = "";
+        }
+        return result;
     }
 }

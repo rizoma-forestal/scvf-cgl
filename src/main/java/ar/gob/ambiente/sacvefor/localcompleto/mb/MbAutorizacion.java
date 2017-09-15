@@ -119,6 +119,7 @@ public class MbAutorizacion {
      * Estado
      */
     private List<EstadoAutorizacion> lstEstados;
+    private EstadoAutorizacion estadoSelected;
     
     /********************
      * Accesos a datos **
@@ -149,6 +150,14 @@ public class MbAutorizacion {
     private GuiaFacade guiaFacade;
     
     public MbAutorizacion() {
+    }
+
+    public EstadoAutorizacion getEstadoSelected() {
+        return estadoSelected;
+    }
+
+    public void setEstadoSelected(EstadoAutorizacion estadoSelected) {
+        this.estadoSelected = estadoSelected;
     }
 
     public List<Guia> getLstGuias() {
@@ -468,6 +477,10 @@ public class MbAutorizacion {
         if(strPage.equals("productos.xhtml")){
             // si se carga productos, cargo los listados
             lstEspecieLocal = espLocalFacade.getHabilitadas();
+        }
+        if(strPage.equals("estado.xhtml")){
+            // seteo el estado seleccionado
+            estadoSelected = autorizacion.getEstado();
         }
     }  
     
@@ -1064,7 +1077,7 @@ public class MbAutorizacion {
         String result;
         // si el estado seleccionado implica habilitación para la emisión de Guías
         // verifico que la Autorización esté completa
-        if(autorizacion.getEstado().isHabilitaEmisionGuia()){
+        if(estadoSelected.isHabilitaEmisionGuia()){
             result = validarAutCompleta();
             if(!result.equals("")){
                 valida = false;
@@ -1075,8 +1088,10 @@ public class MbAutorizacion {
             try{
                 // actualizo la Autorización
                 autorizacion.setUsuario(usLogueado);
+                autorizacion.setEstado(estadoSelected);
                 autFacade.edit(autorizacion);
                 editEstado = false;
+                estadoSelected = null;
                 JsfUtil.addSuccessMessage("Se actualizó el estado de la Autorización correctamente.");
             }catch(Exception ex){
                 JsfUtil.addErrorMessage("Hubo un error actualizando el " + ResourceBundle.getBundle("/Config").getString("Producto") + ". " + ex.getMessage());

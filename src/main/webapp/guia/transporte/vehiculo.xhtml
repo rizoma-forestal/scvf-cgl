@@ -147,7 +147,6 @@
                                     <f:selectItems value="#{mbVehiculo.listTitulares}" 
                                                    var="titular" itemLabel="#{titular.nombre}" itemValue="#{titular}"/>
                                 </p:selectOneMenu>
-                                <p:outputLabel value="#{mbVehiculo.titularSelected.id}"/>  
                             </h:panelGrid>
                             <h:panelGrid id="pgBotonesRueEdit" columns="2" rendered="#{mbVehiculo.rueEditable}" >
                                 <p:commandButton title="Guardar los datos en el RUE" value="Guardar" icon="fa fa-fw fa-cloud-upload" update="frEditRue,pnFrmNew,messagesEditRue" 

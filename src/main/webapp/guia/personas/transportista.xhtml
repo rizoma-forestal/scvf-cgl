@@ -138,24 +138,21 @@
                                     <p:inputText id="depto" value="#{mbPersona.rueDepto}" size="10" />
 
                                     <p:outputLabel value="Provincia " for="cmbProv"/>   
-                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Provincia" id="cmbProv" 
-                                                     value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbProv" value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter"  >
                                         <f:selectItem itemLabel="Seleccione la Provincia" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listProvincias}" 
                                                        var="prov" itemLabel="#{prov.nombre}" itemValue="#{prov}"/>
                                         <p:ajax listener="#{mbPersona.provinciaChangeListener()}" update="cmbDepto,cmbLocalidades" />
                                     </p:selectOneMenu> 
                                     <p:outputLabel value="Departamento" for="cmbDepto"/>   
-                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Departamiento"  id="cmbDepto" 
-                                                     value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbDepto" value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
                                         <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listDepartamentos}" 
                                                        var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
                                         <p:ajax listener="#{mbPersona.deptoChangeListener()}" update="cmbLocalidades" />
                                     </p:selectOneMenu>  
                                     <p:outputLabel value="Localidad" for="cmbLocalidades"/>   
-                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Localidad"  id="cmbLocalidades" 
-                                                     value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbLocalidades" value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter"  >
                                         <f:selectItem itemLabel="Seleccione la Localidad" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listLocalidades}" 
                                                        var="loc" itemLabel="#{loc.nombre}" itemValue="#{loc}"/>

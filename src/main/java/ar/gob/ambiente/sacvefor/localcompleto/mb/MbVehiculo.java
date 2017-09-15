@@ -452,7 +452,13 @@ public class MbVehiculo {
             vehiculo.setModelo(vehiculoRue.getModelo().getNombre());
             vehiculo.setAnio(vehiculoRue.getAnio());
             // obtengo el Titular a partir de la Persona del RUE
-            Persona tit = perFacade.getByIdRue(vehiculoRue.getEmpresa().getId());
+            Persona tit;
+            if(vehiculo.getId() == null){
+                tit = perFacade.getByIdRue(vehiculoRue.getEmpresa().getId());
+            }else{
+                tit = perFacade.getByIdRue(titularSelected.getId());
+            }
+            
             vehiculo.setTitular(tit);
             
             view = false;
@@ -733,9 +739,9 @@ public class MbVehiculo {
                 vehiculoRue.setModelo(modelo);
                 // seteo el año
                 vehiculoRue.setAnio(rueVehiculoAnio);
-                // obtengo el titular y seteo el idRue como idTitular
-                Persona per = perFacade.find(titularSelected.getId());
-                vehiculoRue.setIdTitular(per.getIdRue());
+                // el idRue ya está asignado como id de titularSelected
+                //Persona per = perFacade.find(titularSelected.getId());
+                vehiculoRue.setIdTitular(titularSelected.getId());
                 
                 if(vehiculoRue.getId() == 0){
                     // seteo la matrícula solo si estoy insertando
@@ -769,8 +775,11 @@ public class MbVehiculo {
                     case 200:
                         JsfUtil.addSuccessMessage("El Vehículo se actualizó exitosamente en el Registro Unico, "
                                 + "para completar la actualización, guarde los datos del formulario de edición.");
-                        limpiarFormVehiculoRue();
+                        
+                        // obtengo el Titular a partir de la Persona del RUE
                         setearVehiculoByRue();
+                        // limpio el formulario
+                        limpiarFormVehiculoRue();
                         break;
                     default:
                         JsfUtil.addErrorMessage("No se pudo guardar el Vehículo en el Registro Unico: " + res.getStatus() + " Error del servidor RUE.");
@@ -811,12 +820,12 @@ public class MbVehiculo {
                     vehiculoFacade.edit(vehiculo);
                     JsfUtil.addSuccessMessage("El Vehículo fue guardado con exito");
                 }else{
-                    // si tiene titular lo seteo
-                    if(titularSelected != null){
-                        // obtengo el titular
-                        Persona per = perFacade.find(titularSelected.getId());
-                        vehiculo.setTitular(per);
-                    }
+//                    // si tiene titular lo seteo
+//                    if(titularSelected != null){    
+//                        // obtengo el titular
+//                        Persona per = perFacade.find(titularSelected.getId());
+//                        vehiculo.setTitular(per);
+//                    }
                     // seteo la fecha de alta y habilitado
                     Date fechaAlta = new Date(System.currentTimeMillis());
                     vehiculo.setFechaAlta(fechaAlta);
@@ -826,6 +835,8 @@ public class MbVehiculo {
                 }
                 vehiculo = new Vehiculo();
                 edit = false;
+            }else{
+                JsfUtil.addErrorMessage("Ya existe un Vehículo registrado con la matrícula que se pretende ingresar.");
             }
         }catch(Exception ex){
             JsfUtil.addErrorMessage(ex, "Hubo un error procesando el Vehículo : " + ex.getMessage());
@@ -1069,7 +1080,8 @@ public class MbVehiculo {
             listTransp = perFacade.findByRol(rolTansp);
             listTitulares = new ArrayList<>();
             for(Persona tit : listTransp){
-                titular = new EntidadServicio(tit.getId(), tit.getNombreCompleto());
+                // asingno los datos del RUE cacheados para no contactar el servicio
+                titular = new EntidadServicio(tit.getIdRue(), tit.getNombreCompleto());
                 listTitulares.add(titular);
             }
 

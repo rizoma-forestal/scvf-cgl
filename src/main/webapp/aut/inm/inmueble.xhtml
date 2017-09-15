@@ -22,11 +22,11 @@
                     
                     <!-- Formulario new y edit -->
                     <p:panel id="pnFrmNew" header="Crear/Editar" rendered="#{not mbInmueble.view}" collapsed="#{not mbInmueble.edit}" toggleable="true" >
-                        <p:growl id="messages" showDetail="false" />
+                        <p:growl id="messages" showDetail="false" />    
                         <h:panelGrid columns="2">
                             <p:outputLabel value="Id Catastral" for="idCatastral" />
                             <p:inputMask placeholder="#{config.maskCatastro}" id="idCatastral" value="#{mbInmueble.inmueble.idCatastral}" 
-                                         mask="#{config.maskCatastro}" />
+                                         mask="#{config.maskCatastro}" style="text-transform: uppercase" />
                             <p:outputLabel value="Nombre" for="nombre"/>   
                             <p:inputText id="nombre" value="#{mbInmueble.inmueble.nombre}" style="text-transform: uppercase; width: 300px" 
                                      requiredMessage="Debe ingresar el Nombre del Inmueble" required="true"/>
@@ -101,11 +101,11 @@
                             </p:outputLabel>
                             <p:outputLabel value="Latitud: " for="v_lat"/>
                             <p:outputLabel id="v_lat" value="#{mbInmueble.inmueble.latitud}" style="text-align: right !important;" >
-                                <f:convertNumber type="currency"  currencySymbol=""/>
+                                <f:convertNumber type="currency" minFractionDigits="13" currencySymbol=""/>
                             </p:outputLabel>
                             <p:outputLabel value="Longitud: " for="v_long"/>
                             <p:outputLabel id="v_long" value="#{mbInmueble.inmueble.longitud}" style="text-align: right !important;" >
-                                <f:convertNumber type="currency"  currencySymbol=""/>
+                                <f:convertNumber type="currency" minFractionDigits="13" currencySymbol=""/>
                             </p:outputLabel>
                         </h:panelGrid>
                         <p:separator rendered="#{mbInmueble.view}" />

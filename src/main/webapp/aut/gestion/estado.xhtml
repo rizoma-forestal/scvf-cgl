@@ -21,7 +21,7 @@
                 </h:panelGrid>
                 <h:panelGrid columns="2" rendered="#{mbAutorizacion.editEstado}" >
                     <p:outputLabel value="Cambiar Estado" for="cmbEstados"/>   
-                    <p:selectOneMenu id="cmbEstados" value="#{mbAutorizacion.autorizacion.estado}" required="true" 
+                    <p:selectOneMenu id="cmbEstados" value="#{mbAutorizacion.estadoSelected}" required="true" 
                                      requiredMessage="Debe seleccionar un Estado." >
                         <f:selectItem itemLabel="Seleccione un Estado" itemValue="" noSelectionOption="true"/>
                         <f:selectItems value="#{mbAutorizacion.lstEstados}" 

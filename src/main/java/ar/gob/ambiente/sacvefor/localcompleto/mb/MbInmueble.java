@@ -209,6 +209,7 @@ public class MbInmueble {
                 }
             }
             if(valida){
+                inmueble.setIdCatastral(inmueble.getIdCatastral().toUpperCase());
                 String tempNombre = inmueble.getNombre();
                 inmueble.setNombre(tempNombre.toUpperCase());
                 String tempDomicilio = inmueble.getDomicilio();

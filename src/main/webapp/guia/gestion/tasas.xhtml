@@ -93,9 +93,9 @@
                     <p:commandButton title="Generar volante de pago" styleClass="save" icon="fa fa-fw fa-file-pdf-o" 
                                      value="Generar Volante" action="#{mbGuia.generarVolante()}"
                                      update="pMenuIndex,frame,frTasas" ajax="false" rendered="#{mbGuia.guia.estado.habilitaLiquidacion}" />
-                    <p:outputLabel value="Volante emitido con fecha: " style="font-size: 20px !important; color: #8A0829" rendered="#{not mbGuia.guia.estado.habilitaLiquidacion}" />
+                    <p:outputLabel value="Volante emitido con fecha: " style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guia.estado.habilitaEmision}" />
                     <p:outputLabel value="#{mbGuia.guia.fechaEmisionVolante}" 
-                                   style="font-size: 20px !important; color: #8A0829" rendered="#{not mbGuia.guia.estado.habilitaLiquidacion}" >
+                                   style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guia.estado.habilitaEmision}" >
                         <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
                     </p:outputLabel>
                     <p:outputLabel value=" Abonado con recibo: " style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guia.codRecibo ne null}" />

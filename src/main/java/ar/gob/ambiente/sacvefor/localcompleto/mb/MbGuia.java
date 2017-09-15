@@ -1227,6 +1227,7 @@ public class MbGuia {
                     // asigno el estado
                     guia.setEstado(estado);
                     guiaFacade.edit(guia);
+                    guia.getItems().add(itemAsignado);
                     // actualizo el flag
                     descontandoProd = false;
                 }
@@ -1267,6 +1268,8 @@ public class MbGuia {
                     // asumo que si el producto fue creado, había configurado un Estado incicial para la Guía
                     EstadoGuia estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaInicial"));
                     guia.setEstado(estado);
+                    List<ItemProductivo> items = new ArrayList<>();
+                    guia.setItems(items);
                     guiaFacade.edit(guia);
                 }
                 // muestro mensaje

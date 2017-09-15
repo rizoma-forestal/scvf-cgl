@@ -150,7 +150,7 @@
                                         <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Saldo disp." style="text-align: right !important;" >
+                                <p:column headerText="Saldo disp." style="text-align: right !important;" rendered="#{mbGuia.guia.tipo.habilitaDesc}" >
                                     <p:outputLabel value="#{item.saldo}" >
                                         <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                     </p:outputLabel>

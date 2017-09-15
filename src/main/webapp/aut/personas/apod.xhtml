@@ -190,7 +190,7 @@
                                 <p:inputText id="razSocEdit" value="#{mbPersona.personaRue.razonSocial}" 
                                              style="text-transform: uppercase" size="50" />
                                 <p:outputLabel value="Tipo Sociedad: *" for="cmbTipoSocEdit"/>   
-                                <p:selectOneMenu id="cmbTipoSocEdit" value="#{mbPersona.personaRue.tipoSociedad}" converter="omnifaces.SelectItemsConverter" >
+                                <p:selectOneMenu id="cmbTipoSocEdit" value="#{mbPersona.tipoSocSelected}" converter="omnifaces.SelectItemsConverter" >
                                     <f:selectItem itemLabel="Seleccione el Tipo de Sociedad" itemValue="" noSelectionOption="true"/>
                                     <f:selectItems value="#{mbPersona.listTipoSoc}" 
                                                    var="tipoSoc" itemLabel="#{tipoSoc.nombre}" itemValue="#{tipoSoc}"/>
