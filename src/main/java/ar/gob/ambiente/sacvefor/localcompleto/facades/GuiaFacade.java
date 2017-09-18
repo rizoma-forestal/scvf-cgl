@@ -136,8 +136,12 @@ public class GuiaFacade extends AbstractFacade<Guia> {
         String queryString = "SELECT MAX(id) FROM guia"; 
         Query q = em.createNativeQuery(queryString);
         BigInteger result = (BigInteger)q.getSingleResult();
-        return result.intValue();
-    }    
+        if(result == null){
+            return 0;
+        }else{
+            return result.intValue();
+        }
+    }      
     
     /**
      * Método que devuelve las Guías vinculadas a un número de fuente determinado.
