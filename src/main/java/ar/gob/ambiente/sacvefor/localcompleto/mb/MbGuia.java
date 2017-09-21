@@ -1235,11 +1235,13 @@ public class MbGuia {
             }catch(Exception ex){
                 JsfUtil.addErrorMessage("Hubo un error agregadon el Producto a la Guía: " + ex.getMessage());
             }
-        }else if(tipoActual != null){
+        }else if(tipoActual == null){
             JsfUtil.addErrorMessage("No se pudo encontrar un Parámetro para el Tipo de Item: 'Extraidos'.");
-        }else if(!validaCantidad){
+        }
+        if(!validaCantidad){
             JsfUtil.addErrorMessage("La cantidad a descontar debe ser menor o igual al saldo disponible.");
-        }else{
+        }
+        if(estado == null){
             JsfUtil.addErrorMessage("No se pudo encontrar un Estado de Guía para: 'GuiaConProductos'.");
         }
     }
