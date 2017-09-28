@@ -13,6 +13,9 @@
             <base-name>/Config</base-name>
             <var>config</var>
         </resource-bundle>
+       <locale-config>
+            <default-locale>es</default-locale>
+       </locale-config>
     </application>
     <managed-bean>
         <description>Bean de respaldo para gestionar las entidades Parametrica y TipoParam</description>

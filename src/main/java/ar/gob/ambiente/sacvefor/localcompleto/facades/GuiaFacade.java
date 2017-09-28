@@ -56,30 +56,30 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }   
     
     /**
-     * Método para obetener las Guías cuyo origen es el enviado como parámetro
-     * @param origen 
+     * Método para obetener las Guías cuyo origen tiene el CUIT recibido como parámetro
+     * @param cuit : CUIT de la Persona vinculada a la Guía como origen 
      * @return 
      */
-    public List<Guia> getByOrigen(EntidadGuia origen){
+    public List<Guia> getByOrigen(Long cuit){
         em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
-                + "WHERE guia.origen = :origen";
+                + "WHERE guia.origen.cuit = :cuit";
         Query q = em.createQuery(queryString)
-                .setParameter("origen", origen);
+                .setParameter("cuit", cuit);
         return q.getResultList();
     }   
     
     /**
-     * Método para obetener las Guías cuyo destino es el enviado como parámetro
-     * @param destino
+     * Método para obetener las Guías cuyo destino tiene el CUIT recibido como parámetro
+     * @param cuit : CUIT de la Persona vinculada a la Guía como destino 
      * @return 
      */
-    public List<Guia> getByDestino(EntidadGuia destino){
+    public List<Guia> getByDestino(Long cuit){
         em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
-                + "WHERE guia.destino = :destino";
+                + "WHERE guia.destino.cuit = :cuit";
         Query q = em.createQuery(queryString)
-                .setParameter("destino", destino);
+                .setParameter("cuit", cuit);
         return q.getResultList();
     } 
 

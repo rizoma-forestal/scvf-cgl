@@ -1,14 +1,17 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Usuario;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.AutorizacionFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.GuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.PersonaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
-import ar.gob.ambiente.sacvefor.localcompleto.facades.UsuarioFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.PersonaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.TipoEntidadClient;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.TipoSociedadClient;
@@ -85,6 +88,10 @@ public class MbPersona implements Serializable {
     private ParametricaFacade paramFacade;
     @EJB
     private TipoParamFacade tipoParamFacade;
+    @EJB
+    private AutorizacionFacade autFacade;
+    @EJB
+    private GuiaFacade guiaFacade;
     
     // Clientes REST para la gestión del API de Personas
     private PersonaClient personaClient;  
@@ -133,6 +140,15 @@ public class MbPersona implements Serializable {
     private boolean rueEditable;
     
     /**
+     * Listados por persona
+     */
+    // Autorizaciones
+    private List<Autorizacion> lstAut;
+    
+    // Guías
+    private List<Guia> lstGuias;
+    
+    /**
      * Constructor
      */        
     public MbPersona() {
@@ -140,7 +156,23 @@ public class MbPersona implements Serializable {
     
     /**********************
      * Métodos de acceso **
-     **********************/     
+     **********************/      
+    public List<Autorizacion> getLstAut() {
+        return lstAut;
+    }
+
+    public void setLstAut(List<Autorizacion> lstAut) {
+        this.lstAut = lstAut;
+    }
+
+    public List<Guia> getLstGuias() {
+        return lstGuias;
+    }
+   
+    public void setLstGuias(List<Guia> lstGuias) {
+        this.lstGuias = lstGuias;
+    }
+
     public List<Persona> getLstDestinatarios() {
         try{
             lstDestinatarios = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Destinatario")));
@@ -532,6 +564,27 @@ public class MbPersona implements Serializable {
         view = true;
         edit = false;
     }  
+    
+    /**
+     * Método para preparar el listado de Autorizaciones por Persona según su rol
+     * @param rol
+     */
+    public void prepareViewAut(String rol){
+        lstAut = new ArrayList<>();
+        Parametrica rolPersona = obtenerRol(rol);
+        lstAut = autFacade.getByPersona(persona, rolPersona);
+    }
+    
+    public void preparaViewGuias(String rol){
+        lstGuias = new ArrayList<>();
+        if(rol.equals(ResourceBundle.getBundle("/Config").getString("TegFuente"))){
+            // obtengo las Guías de las cuales es titular
+            lstGuias = guiaFacade.getByOrigen(persona.getCuit());
+        }else{
+            // obtengo las Guías que lo tienen como destinatario
+            lstGuias = guiaFacade.getByDestino(persona.getCuit());
+        }
+    }
 
     /**
      * Método para habilitar el formulario de creación de una Persona

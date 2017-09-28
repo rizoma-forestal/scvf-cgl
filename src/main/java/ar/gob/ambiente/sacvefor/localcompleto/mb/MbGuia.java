@@ -186,6 +186,13 @@ public class MbGuia {
     private GuiaCtrlClient guiaCtrlClient;
     private String msgExitoEmision;
     private String msgErrorEmision;
+    
+    /*****************************************************************
+     * Listado de inmuebles vinculados a la Autorización del predio **
+     * desde el cual provienen los productos vinculados a la Guía, ***
+     * cualquier sea su tipo. A mostrar en el detalle de la Guía. ****
+     *****************************************************************/
+    private List<Inmueble> lstInmueblesOrigen;
 
     /********************
      * Accesos a datos **
@@ -214,6 +221,14 @@ public class MbGuia {
     private VehiculoFacade vehFacade;
     
     public MbGuia() {
+    }
+
+    public List<Inmueble> getLstInmueblesOrigen() {
+        return lstInmueblesOrigen;
+    }
+
+    public void setLstInmueblesOrigen(List<Inmueble> lstInmueblesOrigen) {
+        this.lstInmueblesOrigen = lstInmueblesOrigen;
     }
 
     public List<Guia> getLstGuiasHijas() {
@@ -694,12 +709,13 @@ public class MbGuia {
      */
     public void buscar(){
         try{
-            // busco la Autorización
+            // busco la Guía
             guia = guiaFacade.getExistente(guiaNumero.toUpperCase());
             if(guia == null){
                 JsfUtil.addErrorMessage("No se encontró ninguna Guía con el Número ingresado.");
             }else{
                 // redirecciono a la vista
+                setearInmueblesOrigen();
                 page = "generalView.xhtml";
             }
         }catch(Exception ex){
@@ -776,6 +792,7 @@ public class MbGuia {
      */
     public void prepareView(){
         limpiarForm();
+        setearInmueblesOrigen();
         page = "generalView.xhtml";
     }    
     
@@ -919,6 +936,7 @@ public class MbGuia {
             // limpio los objetos temporales del bean
             limpiarForm();
             // redirecciono a la vista
+            setearInmueblesOrigen();
             page = "generalView.xhtml";
         }catch(Exception ex){
             JsfUtil.addErrorMessage("Hubo un error gestionando la Guía. " + ex.getMessage());
@@ -1610,6 +1628,8 @@ public class MbGuia {
     public void prepareViewDetalle(){
         // Busco las Guías de las que pudiera ser fuente la Autorización
         lstGuiasHijas = guiaFacade.findByNumFuente(guia.getCodigo());
+        // Busco los inmuebles 
+        setearInmueblesOrigen();
         view = true;
     }    
     
@@ -1807,4 +1827,24 @@ public class MbGuia {
         
         return result;
     }       
+
+    /**
+     * Método para listar los inmuebles vinculados a la Autorización de la cual provienen los productos de la Guía
+     */
+    private void setearInmueblesOrigen() {
+        lstInmueblesOrigen = new ArrayList<>();
+        // obtengo la Autorización según el tipo de Guía
+        Autorizacion aut;
+        if(guia.getTipoFuente().getNombre().equals(ResourceBundle.getBundle("/Config").getString("Autorizacion"))){
+            // si la fuente de la Guía es una Autorización, obtengo sus inmuebles
+            aut = autFacade.getExistente(guia.getNumFuente());
+        }else{
+            // si la fuente es una Guía obtengo su Autorización
+            Guia g = guiaFacade.getExistente(guia.getNumFuente());
+            aut = autFacade.getExistente(g.getNumFuente());
+        }
+        for(Inmueble inm : aut.getInmuebles()){
+            lstInmueblesOrigen.add(inm);
+        }
+    }
 }

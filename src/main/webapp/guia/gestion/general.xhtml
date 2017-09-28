@@ -47,7 +47,7 @@
                         <p:commandButton title="Buscar Fuentes de Productos" value="Buscar" icon="fa fa-fw fa-search" 
                                          action="#{mbGuia.buscarFuentesProductos()}" update="pnForm,fsAutFuentes,messages"/>
                         <p:commandButton title="Limpiar el CUIT a buscar" value="Limpiar" icon="fa fa-fw fa-refresh" 
-                                         action="#{mbGuia.limpiarCuit()}" update="pnForm"/>
+                                         action="#{mbGuia.limpiarCuit()}" update="pnForm" rendered="#{mbGuia.guia.id eq null}"/>
                     </h:panelGrid>
                     <h:panelGrid id="pgDatosProductor" columns="2" cellpadding="5" rendered="#{mbGuia.productor ne null}">
                         <p:outputLabel value="Tipo: " for="perTipo"/>

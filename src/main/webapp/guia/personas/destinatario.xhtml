@@ -269,6 +269,54 @@
                     </h:form>
                 </p:dialog> 
                 
+                <!-- Diálogo para obtener las Guías vinculadas -->
+                <p:dialog header="Guías vinculadas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
+                    <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
+                        <h:panelGrid columns="2" >
+                            <p:dataTable styleClass="table" value="#{mbPersona.lstGuias}"
+                                    var="guia"
+                                    id="dtViewGuias"
+                                    rows="5"
+                                    paginator="true"      
+                                    widgetVar="guiaTable"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+                                <f:facet name="header">
+                                    <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                             onclick="PF('guiaTable').clearFilters()" update="dtViewGuias"/>
+                                </f:facet>
+                                <p:column headerText="Tipo" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.tipo.nombre}" 
+                                    filterBy="#{guia.tipo.nombre}" >
+                                    <p:outputLabel value="#{guia.tipo.nombre}"/>
+                                </p:column>
+                                <p:column headerText="Número" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.codigo}" 
+                                    filterBy="#{guia.codigo}" >
+                                    <p:outputLabel value="#{guia.codigo}"/>
+                                </p:column>
+                                <p:column headerText="Fuente" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" 
+                                    filterBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" >
+                                    <p:outputLabel value="#{guia.tipoFuente.nombre} - #{guia.numFuente}"/>
+                                </p:column>
+                                <p:column headerText="Estado" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.estado.nombre}" 
+                                    filterBy="#{guia.estado.nombre}" >
+                                    <p:outputLabel value="#{guia.estado.nombre}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <f:facet name="footer">
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerGuias').hide();"/>
+                        </f:facet>
+                    </p:panel>
+                </p:dialog>
+                
                 <h:form prependId="false" id="frDestinatarios">
                     <!-- Formulario new y edit -->
                     <p:panel id="pnFrmNew" header="Agregar/Crear/Editar" rendered="#{not mbPersona.view}" collapsed="#{not mbPersona.edit}" toggleable="true" >
@@ -328,8 +376,13 @@
                             <p:outputLabel id="v_tipo" value="#{mbPersona.persona.tipo}"/>
                             <p:outputLabel value="Tipo: " for="v_email"/>
                             <p:outputLabel id="v_email" value="#{mbPersona.persona.email}"/>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbPersona.view}" />
+                        <h:panelGrid id="pgBtn" columns="2" rendered="#{mbPersona.view}" >
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
                                              actionListener="#{mbPersona.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                            <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" update="pnViewGuias" 
+                                             actionListener="#{mbPersona.preparaViewGuias(config.TegDestino)}" oncomplete="PF('dlgVerGuias').show();" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbPersona.view}" >

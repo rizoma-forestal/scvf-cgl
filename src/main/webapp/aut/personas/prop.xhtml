@@ -266,6 +266,108 @@
                     </h:form>
                 </p:dialog>
                 
+                <!-- Diálogo para obtener las Autorizaciones vinculadas -->
+                <p:dialog header="Autorizaciones vinculadas" widgetVar="dlgVerAut" minHeight="40" closable="false">
+                    <p:panel id="pnViewAut" style="margin-bottom:10px; width: 800px">
+                        <h:panelGrid columns="2" >
+                            <p:dataTable styleClass="table" value="#{mbPersona.lstAut}"
+                                    var="aut"
+                                    id="dtViewAut"
+                                    rows="5"
+                                    paginator="true"      
+                                    widgetVar="autTable"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+                                <f:facet name="header">
+                                    <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                             onclick="PF('autTable').clearFilters()" update="dtViewAut"/>
+                                </f:facet>
+                                <p:column headerText="Número" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{aut.numero}" 
+                                    filterBy="#{aut.numero}" >
+                                    <p:outputLabel value="#{aut.numero}"/>
+                                </p:column>
+                                <p:column headerText="Expediente" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{aut.numExp}" 
+                                    filterBy="#{aut.numExp}" >
+                                    <p:outputLabel value="#{aut.numExp}"/>
+                                </p:column>
+                                <p:column headerText="Intervencion" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{aut.intervencion.nombre}" 
+                                    filterBy="#{aut.intervencion.nombre}" >
+                                    <p:outputLabel value="#{aut.intervencion.nombre}" />
+                                </p:column> 
+                                <p:column headerText="Uso Suelo" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{aut.usoSuelo.nombre}" 
+                                    filterBy="#{aut.usoSuelo.nombre}" >
+                                    <p:outputLabel value="#{aut.usoSuelo.nombre}" />
+                                </p:column>  
+                                <p:column headerText="Estado" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{aut.estado.nombre}" 
+                                    filterBy="#{aut.estado.nombre}" >
+                                    <p:outputLabel value="#{aut.estado.nombre}" />
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <f:facet name="footer">
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerAut').hide();"/>
+                        </f:facet>
+                    </p:panel>
+                </p:dialog>
+                
+                <!-- Diálogo para obtener las Guías vinculadas -->
+                <p:dialog header="Guías vinculadas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
+                    <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
+                        <h:panelGrid columns="2" >
+                            <p:dataTable styleClass="table" value="#{mbPersona.lstGuias}"
+                                    var="guia"
+                                    id="dtViewGuias"
+                                    rows="5"
+                                    paginator="true"      
+                                    widgetVar="guiaTable"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+                                <f:facet name="header">
+                                    <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                             onclick="PF('guiaTable').clearFilters()" update="dtViewGuias"/>
+                                </f:facet>
+                                <p:column headerText="Tipo" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.tipo.nombre}" 
+                                    filterBy="#{guia.tipo.nombre}" >
+                                    <p:outputLabel value="#{guia.tipo.nombre}"/>
+                                </p:column>
+                                <p:column headerText="Número" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.codigo}" 
+                                    filterBy="#{guia.codigo}" >
+                                    <p:outputLabel value="#{guia.codigo}"/>
+                                </p:column>
+                                <p:column headerText="Fuente" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" 
+                                    filterBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" >
+                                    <p:outputLabel value="#{guia.tipoFuente.nombre} - #{guia.numFuente}"/>
+                                </p:column>
+                                <p:column headerText="Estado" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.estado.nombre}" 
+                                    filterBy="#{guia.estado.nombre}" >
+                                    <p:outputLabel value="#{guia.estado.nombre}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <f:facet name="footer">
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerGuias').hide();"/>
+                        </f:facet>
+                    </p:panel>
+                </p:dialog>
+                
                 <h:form prependId="false" id="frProponentes">
                     <!-- Formulario new y edit -->
                     <p:panel id="pnFrmNew" header="Agregar/Crear/Editar" rendered="#{not mbPersona.view}" collapsed="#{not mbPersona.edit}" toggleable="true" >
@@ -332,8 +434,15 @@
                             <p:outputLabel id="v_tipo" value="#{mbPersona.persona.tipo}"/>
                             <p:outputLabel value="Martillo: " />
                             <img src="/martillos/#{mbPersona.persona.nombreArchivo}" width="150" />
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbPersona.view}" />
+                        <h:panelGrid id="pgBtn" columns="3" rendered="#{mbPersona.view}" >
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
                                              actionListener="#{mbPersona.verDatosRue()}" update="pnDlgBuscar" oncomplete="PF('dlgBuscarRue').show();"/>
+                            <p:commandButton value="Ver Autorizaciones" icon="fa fa-fw fa-external-link" process="@this" update="pnViewAut" 
+                                             actionListener="#{mbPersona.prepareViewAut(config.Proponente)}" oncomplete="PF('dlgVerAut').show();" />
+                            <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" update="pnViewGuias" 
+                                             actionListener="#{mbPersona.preparaViewGuias(config.TegFuente)}" oncomplete="PF('dlgVerGuias').show();" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbPersona.view}" >

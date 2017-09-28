@@ -788,7 +788,18 @@ public class MbAutorizacion {
         try{
             if(valida){
                 autorizacion.getPersonas().add(persona);
+                // guardo temporalmente las personas
+                List<Persona> perTemp = new ArrayList<>();
+                for(Persona per : autorizacion.getPersonas()){
+                    perTemp.add(per);
+                }
+                // limpio lo guardado
+                autorizacion.setPersonas(null);
                 autFacade.edit(autorizacion);
+                // seteo y guardo las personas definitivas
+                autorizacion.setPersonas(perTemp);
+                autFacade.edit(autorizacion);
+                // limpio todo
                 persona = null;
                 cuitBuscar = null;
                 JsfUtil.addSuccessMessage("El " + rolPersona + " se agregó a la Autorización");
@@ -870,7 +881,18 @@ public class MbAutorizacion {
         try{
             if(valida){
                 autorizacion.getInmuebles().add(inmueble);
+                // guardo temporalmente los inmuebles
+                List<Inmueble> inmTemp = new ArrayList<>();
+                for(Inmueble inm : autorizacion.getInmuebles()){
+                    inmTemp.add(inm);
+                }
+                // limpio lo guardado
+                autorizacion.setInmuebles(null);
                 autFacade.edit(autorizacion);
+                // seteo y guardo los inmuebles definitivos
+                autorizacion.setInmuebles(inmTemp);
+                autFacade.edit(autorizacion);
+                // limpio todo
                 inmueble = null;
                 catastroBuscar = null;
                 JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " se agregó a la Autorización");

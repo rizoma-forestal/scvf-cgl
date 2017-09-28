@@ -32,7 +32,7 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
      * @param nombreVulgar : Nombre vulgar a validar
      * @return 
      */
-    public ProductoEspecieLocal getExistente(String nombreVulgar) {
+    public ProductoEspecieLocal getExistenteXNomVulgar(String nombreVulgar) {
         List<ProductoEspecieLocal> lstEspecies;
         em = getEntityManager();
         
@@ -47,6 +47,27 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
             return lstEspecies.get(0);
         }
     }   
+    
+    /**
+     * Método para validar la existencia de una Especie según su nombre científico
+     * @param nombreCientifico
+     * @return 
+     */
+    public ProductoEspecieLocal getExistenteXNomCientifico(String nombreCientifico){
+        List<ProductoEspecieLocal> lstEspecies;
+        em = getEntityManager();
+        
+        String queryString = "SELECT especie FROM ProductoEspecieLocal especie "
+                + "WHERE especie.nombreCientifico = :nombreCientifico";
+        Query q = em.createQuery(queryString)
+                .setParameter("nombreCientifico", nombreCientifico);
+        lstEspecies = q.getResultList();
+        if(lstEspecies.isEmpty()){
+            return null;
+        }else{
+            return lstEspecies.get(0);
+        }
+    }
     
     /**
      * Método sobreescrito que lista las ProductoEspecieLocal ordenadas por nombre

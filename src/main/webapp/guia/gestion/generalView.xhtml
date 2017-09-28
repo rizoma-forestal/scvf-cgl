@@ -53,20 +53,6 @@
                             <p:outputLabel value="#{mbGuia.guia.origen.cuit}" style=" font-weight: bold" />
                         </h:panelGrid>
                     </p:fieldset>
-                    <p:fieldset toggleable="true" legend="#{config.Inmueble}" style="margin-bottom:20px">
-                        <h:panelGrid columns="2" cellpadding="1">
-                            <p:outputLabel value="Nombre: " />
-                            <p:outputLabel value="#{mbGuia.guia.origen.inmNombre}" style=" font-weight: bold" />
-                            <p:outputLabel value="Id Catastral: " />
-                            <p:outputLabel value="#{mbGuia.guia.origen.inmCatastro}" style=" font-weight: bold" />
-                            <p:outputLabel value="Localidad: " />
-                            <p:outputLabel value="#{mbGuia.guia.origen.localidad}" style=" font-weight: bold" />
-                            <p:outputLabel value="Departamente: " />
-                            <p:outputLabel value="#{mbGuia.guia.origen.departamento}" style=" font-weight: bold" />
-                            <p:outputLabel value="Provincia " />
-                            <p:outputLabel value="#{mbGuia.guia.origen.provincia}" style=" font-weight: bold" />
-                        </h:panelGrid>
-                    </p:fieldset>
                     <p:fieldset toggleable="true" legend="Fuente" style="margin-bottom:20px">
                         <h:panelGrid columns="2" cellpadding="1">
                             <p:outputLabel value="Tipo: " />
@@ -76,6 +62,33 @@
                         </h:panelGrid>
                     </p:fieldset>
                 </h:panelGrid>
+                
+                <p:separator />
+
+                <h:panelGrid id="pgGuiaInmuebles" columns="1" >
+                    <p:outputLabel value="Inmuebles" style="font-weight: bold" />
+                    <p:dataTable styleClass="table" value="#{mbGuia.lstInmueblesOrigen}"
+                                 var="inm"
+                                 id="dtGuiaInms" >
+                        <p:column headerText="Id Catastral" >
+                            <p:outputLabel value="#{inm.idCatastral}"/>
+                        </p:column>
+                        <p:column headerText="Nombre" >
+                            <p:outputLabel value="#{inm.nombre}"/>
+                        </p:column>
+                        <p:column headerText="Domicilio" >
+                            <p:outputLabel value="#{inm.domicilio}"/>
+                        </p:column>
+                        <p:column headerText="Localidad" >
+                            <p:outputLabel value="#{inm.localidad}"/>
+                        </p:column>
+                        <p:column headerText="Superficie (Hs.)" >
+                            <p:outputLabel value="#{inm.superficie}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+
+                <p:separator />
 
                 <h:panelGrid columns="2">
                     <p:commandButton title="Editar el contenido de los datos generales de la Guía" styleClass="save" icon="fa fa-fw fa-pencil" 

@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Recibo" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="b0afdfac-b5eb-4d89-aa6c-77705803faa6">
 	<property name="ireport.zoom" value="0.9090909090909091"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="288"/>
 	<subDataset name="Table Dataset 1" uuid="3b96fe36-c02d-46eb-a1af-51656d020fcb"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["C:\\Users\\rincostante\\Documents\\NetBeansProjects\\grp_wildfly\\sacvefor\\sacvefor-gestionLocalCompleto\\src\\main\\webapp\\resources\\reportes\\"]]></defaultValueExpression>
@@ -151,7 +151,7 @@
 				<reportElement x="0" y="440" width="350" height="1" uuid="7444e83f-a669-42cf-b56e-684f86c7cf55"/>
 			</line>
 			<staticText>
-				<reportElement x="221" y="5" width="143" height="20" uuid="dd81f7ea-cb92-4d42-a93e-c240d6f1fc22"/>
+				<reportElement x="1" y="5" width="125" height="20" uuid="dd81f7ea-cb92-4d42-a93e-c240d6f1fc22"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="false" isItalic="true"/>
 					<paragraph leftIndent="5"/>
@@ -167,7 +167,7 @@
 				<text><![CDATA[Listado de Productos]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement x="346" y="5" width="208" height="20" uuid="111b1985-a8fc-433c-bcf7-001b3c49654b"/>
+				<reportElement x="126" y="5" width="429" height="20" uuid="111b1985-a8fc-433c-bcf7-001b3c49654b"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="true"/>
 				</textElement>
@@ -207,7 +207,7 @@
 					<font size="11" isBold="true"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<text><![CDATA[Cant.:]]></text>
+				<text><![CDATA[Kg:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="282" y="450" width="120" height="24" uuid="12ef94bd-651e-4a05-bcc3-63cd7e36859f"/>

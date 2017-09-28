@@ -1,15 +1,16 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Usuario;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Vehiculo;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.GuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.PersonaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
-import ar.gob.ambiente.sacvefor.localcompleto.facades.UsuarioFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.VehiculoFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.MarcaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.ModeloClient;
@@ -82,7 +83,7 @@ public class MbVehiculo {
     @EJB
     private TipoParamFacade tipoParamFacade;    
     @EJB
-    private UsuarioFacade usuarioFacade;    
+    private GuiaFacade guiaFacade;  
     
     // Clientes REST para la gestión del API de Vehículos, Marcas y Modelos
     private VehiculoClient vehiculoClient;  
@@ -109,12 +110,23 @@ public class MbVehiculo {
     private int rueVehiculoAnio;
     private boolean rueEditable;
     
+    // listado de Guías vinculadas
+    private List<Guia> lstGuias;
+    
     public MbVehiculo() {
     }
        
     /**********************
      * Métodos de acceso **
-     **********************/       
+     **********************/          
+    public List<Guia> getLstGuias() {
+        return lstGuias;
+    }
+ 
+    public void setLstGuias(List<Guia> lstGuias) {
+        this.lstGuias = lstGuias;
+    }
+
     public String getNombreMarcaRue() {
         return nombreMarcaRue;
     }
@@ -519,6 +531,14 @@ public class MbVehiculo {
         view = true;
         edit = false;
     }      
+    
+    /**
+     * Método para obtener las Guías de Transporte vinculadas al Vehículo
+     */
+    public void preapreViewGuias(){
+        lstGuias = new ArrayList<>();
+        lstGuias = guiaFacade.getByVehiculo(vehiculo.getMatricula());
+    }
     
     /**
      * Método para iniciar el registro de un Vehículo en el RUE

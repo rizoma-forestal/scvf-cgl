@@ -3,6 +3,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoAutorizacion;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,26 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
                 .setParameter("per", per)
                 .setParameter("rolProponente", rolProponente);
         return q.getResultList();
-    }    
+    } 
+    
+    /**
+     * Método que devuevle las Autorizaciones vinculadas a una Persona mediante un Rol determinado
+     * @param per : Persona cuyas Autorizaciones se quiere consultar
+     * @param rol = Rol mediante el cual se vinculan las Autorizaciones a la Persona
+     * @return 
+     */
+    public List<Autorizacion> getByPersona(Persona per, Parametrica rol){
+        em = getEntityManager();
+        String queryString = "SELECT aut FROM Autorizacion aut "
+                + "INNER JOIN aut.personas per "
+                + "INNER JOIN per.rolPersona rol "
+                + "WHERE per = :per "
+                + "AND rol = :rol";
+        Query q = em.createQuery(queryString)
+                .setParameter("per", per)
+                .setParameter("rol", rol);
+        return q.getResultList(); 
+    }
     
     /**
      * Método para obtener las Autorizaciones según el id del Producto autorizado

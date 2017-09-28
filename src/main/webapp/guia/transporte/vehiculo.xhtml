@@ -294,6 +294,62 @@
                     </h:form>
                 </p:dialog>
                 
+                <!-- Diálogo para obtener las Guías vinculadas -->
+                <p:dialog header="Guías vinculadas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
+                    <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
+                        <h:panelGrid columns="2" >
+                            <p:dataTable styleClass="table" value="#{mbVehiculo.lstGuias}"
+                                    var="guia"
+                                    id="dtViewGuias"
+                                    rows="5"
+                                    paginator="true"      
+                                    widgetVar="guiaTable"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+                                <f:facet name="header">
+                                    <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                             onclick="PF('guiaTable').clearFilters()" update="dtViewGuias"/>
+                                </f:facet>
+                                <p:column headerText="Número" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.codigo}" 
+                                    filterBy="#{guia.codigo}" >
+                                    <p:outputLabel value="#{guia.codigo}"/>
+                                </p:column>
+                                <p:column headerText="Fuente" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" 
+                                    filterBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" >
+                                    <p:outputLabel value="#{guia.tipoFuente.nombre} - #{guia.numFuente}"/>
+                                </p:column>
+                                <p:column headerText="Destino" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.destino.localidad} - #{guia.destino.provincia}" 
+                                    filterBy="#{guia.destino.localidad} - #{guia.destino.provincia}" >
+                                    <p:outputLabel value="#{guia.destino.localidad} - #{guia.destino.provincia}"/>
+                                </p:column>
+                                <p:column headerText="Emisión" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.fechaEmisionGuia}" 
+                                    filterBy="#{guia.fechaEmisionGuia}" >
+                                    <p:outputLabel value="#{guia.fechaEmisionGuia}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Estado" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.estado.nombre}" 
+                                    filterBy="#{guia.estado.nombre}" >
+                                    <p:outputLabel value="#{guia.estado.nombre}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <f:facet name="footer">
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerGuias').hide();"/>
+                        </f:facet>
+                    </p:panel>
+                </p:dialog>
+                
                 <h:form prependId="false" id="frVehiculos">
                     <!-- Formulario new y edit -->
                     <p:panel id="pnFrmNew" header="Agregar/Crear/Editar" rendered="#{not mbVehiculo.view}" collapsed="#{not mbVehiculo.edit}" toggleable="true" >
@@ -364,8 +420,13 @@
                             <p:outputLabel value="Titular: " for="v_titular" rendered="#{mbVehiculo.vehiculo.titular ne null}" />   
                             <p:outputLabel id="v_titular" value="#{mbVehiculo.vehiculo.titular.nombreCompleto}" 
                                            style="color: #0F4C20; font-weight: bold" rendered="#{mbVehiculo.vehiculo.titular ne null}"/>
+                        </h:panelGrid>
+                        <p:separator rendered="#{mbVehiculo.view}" />
+                        <h:panelGrid id="pgBtn" columns="2" rendered="#{mbVehiculo.view}" >
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
                                              actionListener="#{mbVehiculo.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                            <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" update="pnViewGuias" 
+                                             actionListener="#{mbVehiculo.preapreViewGuias()}" oncomplete="PF('dlgVerGuias').show();" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbVehiculo.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbVehiculo.view}" >

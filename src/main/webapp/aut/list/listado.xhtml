@@ -238,17 +238,17 @@
                             <p:column headerText="id" style="width:50px">
                                 <p:outputLabel value="#{aut.id}"/>
                             </p:column>
-                            <p:column headerText="Tipo" 
-                                filterMatchMode="contains"
-                                sortBy="#{aut.tipo.nombre}" 
-                                filterBy="#{aut.tipo.nombre}" >
-                                <p:outputLabel value="#{aut.tipo.nombre}"/>
-                            </p:column>
                             <p:column headerText="Número" 
                                 filterMatchMode="contains"
                                 sortBy="#{aut.numero}" 
                                 filterBy="#{aut.numero}" >
                                 <p:outputLabel value="#{aut.numero}"/>
+                            </p:column>
+                            <p:column headerText="Expediente" 
+                                filterMatchMode="contains"
+                                sortBy="#{aut.numExp}" 
+                                filterBy="#{aut.numExp}" >
+                                <p:outputLabel value="#{aut.numExp}"/>
                             </p:column>
                             <p:column headerText="Fecha" 
                                 filterMatchMode="contains"

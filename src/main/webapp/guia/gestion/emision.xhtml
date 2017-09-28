@@ -35,7 +35,7 @@
                     <p:outputLabel value="Cuit del Titular: " for="titCuit"/>
                     <p:outputLabel id="titCuit" value="#{mbGuia.guia.origen.cuit}" 
                                    style=" font-weight: bold"/>
-                    <p:outputLabel value="Origen: " for="titOrigen"/>
+                    <p:outputLabel value="Origen: " for="titOrigen" rendered="#{mbGuia.guia.tipo.habilitaTransp}" />
                     <p:outputLabel id="titOrigen" value="#{mbGuia.guia.origen.localidad} - #{mbGuia.guia.origen.provincia}" 
                                    style=" font-weight: bold" rendered="#{mbGuia.guia.tipo.habilitaTransp}"/>
                     <p:outputLabel value="Nombre completo del Destinatario: " for="destNombre" rendered="#{mbGuia.guia.tipo.habilitaTransp}"/>
@@ -44,7 +44,7 @@
                     <p:outputLabel value="Cuit del Destinatiario: " for="destCuit" rendered="#{mbGuia.guia.tipo.habilitaTransp}"/>
                     <p:outputLabel id="destCuit" value="#{mbGuia.guia.destino.cuit}" 
                                    style=" font-weight: bold" rendered="#{mbGuia.guia.tipo.habilitaTransp}"/>
-                    <p:outputLabel value="Destino: " for="destDestino"/>
+                    <p:outputLabel value="Destino: " for="destDestino" rendered="#{mbGuia.guia.tipo.habilitaTransp}"/>
                     <p:outputLabel id="destDestino" value="#{mbGuia.guia.destino.localidad} - #{mbGuia.guia.destino.provincia}" 
                                    style=" font-weight: bold" rendered="#{mbGuia.guia.tipo.habilitaTransp}"/>
                     <p:outputLabel value="Productos: " />

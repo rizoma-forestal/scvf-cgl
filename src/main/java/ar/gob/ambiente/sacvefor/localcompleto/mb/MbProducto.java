@@ -463,19 +463,52 @@ public class MbProducto {
      */      
     public void saveEspecie(){
         boolean valida = true;
+        ProductoEspecieLocal especieVulgarExistente, especieCientExistente;
+        String msg = "";
         
         try{
-            ProductoEspecieLocal especieExitente = prodEspFacade.getExistente(prodEspecie.getNombreVulgar().toUpperCase());
-            // valido por el nombre
-            if(especieExitente != null){
+            // valido por el nombre vulgar
+            especieVulgarExistente = prodEspFacade.getExistenteXNomVulgar(prodEspecie.getNombreVulgar().toUpperCase());
+            
+            if(especieVulgarExistente != null){
                 if(prodEspecie.getId() != null){
                     // si edita, no habilito si no es el mismo
-                    if(!especieExitente.equals(prodEspecie)) valida = false;
+                    if(!especieVulgarExistente.equals(prodEspecie)){
+                        valida = false;
+                        msg = "Ya existe una Especie local con el nombre vulgar que está ingresando, por favor verifique los datos ingresados.";
+                    }
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
+                    msg = "Ya existe una Especie local con el nombre vulgar que está ingresando, por favor verifique los datos ingresados.";
                 }
             }
+            
+            // valido por el nombre científico
+            especieCientExistente = prodEspFacade.getExistenteXNomCientifico(especieSelected.getNombre());
+            if(especieCientExistente != null){
+                if(prodEspecie.getId() != null){
+                    // si edita, no habilito si no es el mismo
+                    if(!especieCientExistente.equals(prodEspecie)) {
+                        valida = false;
+                        if(!msg.equals("")){
+                            msg = msg + " " + "Ya existe una Especie local con el nombre científico que está ingresando, por favor verifique los datos ingresados.";
+                        }else{
+                            msg = "Ya existe una Especie local con el nombre científico que está ingresando, por favor verifique los datos ingresados.";
+                        }
+                        
+                    }
+                }else{
+                    // si no edita no habilito de ninguna manera
+                    valida = false;
+                    if(!msg.equals("")){
+                        msg = msg + " " + "Ya existe una Especie local con el nombre científico que está ingresando, por favor verifique los datos ingresados.";
+                    }else{
+                        msg = "Ya existe una Especie local con el nombre científico que está ingresando, por favor verifique los datos ingresados.";
+                    }
+                }
+            }
+            
             if(valida){
                 String tempNombre = prodEspecie.getNombreVulgar();
                 prodEspecie.setNombreVulgar(tempNombre.toUpperCase());
@@ -492,7 +525,7 @@ public class MbProducto {
                     JsfUtil.addSuccessMessage("La Especie local fue registrada con exito");
                 }  
             }else{
-                JsfUtil.addErrorMessage("Ya existe una Especie local con es nombre vulgar que está ingresando, por favor verifique los datos ingresados.");
+                JsfUtil.addErrorMessage(msg);
             }
             limpiarFormEspecie();
         }catch(Exception ex){
