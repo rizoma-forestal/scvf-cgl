@@ -21,15 +21,6 @@ pom.xml
 # ignoro los escudos
 src/main/webapp/resources/img/escudo.gif
 src/main/webapp/resources/img/favicon.ico
-
-# ignoro los reportes principales y el logo
-src/main/webapp/resources/reportes/guia.jrxml
-src/main/webapp/resources/reportes/guia.jasper
-src/main/webapp/resources/reportes/guiaTransp.jrxml
-src/main/webapp/resources/reportes/guiaTransp.jasper
-src/main/webapp/resources/reportes/volante.jrxml
-src/main/webapp/resources/reportes/volante.jasper
-src/main/webapp/resources/reportes/logo.jpg
  
 ######################
 # Windows
