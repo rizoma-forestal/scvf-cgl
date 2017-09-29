@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Recibo" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="b0afdfac-b5eb-4d89-aa6c-77705803faa6">
 	<property name="ireport.zoom" value="0.9090909090909091"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="288"/>
+	<property name="ireport.y" value="0"/>
 	<subDataset name="Table Dataset 1" uuid="3b96fe36-c02d-46eb-a1af-51656d020fcb"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["C:\\Users\\rincostante\\Documents\\NetBeansProjects\\grp_wildfly\\sacvefor\\sacvefor-gestionLocalCompleto\\src\\main\\webapp\\resources\\reportes\\"]]></defaultValueExpression>
@@ -48,7 +48,7 @@
 			</textField>
 			<image hAlign="Center">
 				<reportElement x="0" y="0" width="142" height="134" uuid="22b31bc6-4276-4a08-958d-0d44c6b326c4"/>
-				<imageExpression><![CDATA["logoSACveforHeader.jpg"]]></imageExpression>
+				<imageExpression><![CDATA["logo.jpg"]]></imageExpression>
 			</image>
 			<staticText>
 				<reportElement x="153" y="80" width="88" height="20" uuid="37a8d7d9-4493-462a-bc93-25a5cb23fcf4"/>
