@@ -25,7 +25,7 @@
                             <f:facet name="header" >
                                 <h:outputText value="#{nomTasa}" />
                             </f:facet>
-                            <p:outputLabel value="#{mbGuia.getLiqUnitarioByTasa(dt.nombreProd, nomTasa)}"  >
+                            <p:outputLabel value="#{mbGuia.getLiqUnitarioByTasa(dt.nombreProd, dt.clase, nomTasa)}"  >
                                 <f:convertNumber type="currency"  currencySymbol=""/>
                             </p:outputLabel>
                         </p:columns>
@@ -55,7 +55,7 @@
                             <f:facet name="header">
                                 <h:outputText value="#{nomTasa}" />
                             </f:facet>
-                            <p:outputLabel value="#{mbGuia.getLiqTotalByTasa(detTasa.nombreProd, nomTasa)}"  >
+                            <p:outputLabel value="#{mbGuia.getLiqTotalByTasa(detTasa.nombreProd, detTasa.clase, nomTasa)}"  >
                                 <f:convertNumber type="currency"  currencySymbol=""/>
                             </p:outputLabel>
                         </p:columns>

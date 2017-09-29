@@ -1339,13 +1339,14 @@ public class MbGuia {
     /**
      * Método que muestra el valor unitario de tasa para cada Producto del Item 
      * @param nombreProd : nombre del Producto del item
+     * @param clase : clase del Producto del item
      * @param nombreTasa : nombre de la Tasa del Prducto
      * @return 
      */
-    public float getLiqUnitarioByTasa(String nombreProd, String nombreTasa){
+    public float getLiqUnitarioByTasa(String nombreProd, String clase, String nombreTasa){
         float result = 0;
         for(DetalleTasas detTasa : lstDetallesTasas){
-            if(detTasa.getNombreProd().equals(nombreProd)){
+            if(detTasa.getNombreProd().equals(nombreProd) && detTasa.getClase().equals(clase)){
                 for(TasaModel tm : detTasa.getTasas()){
                     if(tm.getHeader().equals(nombreTasa)){
                         result = tm.getProperty();
@@ -1360,13 +1361,14 @@ public class MbGuia {
     /**
      * Método que muestra el total a liquidar por cada tasa para cada item
      * @param nombreProd : nombre del Producto del item
+     * @param clase : clase del Producto del item
      * @param nombreTasa : nombre de la Tasa del Prducto
      * @return 
      */
-    public float getLiqTotalByTasa(String nombreProd, String nombreTasa){
+    public float getLiqTotalByTasa(String nombreProd, String clase, String nombreTasa){
         float result = 0;
         for(DetalleTasas detTasa : lstDetallesTasas){
-            if(detTasa.getNombreProd().equals(nombreProd)){
+            if(detTasa.getNombreProd().equals(nombreProd) && detTasa.getClase().equals(clase)){
                 for(TasaModel tm : detTasa.getTasas()){
                     if(tm.getHeader().equals(nombreTasa)){
                         result = tm.getProperty() * detTasa.getCantidad();
