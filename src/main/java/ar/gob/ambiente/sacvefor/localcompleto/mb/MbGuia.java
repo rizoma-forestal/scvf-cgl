@@ -28,7 +28,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.PersonaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoGuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
-import ar.gob.ambiente.sacvefor.localcompleto.facades.UsuarioFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.VehiculoFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.PersonaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.TipoParamClient;
@@ -38,6 +37,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.util.DetalleTasas.TasaModel;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
 import ar.gob.ambiente.sacvefor.localcompleto.util.LiqTotalTasas;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1794,12 +1794,13 @@ public class MbGuia {
      * @return 
      */
     private boolean enviarCorreo(){  
+        SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         boolean result;
         String bodyMessage;
         mensaje = new MimeMessage(mailSesion);
         bodyMessage = "<p>Estimado/a</p> "
                 + "<p>Se acaba de emitir la Guía " + guia.getCodigo() + " a su nombre, proveniente de la Provincia de " + ResourceBundle.getBundle("/Config").getString("Provincia") + ".</p>"
-                + "<p>Dispone hasta el " + guia.getFechaVencimiento() + " para aceptarla y completar el ciclo.</p>"
+                + "<p>Dispone hasta el " + formateador.format(guia.getFechaVencimiento()) + " para aceptarla y completar el ciclo.</p>"
                 + "<p>Podrá hacerlo ingresando a " + ResourceBundle.getBundle("/Config").getString("TrazServer") + ResourceBundle.getBundle("/Config").getString("TrazRutaAplicacion") + " "
                 + "con sus credenciales de acceso.</p>"
                 
