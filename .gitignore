@@ -30,6 +30,7 @@ src/main/webapp/resources/reportes/guiaTransp.jasper
 src/main/webapp/resources/reportes/volante.jrxml
 src/main/webapp/resources/reportes/volante.jasper
 src/main/webapp/resources/reportes/logo.jpg
+src/main/webapp/resources/reportes/pie.jpg
  
 ######################
 # Windows
