@@ -37,9 +37,9 @@ public class Parametrica implements Serializable {
     @NotNull(message = "Debe existir un Tipo de parámetro")
     private TipoParam tipo;
     
-    @Column (nullable=false, length=50)
+    @Column (nullable=false, length=100)
     @NotNull(message = "El campo nombre no puede ser nulo")
-    @Size(message = "El campo nombre no puede tener más de 50 caracteres", min = 1, max = 50)    
+    @Size(message = "El campo nombre no puede tener más de 100 caracteres", min = 1, max = 100)    
     private String nombre;
     
     private boolean habilitado;
