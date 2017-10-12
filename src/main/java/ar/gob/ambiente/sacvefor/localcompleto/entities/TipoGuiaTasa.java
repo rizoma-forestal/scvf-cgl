@@ -11,11 +11,11 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 /**
- * Entidad que gestiona las tasas a depositar por la extracción de los diferentes productos:
+ * Entidad que gestiona las tasas a depositar por según el tipo de Guía:
  * @author rincostante
  */
 @Entity
-public class ProductoTasa implements Serializable {
+public class TipoGuiaTasa implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -28,31 +28,14 @@ public class ProductoTasa implements Serializable {
     @ManyToOne
     @JoinColumn(name="tipoTasa_id", nullable=false)
     @NotNull(message = "Debe existir un Tipo")
-    private Parametrica tipo;
-    
-    /**
-     * Monto que deberá abonarse por la tasa
-     * Los montos son por unidad
-     */
-    private float monto;
+    private Parametrica tipo;    
 
-    /**********************
-     * Métodos de acceso **
-     **********************/
     public Parametrica getTipo() {
         return tipo;
     }
 
     public void setTipo(Parametrica tipo) {
         this.tipo = tipo;
-    }
-
-    public float getMonto() {
-        return monto;
-    }
-
-    public void setMonto(float monto) {
-        this.monto = monto;
     }
 
     public Long getId() {
@@ -73,10 +56,10 @@ public class ProductoTasa implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof ProductoTasa)) {
+        if (!(object instanceof TipoGuiaTasa)) {
             return false;
         }
-        ProductoTasa other = (ProductoTasa) object;
+        TipoGuiaTasa other = (TipoGuiaTasa) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -85,7 +68,7 @@ public class ProductoTasa implements Serializable {
 
     @Override
     public String toString() {
-        return "ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoTasa[ id=" + id + " ]";
+        return "ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuiaTasa[ id=" + id + " ]";
     }
     
 }

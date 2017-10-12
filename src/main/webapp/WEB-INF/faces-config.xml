@@ -36,7 +36,7 @@
         <description>Bean de respaldo para las paramétricas de guìas: TipoGuia y EstadoGuia</description>
         <managed-bean-name>mbParamGuia</managed-bean-name>
         <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbParamGuia</managed-bean-class>
-        <managed-bean-scope>request</managed-bean-scope>
+        <managed-bean-scope>view</managed-bean-scope>
     </managed-bean>
     <managed-bean>
         <description>Bean de respaldo para la gestión de Estados de una Autorización</description>

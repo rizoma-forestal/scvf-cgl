@@ -3,12 +3,19 @@ package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.CopiaGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuia;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuiaTasa;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.CopiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.EstadoGuiaFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoGuiaFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
 import java.util.List;
+import java.util.Objects;
+import java.util.ResourceBundle;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
@@ -21,8 +28,8 @@ import javax.faces.convert.FacesConverter;
  * TipoGuia: Se refiere a los diferentes Tipos de Guías que podrán configurarse:
  * Acopio, Acopio y Transporte, Transporte, etc.
  * EstadoGuia: Se refiere a los diferentes Estados que podrá tomar una Guía:
- Carga inicial, Cerrada, En tránsito, Intervenida, Extraviada, etc.
- CopiaGuia: Se refiere a los tipos de copia que deben imprimirse por cada tipo de Guía
+ * Carga inicial, Cerrada, En tránsito, Intervenida, Extraviada, etc.
+ * CopiaGuia: Se refiere a los tipos de copia que deben imprimirse por cada tipo de Guía
  * @author Administrador
  */
 public class MbParamGuia {
@@ -41,14 +48,39 @@ public class MbParamGuia {
     private boolean view;
     private boolean edit;
     
+    // tasas por tipo de Guía
+    private TipoGuiaTasa tipoGuiaTasa;
+    private List<Parametrica> lstTiposTasas;
+    
+    
     @EJB
     private TipoGuiaFacade tipoFacade;
     @EJB
     private EstadoGuiaFacade estadoFacade;
     @EJB
     private CopiaFacade copiaFacade;
+    @EJB
+    private ParametricaFacade paramFacade;  
+    @EJB
+    private TipoParamFacade tipoParamFacade;   
     
     public MbParamGuia() {
+    }
+
+    public TipoGuiaTasa getTipoGuiaTasa() {
+        return tipoGuiaTasa;
+    }
+
+    public void setTipoGuiaTasa(TipoGuiaTasa tipoGuiaTasa) {
+        this.tipoGuiaTasa = tipoGuiaTasa;
+    }
+
+    public List<Parametrica> getLstTiposTasas() {
+        return lstTiposTasas;
+    }
+
+    public void setLstTiposTasas(List<Parametrica> lstTiposTasas) {
+        this.lstTiposTasas = lstTiposTasas;
     }
 
     public List<TipoGuia> getLstTiposHab() {
@@ -167,6 +199,9 @@ public class MbParamGuia {
         estadoGuia = new EstadoGuia();
         copia = new CopiaGuia();
         lstTiposHab = tipoFacade.getHabilitados();
+        tipoGuiaTasa = new TipoGuiaTasa();
+        TipoParam tipoParamTasa = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoTasa"));
+        lstTiposTasas = paramFacade.getHabilitadas(tipoParamTasa);
     }      
     
     /**
@@ -175,6 +210,7 @@ public class MbParamGuia {
      */
     public void saveTipo(){  
         boolean valida = true;
+        String msg = "";
         try{
             TipoGuia tipoExitente = tipoFacade.getExistente(tipoGuia.getNombre().toUpperCase());
             if(tipoExitente != null){
@@ -184,8 +220,17 @@ public class MbParamGuia {
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
+                    msg = "El Tipo de Guía que está tratando de persisitir ya existe, por favor verifique los datos ingresados.";
                 }
             }
+            if(tipoGuia.isAbonaTasa()){
+                if(tipoGuia.getTasas().isEmpty()){
+                    valida = false;
+                    if(msg.equals("")) msg = "El tipo de Guía abona tasas pero no tiene ninguna configurada.";
+                    else msg = msg + " El tipo de Guía abona tasas pero no tiene ninguna configurada";
+                }
+            }
+            
             if(valida){
                 String tempNombre = tipoGuia.getNombre();
                 tipoGuia.setNombre(tempNombre.toUpperCase());
@@ -198,7 +243,7 @@ public class MbParamGuia {
                     JsfUtil.addSuccessMessage("El Tipo de Guía fue registrado con exito");
                 }   
             }else{
-                JsfUtil.addErrorMessage("El Tipo de Guía que está tratando de persisitir ya existe, por favor verifique los datos ingresados.");
+                JsfUtil.addErrorMessage(msg);
             }
             limpiarFormTipo();
         }catch(Exception ex){
@@ -281,6 +326,57 @@ public class MbParamGuia {
             JsfUtil.addErrorMessage(ex, "Hubo un error procesando la Copia de Tipo de Guía: " + ex.getMessage());
         }
     }
+    
+    /*************************************
+     * Métodos para la gestión de Tasas **
+     *************************************/
+    /**
+     * Método para agregar una Tasa al producto.
+     * Primero valida que ya no esté agregada //tipoGuia
+     */
+    public void agregarTasa(){
+        boolean valida = true;
+        
+        // valido que la Tasa no esté ya aplicada al producto
+        for(TipoGuiaTasa tgs : tipoGuia.getTasas()){
+            if(Objects.equals(tgs.getTipo(), tipoGuiaTasa.getTipo())){
+                valida = false;
+                JsfUtil.addErrorMessage("La Tasa que está tratando de asociar, ya está vinculada al Tipo de Guía.");
+            }
+        }
+        
+        try{
+            if(valida){
+                tipoGuia.getTasas().add(tipoGuiaTasa);
+                tipoGuiaTasa = new TipoGuiaTasa();
+            }
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage(ex, "Hubo un error al agergar la Tasa al Tipo de Guía: " + ex.getMessage());
+        }        
+    }
+    
+    /**
+     * Método para limpiar el formulario de selección de Tasas para el Tipo de Guía
+     */
+    public void limpiarFormTasa(){
+        tipoGuiaTasa = new TipoGuiaTasa();
+    }   
+    
+    /**
+     * Método para desagregar una Tasa de un Tipo de Guía
+     */
+    public void desagregarTasa(){
+        int i = 0, j = 0;
+        
+        for(TipoGuiaTasa tgs : tipoGuia.getTasas()){
+            if(Objects.equals(tgs.getTipo(), tipoGuiaTasa.getTipo())){
+                j = i;
+            }
+            i = i+= 1;
+        }
+        tipoGuia.getTasas().remove(j);
+        tipoGuiaTasa = new TipoGuiaTasa();
+    }    
     
     /**
      * Método para deshabilitar un Tipo de Guìa
@@ -413,7 +509,15 @@ public class MbParamGuia {
     public void preparaNewCopia(){
         view = false;
         edit = true;
-    }        
+    }   
+    
+    /**
+     * Método para habilitar la vista detalle del formulario
+     */
+    public void prepareView(){
+        view = true;
+        edit = false;
+    }      
 
     
     /*********************

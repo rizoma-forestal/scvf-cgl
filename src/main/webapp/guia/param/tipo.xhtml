@@ -16,8 +16,90 @@
                     <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
                     <p:outputLabel styleClass="titPanel" value="#{config.TiposGuia}" />
                 </h:panelGrid>
+
+                <!-- Diálogo para agegar las Tasas al Tipo de Guía -->
+                <p:dialog header="Agregue las tasas que correspondan" widgetVar="dlgAgregarTasa" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frAgregarTasa">
+                        <p:panel id="pnDlg" style="margin-bottom:10px; width: 550px">
+                            <h:panelGrid columns="2" >
+                                <p:outputLabel value="Tasa" for="cmbTasas"/>    
+                                <p:selectOneMenu id="cmbTasas" value="#{mbParamGuia.tipoGuiaTasa.tipo}" required="true" 
+                                                 requiredMessage="Debe seleccionar una Tasa." >
+                                    <f:selectItem itemLabel="Seleccione una Tasa" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbParamGuia.lstTiposTasas}" 
+                                                   var="tipoTasa" itemLabel="#{tipoTasa.nombre}" itemValue="#{tipoTasa}"/>
+                                </p:selectOneMenu>
+                            </h:panelGrid>
+                            <h:panelGrid columns="2" >
+                                <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" 
+                                                 action="#{mbParamGuia.agregarTasa()}" update="frAgregarTasa,messages"/>
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" resetValues="true" 
+                                                 action="#{mbParamGuia.limpiarFormTasa()}" update="pnDlg"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="1" >
+                                <p:dataTable styleClass="table" value="#{mbParamGuia.tipoGuia.tasas}"
+                                     var="tasa"
+                                     id="dtTasas">
+                                    <p:column headerText="Nombre" >                              
+                                        <p:outputLabel value="#{tasa.tipo.nombre}"/>
+                                    </p:column>
+                                    <p:column style="width:30px">
+                                        <p:commandButton icon="fa fa-fw fa-toggle-off" title="Eliminar" action="#{mbParamGuia.desagregarTasa()}" 
+                                                         process="@this" update="frAgregarTasa" >
+                                            <f:setPropertyActionListener value="#{tasa}" target="#{mbParamGuia.tipoGuiaTasa}" /> 
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgAgregarTasa').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <!-- Diálogo para ver las Tasas al Tipo de Guía -->
+                <p:dialog header="Tasas a pagar por el Tipo de Guía" widgetVar="dlgVerTasas" minHeight="40" closable="false">
+                    <p:panel id="pnDlgView" style="margin-bottom:10px; width: 400px">
+                        <h:panelGrid columns="1" >
+                            <p:dataTable styleClass="table" value="#{mbParamGuia.tipoGuia.tasas}"
+                                 var="tasa"
+                                 id="dtViewTasas">
+                                <p:column headerText="Nombre" >                              
+                                    <p:outputLabel value="#{tasa.tipo.nombre}"/>
+                                </p:column>
+                            </p:dataTable> 
+                        </h:panelGrid>
+                        <f:facet name="footer">
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerTasas').hide();"/>
+                        </f:facet>
+                    </p:panel>
+                </p:dialog>
+
                 <h:form prependId="false" id="frTiposGuia">
-                    <p:panel id="pnFrm" header="Crear/Editar" collapsed="#{not mbParamGuia.edit}" toggleable="true" >
+                    <!-- Formulario view -->
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbParamGuia.view}" >
+                        <h:panelGrid id="pgDatosGrales" columns="2" >
+                            <p:outputLabel value="Nombre: " for="v_nombre"/>
+                            <p:outputLabel id="v_nombre" value="#{mbParamGuia.tipoGuia.nombre}"/>
+                            <p:outputLabel value="Habilita transporte: " for="v_habTransp"/>
+                            <p:selectBooleanCheckbox disabled="true" id="v_habTransp" value="#{mbParamGuia.tipoGuia.habilitaTransp}" />
+                            <p:outputLabel value="Descuenta de Autorización: " for="v_descAut"/>
+                            <p:selectBooleanCheckbox disabled="true" id="v_descAut" value="#{mbParamGuia.tipoGuia.descuentaAutoriz}" />
+                            <p:outputLabel value="Habilita descuentos: " for="v_habDesc"/>
+                            <p:selectBooleanCheckbox disabled="true" id="v_habDesc" value="#{mbParamGuia.tipoGuia.habilitaDesc}" />
+                        </h:panelGrid> 
+                        <h:panelGrid columns="3">
+                            <p:outputLabel value="Abona tasas: " />
+                            <p:selectBooleanCheckbox disabled="true" value="#{mbParamGuia.tipoGuia.abonaTasa}" />
+                            <p:commandButton value="Ver Tasas" icon="fa fa-fw fa-external-link" process="@this" 
+                                             update="dtViewTasas" oncomplete="PF('dlgVerTasas').show();" rendered="#{mbParamGuia.tipoGuia.abonaTasa}"/>
+                        </h:panelGrid>   
+                        <h:panelGrid columns="2" >    
+                        </h:panelGrid>
+                    </p:panel>
+                    <!-- Formulario new y edit -->
+                    <p:panel id="pnFrm" header="Crear/Editar" rendered="#{not mbParamGuia.view}" collapsed="#{not mbParamGuia.edit}" toggleable="true" >
                         <p:growl id="messages" showDetail="false" />
                         <h:panelGrid columns="2">
                             <p:inputText type="hidden" id="id" value="#{mbParamGuia.tipoGuia.id}" />
@@ -31,8 +113,16 @@
                             <p:selectBooleanCheckbox id="descAut" value="#{mbParamGuia.tipoGuia.descuentaAutoriz}" />
                             <p:outputLabel value="Habilita descuentos: " for="habDesc"/>
                             <p:selectBooleanCheckbox id="habDesc" value="#{mbParamGuia.tipoGuia.habilitaDesc}" />
-                            <p:outputLabel value="Abona tasas: " for="abonaTasas"/>
-                            <p:selectBooleanCheckbox id="abonaTasas" value="#{mbParamGuia.tipoGuia.abonaTasa}" />
+                        </h:panelGrid>  
+                        <h:panelGrid id="pgTasas" columns="3">
+                            <p:outputLabel value="Abona tasas: " />
+                            <p:selectBooleanCheckbox value="#{mbParamGuia.tipoGuia.abonaTasa}" >
+                                <p:ajax update="pgTasas" />
+                            </p:selectBooleanCheckbox>
+                            <p:commandButton value="Tasas" icon="fa fa-fw fa-external-link" process="@this" 
+                                             update="dtTasas" oncomplete="PF('dlgAgregarTasa').show();" rendered="#{mbParamGuia.tipoGuia.abonaTasa}"/>
+                        </h:panelGrid>    
+                        <h:panelGrid columns="2">
                             <p:outputLabel value="Vigencia (días): " for="vigencia"/>
                             <p:inputNumber id="vigencia" value="#{mbParamGuia.tipoGuia.vigencia}" />
                         </h:panelGrid>
@@ -57,6 +147,7 @@
                             <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbParamGuia.limpiarFormTipo()}" update="pnFrm"/>
                         </h:panelGrid>
                     </p:panel>
+                    
                     <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
                         <p:dataTable styleClass="table" value="#{mbParamGuia.lstTipos}"
                                      filteredValue="#{mbParamGuia.lstTiposFilters}"
@@ -142,7 +233,11 @@
                                 </f:facet>
                                 <p:outputLabel value="#{tipoGuia.habilitado ? 'Habilitado': 'Deshabilitado'}" />
                             </p:column>
-                            <p:column headerText="Acciones" style="width:65px">
+                            <p:column headerText="Acciones" style="width:100px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="frTiposGuia" action="#{mbParamGuia.prepareView()}" >
+                                    <f:setPropertyActionListener value="#{tipoGuia}" target="#{mbParamGuia.tipoGuia}" /> 
+                                </p:commandButton>
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
                                                  update="@form" action="#{mbParamGuia.prepareNewTipo()}" >
                                     <f:setPropertyActionListener value="#{tipoGuia}" target="#{mbParamGuia.tipoGuia}" /> 

@@ -17,11 +17,11 @@
                 </h:panelGrid>
                 
                 <!-- Diálogo para agegar las Tasas al Producto -->
-                <p:dialog header="Agregue las tasas que corresponda" widgetVar="dlgAgregarTasa" minHeight="40" closable="false">
+                <p:dialog header="Agregue las tasas que correspondan" widgetVar="dlgAgregarTasa" minHeight="40" closable="false">
                     <h:form prependId="false" id="frAgregarTasa">
                         <p:panel id="pnDlg" style="margin-bottom:10px; width: 550px">
                             <h:panelGrid columns="2" >
-                                <p:outputLabel value="Tasa" for="cmbTasas"/>   
+                                <p:outputLabel value="Tasa" for="cmbTasas"/>    
                                 <p:selectOneMenu id="cmbTasas" value="#{mbProducto.prodTasa.tipo}" required="true" 
                                                  requiredMessage="Debe seleccionar una Tasa." >
                                     <f:selectItem itemLabel="Seleccione una Tasa" itemValue="" noSelectionOption="true"/>

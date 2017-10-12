@@ -14,6 +14,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Producto;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoTasa;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuia;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuiaTasa;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Transporte;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Usuario;
@@ -607,13 +608,13 @@ public class MbGuia {
         // para la vista de Tasas preparo la liquidación
         switch (strPage) {
             case "tasas.xhtml":
-                // cargo el listado de las tasas configuradas
-                TipoParam tipo = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoTasa"));
-                List<Parametrica> lstParam = paramFacade.getHabilitadas(tipo);
+                // cargo el listado de las tasas configuradas para el tipo de Guía
                 lstNombresTasas = new ArrayList<>();
-                for(Parametrica tasa : lstParam){
-                    lstNombresTasas.add(tasa.getNombre());
-                }   // cargo los detalles por item
+                for(TipoGuiaTasa tgt : guia.getTipo().getTasas()){
+                    lstNombresTasas.add(tgt.getTipo().getNombre());
+                }
+
+                // cargo los detalles por item
                 lstDetallesTasas = new ArrayList<>();
                 for(ItemProductivo item : guia.getItems()){
                     // obtengo el producto para sacar las tasas

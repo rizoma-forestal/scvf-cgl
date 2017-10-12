@@ -13,10 +13,8 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoClaseFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoEspecieLocalFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoFacade;
-import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoTasaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoUnidadMedidaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
-import ar.gob.ambiente.sacvefor.localcompleto.facades.UsuarioFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.EspecieClient;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.FamiliaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.GeneroClient;
@@ -89,10 +87,6 @@ public class MbProducto {
     private ParametricaFacade paramFacade;  
     @EJB
     private TipoParamFacade tipoParamFacade;        
-    @EJB
-    private UsuarioFacade usuarioFacade;
-    @EJB
-    private ProductoTasaFacade prodTasaFacade;
     
     // Clientes REST para la gestión del API de taxonomía de especies
     private EspecieClient especieClient;    
@@ -777,7 +771,7 @@ public class MbProducto {
                 prodTasa = new ProductoTasa();
             }
         }catch(Exception ex){
-            JsfUtil.addErrorMessage(ex, "Hubo un error al habilitar el Producto forestal: " + ex.getMessage());
+            JsfUtil.addErrorMessage(ex, "Hubo un error al agregar la Tasa al Producto: " + ex.getMessage());
         }
     }
     

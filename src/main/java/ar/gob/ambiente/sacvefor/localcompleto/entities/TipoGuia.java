@@ -2,12 +2,15 @@
 package ar.gob.ambiente.sacvefor.localcompleto.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -60,6 +63,14 @@ public class TipoGuia implements Serializable {
     private boolean abonaTasa;
     
     /**
+     * Tasas que deberá pagar el tipo de Guía 
+     * Podrá ser una, varias o ninguna
+     */
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
+    @JoinColumn(name = "tipoguia_id", referencedColumnName = "id")
+    private List<TipoGuiaTasa> tasas;         
+    
+    /**
      * Listado de las Copias a imprimir de la Guía
      */
     @OneToMany (mappedBy="tipoGuia")
@@ -71,6 +82,19 @@ public class TipoGuia implements Serializable {
      * Indica la vigencia del tipo de Guía en días.
      */
     private int vigencia;
+    
+    public TipoGuia(){
+        tasas = new ArrayList<>();
+    }
+
+    @XmlTransient
+    public List<TipoGuiaTasa> getTasas() {
+        return tasas;
+    }
+
+    public void setTasas(List<TipoGuiaTasa> tasas) {
+        this.tasas = tasas;
+    }
 
     public int getVigencia() {
         return vigencia;
