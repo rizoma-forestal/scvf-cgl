@@ -295,7 +295,7 @@ public class MbParamGuia {
     public void saveCopia(){
         boolean valida = true;
         try{
-            CopiaGuia copiaExitente = copiaFacade.getExistente(copia.getNombre().toUpperCase(), copia.getDestino().toUpperCase());
+            CopiaGuia copiaExitente = copiaFacade.getExistente(copia.getNombre().toUpperCase(), copia.getDestino().toUpperCase(), copia.getTipoGuia());
             if(copiaExitente != null){
                 if(copia.getId() != null){
                     // si edita, no habilito si no es el mismo

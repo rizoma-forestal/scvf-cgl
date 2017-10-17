@@ -32,17 +32,20 @@ public class CopiaFacade extends AbstractFacade<CopiaGuia> {
      * Método para validar la existencia de una Copia en función de su nombre y destino
      * @param nombre : Nombre de la CopiaGuia a validar
      * @param destino : Destino de la CopiaGuia a validar
+     * @param tipo : Tipo de Guía
      * @return 
      */
-    public CopiaGuia getExistente(String nombre, String destino) {
+    public CopiaGuia getExistente(String nombre, String destino, TipoGuia tipo) {
         List<CopiaGuia> lstCopias;
         em = getEntityManager();
         
         String queryString = "SELECT copia FROM CopiaGuia copia "
                 + "WHERE copia.nombre = :nombre "
+                + "AND copia.tipoGuia = :tipo "
                 + "AND copia.destino = :destino";
         Query q = em.createQuery(queryString)
                 .setParameter("nombre", nombre)
+                .setParameter("tipo", tipo)
                 .setParameter("destino", destino);
         lstCopias = q.getResultList();
         if(lstCopias.isEmpty()){

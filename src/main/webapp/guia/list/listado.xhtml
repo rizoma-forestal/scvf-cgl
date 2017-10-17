@@ -129,7 +129,9 @@
                                     <p:outputLabel value="#{inm.localidad}"/>
                                 </p:column>
                                 <p:column headerText="Superficie (Hs.)" >
-                                    <p:outputLabel value="#{inm.superficie}"/>
+                                    <p:outputLabel value="#{inm.superficie}" >
+                                        <f:convertNumber type="currency"  currencySymbol=""/>
+                                    </p:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
