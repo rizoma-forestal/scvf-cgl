@@ -43,8 +43,9 @@
                     <h:panelGrid columns="4" cellpadding="5">
                         <p:outputLabel value="CUIT" for="dlg_cuit"/>
                         <p:inputNumber id="dlg_cuit" value="#{mbGuia.cuitBuscar}" thousandSeparator="" decimalPlaces="0" 
-                                   requiredMessage="Debe haber un CUIT para buscar" required="true" />
+                                       requiredMessage="Debe haber un CUIT para buscar" required="true" />
                         <p:commandButton title="Buscar Fuentes de Productos" value="Buscar" icon="fa fa-fw fa-search" 
+                                         rendered="#{mbGuia.autSelected eq null and mbGuia.guiaSelected eq null}" 
                                          action="#{mbGuia.buscarFuentesProductos()}" update="pnForm,fsAutFuentes,messages"/>
                         <p:commandButton title="Limpiar el CUIT a buscar" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                          action="#{mbGuia.limpiarCuit()}" update="pnForm" rendered="#{mbGuia.guia.id eq null}"/>
@@ -151,11 +152,11 @@
                             <p:outputLabel id="aut_fechaIng" value="#{mbGuia.autSelected.fechaIngExpte}" >
                                 <f:convertDateTime pattern="dd/MM/yyyy" />
                             </p:outputLabel>
-                            <p:outputLabel value="Sup. Total (Hs.): " for="aut_supTot"/>
+                            <p:outputLabel value="Sup. Total (Has.): " for="aut_supTot"/>
                             <p:outputLabel id="aut_supTot" value="#{mbGuia.autSelected.supTotal}"/>
-                            <p:outputLabel value="Sup. Solicitada (Hs.): " for="aut_supSol"/>
+                            <p:outputLabel value="Sup. Solicitada (Has.): " for="aut_supSol"/>
                             <p:outputLabel id="aut_supSol" value="#{mbGuia.autSelected.supSolicitada}"/>
-                            <p:outputLabel value="Sup. Autorizada (Hs.): " for="aut_supAut"/>
+                            <p:outputLabel value="Sup. Autorizada (Has.): " for="aut_supAut"/>
                             <p:outputLabel id="aut_supAut" value="#{mbGuia.autSelected.supAutorizada}"/>
                             <p:outputLabel value="Fecha Vencimiento: " for="aut_fechaVenc"/>
                             <p:outputLabel id="aut_fechaVenc" value="#{mbGuia.autSelected.fechaVencAutoriz}" >

@@ -40,15 +40,15 @@
                             <p:outputLabel id="fechaIng" value="#{mbAutorizacion.autorizacion.fechaIngExpte}" style=" font-weight: bold" >
                                 <f:convertDateTime pattern="dd/MM/yyyy" />
                             </p:outputLabel>
-                            <p:outputLabel value="Sup. Total (Hs.): " for="supTot"/>
+                            <p:outputLabel value="Sup. Total (Has.): " for="supTot"/>
                             <p:outputLabel id="supTot" value="#{mbAutorizacion.autorizacion.supTotal}" style=" font-weight: bold" >
                                 <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
                             </p:outputLabel>
-                            <p:outputLabel value="Sup. Solicitada (Hs.): " for="supSol"/>
+                            <p:outputLabel value="Sup. Solicitada (Has.): " for="supSol"/>
                             <p:outputLabel id="supSol" value="#{mbAutorizacion.autorizacion.supSolicitada}" style=" font-weight: bold" >
                                 <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
                             </p:outputLabel>
-                            <p:outputLabel value="Sup. Autorizada (Hs.): " for="supAut"/>
+                            <p:outputLabel value="Sup. Autorizada (Has.): " for="supAut"/>
                             <p:outputLabel id="supAut" value="#{mbAutorizacion.autorizacion.supAutorizada}" style=" font-weight: bold" >
                                 <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
                             </p:outputLabel>
@@ -109,7 +109,7 @@
                                 <p:column headerText="Localidad" >
                                     <p:outputLabel value="#{inm.localidad}"/>
                                 </p:column>
-                                <p:column headerText="Superficie (Hs.)" style="text-align: right !important; width: 150px" >
+                                <p:column headerText="Superficie (Has.)" style="text-align: right !important; width: 150px" >
                                     <p:outputLabel value="#{inm.superficie}" >
                                         <f:convertNumber type="currency"  currencySymbol=""/>
                                     </p:outputLabel>

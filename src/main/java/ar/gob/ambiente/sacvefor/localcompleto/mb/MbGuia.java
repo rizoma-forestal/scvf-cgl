@@ -1050,7 +1050,7 @@ public class MbGuia {
      */
     public void buscarVehiculo(){
         try{
-            vehiculo = vehFacade.getExistente(matBuscar);
+            vehiculo = vehFacade.getExistente(matBuscar.toUpperCase());
             if(vehiculo == null){
                 JsfUtil.addErrorMessage("No hay ningún Vehículo registrado con la Matrícula ingresada para su búsqueda.");
             }else{
@@ -1180,7 +1180,8 @@ public class MbGuia {
         Parametrica tipoActual = obtenerParametro(ResourceBundle.getBundle("/Config").getString("TipoItem"), ResourceBundle.getBundle("/Config").getString("Extraidos"));
         // valido la cantidad con el saldo
         if(itemAsignado.getTotal() > itemAsignado.getSaldoOrigen()){
-            validaCantidad = false;
+            if(!editandoItem) validaCantidad = false;
+            else if(itemAsignado.getTotal() > itemAsignado.getSaldoTemp()) validaCantidad = false;
         }
         // obtengo el Estado a setear según pague o no pague tasas
         if(guia.getTipo().isAbonaTasa()){

@@ -41,7 +41,7 @@
                     <p:outputLabel value="#{mbAutorizacion.inmueble.departamento}" style=" font-weight: bold" />
                     <p:outputLabel value="Provincia: " />
                     <p:outputLabel value="#{mbAutorizacion.inmueble.provincia}" style=" font-weight: bold" />
-                    <p:outputLabel value="Superficie (Hs.): " />
+                    <p:outputLabel value="Superficie (Has.): " />
                     <p:outputLabel value="#{mbAutorizacion.inmueble.superficie}" style=" font-weight: bold" >
                         <f:convertNumber type="currency" maxFractionDigits="4" currencySymbol=""/>
                     </p:outputLabel>
@@ -110,7 +110,7 @@
                         filterBy="#{inm.localidad}" >
                         <p:outputLabel value="#{inm.localidad}" />
                     </p:column> 
-                    <p:column headerText="Superficie (Hs.)" 
+                    <p:column headerText="Superficie (Has.)" 
                         filterMatchMode="contains"
                         sortBy="#{inm.superficie}" 
                         filterBy="#{inm.superficie}" >

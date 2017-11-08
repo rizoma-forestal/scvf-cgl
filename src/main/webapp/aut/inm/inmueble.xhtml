@@ -61,7 +61,7 @@
                                 <f:selectItems value="#{mbInmueble.listLocalidades}" 
                                                var="loc" itemLabel="#{loc.nombre}" itemValue="#{loc}"/>
                             </p:selectOneMenu>
-                            <p:outputLabel value="Superficie (Hs.)" for="sup" />   
+                            <p:outputLabel value="Superficie (Has.)" for="sup" />   
                             <p:inputNumber id="sup" value="#{mbInmueble.inmueble.superficie}" decimalPlaces="4" 
                                            minValue="0" decimalSeparator="," thousandSeparator="."  
                                            required="true" requiredMessage="Debe ingresar la superficie" />
@@ -95,7 +95,7 @@
                             <p:outputLabel id="v_depto" value="#{mbInmueble.inmueble.departamento} "/>
                             <p:outputLabel value="Provincia: " for="v_provincia"/>
                             <p:outputLabel id="v_provincia" value="#{mbInmueble.inmueble.provincia} "/>
-                            <p:outputLabel value="Superficie (Hs.): " for="v_sup"/>
+                            <p:outputLabel value="Superficie (Has.): " for="v_sup"/>
                             <p:outputLabel id="v_sup" value="#{mbInmueble.inmueble.superficie}" style="text-align: right !important;" >
                                 <f:convertNumber type="currency"  currencySymbol=""/>
                             </p:outputLabel>
@@ -159,7 +159,7 @@
                                 filterBy="#{inm.localidad}" >
                                 <p:outputLabel value="#{inm.localidad}" />
                             </p:column> 
-                            <p:column headerText="Superficie (Hs.)" style="text-align: right !important;" 
+                            <p:column headerText="Superficie (Has.)" style="text-align: right !important;" 
                                 filterMatchMode="contains"
                                 sortBy="#{inm.superficie}" 
                                 filterBy="#{inm.superficie}" >
