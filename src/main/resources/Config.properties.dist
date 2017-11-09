@@ -109,8 +109,11 @@ Usuarios=Usuarios
 # Rutas #
 # ----- #
 RutaArchivos=C:\\wildfly\\resources
+#RutaArchivos=/opt/wildfly/welcome-content
 SubdirTemp=C:\\wildfly\\TMP\\
+#SubdirTemp=/opt/wildfly/welcome-content/TMP/
 SubdirMartillos=\\martillos\\
+#SubdirMartillos=/martillos/
 
 # ------------------- #
 # Tipos de parámetros #
