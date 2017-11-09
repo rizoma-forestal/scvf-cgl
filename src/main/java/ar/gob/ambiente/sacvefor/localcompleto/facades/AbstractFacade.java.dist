@@ -6,6 +6,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /*
+ * Se modificó el Abstract por defecto para que gestione directamente el EntityManager
+ * y solo acá se llame a la unidad de persistencia, una para cada replicación provincial
  * @author rincostante
  */
 public abstract class AbstractFacade<T> {
