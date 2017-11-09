@@ -4,8 +4,6 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoAutorizacion;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -14,14 +12,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public EstadoAutorizacionFacade() {
         super(EstadoAutorizacion.class);
@@ -34,8 +24,6 @@ public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion>
      */
     public EstadoAutorizacion getExistenteByNombre(String nombre) {
         List<EstadoAutorizacion> lstEstados;
-        em = getEntityManager();
-        
         String queryString = "SELECT est FROM EstadoAutorizacion est "
                 + "WHERE est.nombre = :nombre";
         Query q = em.createQuery(queryString)
@@ -55,8 +43,6 @@ public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion>
      */
     public EstadoAutorizacion getExistenteByCodigo(String codigo) {
         List<EstadoAutorizacion> lstEstados;
-        em = getEntityManager();
-        
         String queryString = "SELECT est FROM EstadoAutorizacion est "
                 + "WHERE est.codigo = :codigo";
         Query q = em.createQuery(queryString)
@@ -75,7 +61,6 @@ public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion>
      */
     @Override
     public List<EstadoAutorizacion> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT est FROM EstadoAutorizacion est "
                 + "ORDER BY est.nombre";
         Query q = em.createQuery(queryString);
@@ -89,7 +74,6 @@ public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion>
      * @return 
      */
     public List<EstadoAutorizacion> getHabilitadosSinUno(String codigo){
-        em = getEntityManager();
         String queryString = "SELECT est FROM EstadoAutorizacion est "
                 + "WHERE est.habilitado = true "
                 + "AND est.codigo <> :codigo "

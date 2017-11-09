@@ -5,8 +5,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.CopiaGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuia;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -15,14 +13,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class CopiaFacade extends AbstractFacade<CopiaGuia> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public CopiaFacade() {
         super(CopiaGuia.class);
@@ -37,8 +27,6 @@ public class CopiaFacade extends AbstractFacade<CopiaGuia> {
      */
     public CopiaGuia getExistente(String nombre, String destino, TipoGuia tipo) {
         List<CopiaGuia> lstCopias;
-        em = getEntityManager();
-        
         String queryString = "SELECT copia FROM CopiaGuia copia "
                 + "WHERE copia.nombre = :nombre "
                 + "AND copia.tipoGuia = :tipo "
@@ -61,12 +49,11 @@ public class CopiaFacade extends AbstractFacade<CopiaGuia> {
      * @return 
      */
     public List<CopiaGuia> getHabilitadosByTipo(TipoGuia tipo){
-        em = getEntityManager();
         String queryString = "SELECT copia FROM CopiaGuia copia "
                 + "WHERE copia.habilitado = true "
                 + "AND copia.tipoGuia = :tipo";
         Query q = em.createQuery(queryString)
-                .setParameter("tipo", tipo);;
+                .setParameter("tipo", tipo);
         return q.getResultList();
     }       
     
@@ -75,7 +62,6 @@ public class CopiaFacade extends AbstractFacade<CopiaGuia> {
      * @return 
      */
     public List<CopiaGuia> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT copia FROM CopiaGuia copia "
                 + "WHERE copia.habilitado = true";
         Query q = em.createQuery(queryString);

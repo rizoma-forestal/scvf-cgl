@@ -5,8 +5,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Vehiculo;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -17,14 +15,6 @@ import org.hibernate.envers.AuditReaderFactory;
  */
 @Stateless
 public class VehiculoFacade extends AbstractFacade<Vehiculo> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public VehiculoFacade() {
         super(Vehiculo.class);
@@ -37,8 +27,6 @@ public class VehiculoFacade extends AbstractFacade<Vehiculo> {
      */
     public Vehiculo getExistente(String matricula) {
         List<Vehiculo> lstPersonas;
-        em = getEntityManager();
-        
         String queryString = "SELECT veh FROM Vehiculo veh "
                 + "WHERE veh.matricula = :matricula";
         Query q = em.createQuery(queryString)
@@ -57,7 +45,6 @@ public class VehiculoFacade extends AbstractFacade<Vehiculo> {
      */
     @Override
     public List<Vehiculo> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT veh FROM Vehiculo veh "
                 + "ORDER BY veh.marca";
         Query q = em.createQuery(queryString);
@@ -70,7 +57,6 @@ public class VehiculoFacade extends AbstractFacade<Vehiculo> {
      * @return 
      */
     public List<Vehiculo> findByMarca(String param){
-        em = getEntityManager();
         String queryString = "SELECT veh FROM Vehiculo veh "
                 + "WHERE LOWER(veh.marca.nombre) LIKE :param "
                 + "AND veh.habilitado = true"
@@ -87,8 +73,6 @@ public class VehiculoFacade extends AbstractFacade<Vehiculo> {
      */
     public List<Vehiculo> getHabilitadas(){
         List<Vehiculo> lstVehiculos;
-        em = getEntityManager();
-        
         String queryString = "SELECT veh FROM Vehiculo veh "
                 + "WHERE veh.habilitado = true "
                 + "ORDER BY veh.marca";

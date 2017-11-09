@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.AuditReader;
@@ -22,14 +20,6 @@ import org.hibernate.envers.AuditReaderFactory;
 @Stateless
 public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
 
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
-
     public ItemProductivoFacade() {
         super(ItemProductivo.class);
     }
@@ -41,8 +31,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
      */
     public ItemProductivo getExistente(String codigoProducto) {
         List<ItemProductivo> lstItems;
-        em = getEntityManager();
-        
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.codigoProducto = :codigoProducto";
         Query q = em.createQuery(queryString)
@@ -61,7 +49,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
      * @return 
      */
     public List<ItemProductivo> getByAutorizacion(Autorizacion aut){
-        em = getEntityManager();
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.autorizacion = :aut";
         Query q = em.createQuery(queryString)
@@ -75,7 +62,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
      * @return 
      */
     public List<ItemProductivo> getByGuia(Guia guia){
-        em = getEntityManager();
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.guia = :guia";
         Query q = em.createQuery(queryString)
@@ -90,7 +76,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
      * @return 
      */
     public List<ItemProductivo> getByIdGuia(Long idGuia){
-        em = getEntityManager();
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.guia.id = :idGuia "
                 + "AND item.habilitado = true";
@@ -105,7 +90,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
      * @return 
      */
     public List<ItemProductivo> getByAutorizacionHabilitados(Autorizacion aut){
-        em = getEntityManager();
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.autorizacion = :aut "
                 + "AND item.habilitado = true";
@@ -120,7 +104,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
      * @return 
      */
     public List<ItemProductivo> getByGuiaHabilitados(Guia guia){
-        em = getEntityManager();
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.guia = :guia "
                 + "AND item.habilitado = true";
@@ -131,7 +114,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     
     public List<ItemProductivo> getAutorizadosHabilitados(){
         String autorizados = ResourceBundle.getBundle("/Config").getString("Autorizados");
-        em = getEntityManager();
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.tipoActual.nombre = :autorizados "
                 + "AND item.habilitado = true";
@@ -142,7 +124,6 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     
     public List<ItemProductivo> getExtraidosHabilitados(){
         String extraidos = ResourceBundle.getBundle("/Config").getString("Extraidos");
-        em = getEntityManager();
         String queryString = "SELECT item FROM ItemProductivo item "
                 + "WHERE item.tipoActual.nombre = :extraidos "
                 + "AND item.habilitado = true";

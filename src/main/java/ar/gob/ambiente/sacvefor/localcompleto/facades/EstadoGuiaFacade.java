@@ -4,8 +4,6 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -14,14 +12,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public EstadoGuiaFacade() {
         super(EstadoGuia.class);
@@ -34,8 +24,6 @@ public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
      */
     public EstadoGuia getExistente(String nombre) {
         List<EstadoGuia> lstEstados;
-        em = getEntityManager();
-        
         String queryString = "SELECT est FROM EstadoGuia est "
                 + "WHERE est.nombre = :nombre";
         Query q = em.createQuery(queryString)
@@ -54,7 +42,6 @@ public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
      */
     @Override
     public List<EstadoGuia> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT est FROM EstadoGuia est "
                 + "ORDER BY est.nombre";
         Query q = em.createQuery(queryString);
@@ -68,7 +55,6 @@ public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
      * @return 
      */
     public List<EstadoGuia> getHabilitadosSinUno(String nombre){
-        em = getEntityManager();
         String queryString = "SELECT est FROM EstadoGuia est "
                 + "WHERE est.habilitado = true "
                 + "AND est.nombre <> :nombre "
@@ -83,7 +69,6 @@ public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
      * @return 
      */
     public List<EstadoGuia> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT est FROM EstadoGuia est "
                 + "WHERE est.habilitado = true "
                 + "ORDER BY est.nombre";

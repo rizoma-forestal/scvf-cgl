@@ -1,0 +1,4 @@
+# Se ignora la clase abstracta de facade que contiene la unidad de persistencia del proyecto.
+# Se agregará un "AbstractFacade.java.dist" que se replicará como "AbstractFacade" para cada componente local
+
+AbstractFacade.java

@@ -4,8 +4,6 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -14,14 +12,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class TipoParamFacade extends AbstractFacade<TipoParam> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public TipoParamFacade() {
         super(TipoParam.class);
@@ -34,8 +24,6 @@ public class TipoParamFacade extends AbstractFacade<TipoParam> {
      */
     public TipoParam getExistente(String nombre) {
         List<TipoParam> lstParam;
-        em = getEntityManager();
-        
         String queryString = "SELECT tipoParam FROM TipoParam tipoParam "
                 + "WHERE tipoParam.nombre = :nombre";
         Query q = em.createQuery(queryString)
@@ -54,7 +42,6 @@ public class TipoParamFacade extends AbstractFacade<TipoParam> {
      */
     @Override
     public List<TipoParam> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT tipoParam FROM TipoParam tipoParam "
                 + "ORDER BY tipoParam.nombre";
         Query q = em.createQuery(queryString);
@@ -66,7 +53,6 @@ public class TipoParamFacade extends AbstractFacade<TipoParam> {
      * @return 
      */
     public List<TipoParam> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT tipoParam FROM TipoParam tipoParam "
                 + "WHERE tipoParam.habilitado = true "
                 + "ORDER BY tipoParam.nombre";

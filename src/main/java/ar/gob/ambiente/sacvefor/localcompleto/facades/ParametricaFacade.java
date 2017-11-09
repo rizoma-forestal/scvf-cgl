@@ -5,8 +5,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -15,14 +13,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class ParametricaFacade extends AbstractFacade<Parametrica> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public ParametricaFacade() {
         super(Parametrica.class);
@@ -36,8 +26,6 @@ public class ParametricaFacade extends AbstractFacade<Parametrica> {
      */
     public Parametrica getExistente(String nombre, TipoParam tipo) {
         List<Parametrica> lstParam;
-        em = getEntityManager();
-        
         String queryString = "SELECT param FROM Parametrica param "
                 + "WHERE param.nombre = :nombre "
                 + "AND param.tipo = :tipo";
@@ -58,7 +46,6 @@ public class ParametricaFacade extends AbstractFacade<Parametrica> {
      */
     @Override
     public List<Parametrica> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT param FROM Parametrica param "
                 + "ORDER BY param.nombre";
         Query q = em.createQuery(queryString);
@@ -72,7 +59,6 @@ public class ParametricaFacade extends AbstractFacade<Parametrica> {
      * @return 
      */
     public List<Parametrica> getHabilitadas(TipoParam tipo){
-        em = getEntityManager();
         String queryString = "SELECT param FROM Parametrica param "
                 + "WHERE param.habilitado = true "
                 + "AND param.tipo = :tipo "

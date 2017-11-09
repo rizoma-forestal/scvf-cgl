@@ -7,8 +7,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoEspecieLocal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.AuditReader;
@@ -20,14 +18,6 @@ import org.hibernate.envers.AuditReaderFactory;
  */
 @Stateless
 public class ProductoFacade extends AbstractFacade<Producto> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public ProductoFacade() {
         super(Producto.class);
@@ -41,8 +31,6 @@ public class ProductoFacade extends AbstractFacade<Producto> {
      */
     public Producto getExistente(ProductoClase clase, ProductoEspecieLocal especieLocal) {
         List<Producto> lstProductos;
-        em = getEntityManager();
-        
         String queryString = "SELECT prod FROM Producto prod "
                 + "WHERE prod.clase = :clase "
                 + "AND prod.especieLocal = :especieLocal";
@@ -63,7 +51,6 @@ public class ProductoFacade extends AbstractFacade<Producto> {
      */
     @Override
     public List<Producto> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT prod FROM Producto prod "
                 + "ORDER BY prod.especieLocal.nombreVulgar";
         Query q = em.createQuery(queryString);
@@ -76,7 +63,6 @@ public class ProductoFacade extends AbstractFacade<Producto> {
      * @return 
      */
     public List<Producto> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT prod FROM Producto prod "
                 + "WHERE prod.habilitado = true "
                 + "ORDER BY prod.especieLocal.nombreVulgar";
@@ -85,7 +71,6 @@ public class ProductoFacade extends AbstractFacade<Producto> {
     }  
     
     public List<Producto> getByEspecieLocal(ProductoEspecieLocal especieLocal){
-        em = getEntityManager();
         String queryString = "SELECT prod FROM Producto prod "
                 + "WHERE prod.habilitado = true "
                 + "AND prod.especieLocal = :especieLocal "

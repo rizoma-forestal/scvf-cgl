@@ -6,8 +6,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.AuditReader;
@@ -19,14 +17,6 @@ import org.hibernate.envers.AuditReaderFactory;
  */
 @Stateless
 public class PersonaFacade extends AbstractFacade<Persona> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public PersonaFacade() {
         super(Persona.class);
@@ -40,8 +30,6 @@ public class PersonaFacade extends AbstractFacade<Persona> {
      */
     public Persona getExistente(Long cuit, Parametrica rol) {
         List<Persona> lstPersonas;
-        em = getEntityManager();
-        
         String queryString = "SELECT per FROM Persona per "
                 + "WHERE per.cuit = :cuit "
                 + "AND per.rolPersona = :rol";
@@ -64,8 +52,6 @@ public class PersonaFacade extends AbstractFacade<Persona> {
      */
     public Persona getByIdRue(Long idRue){
         List<Persona> lstPersonas;
-        em = getEntityManager();
-        
         String queryString = "SELECT per FROM Persona per "
                 + "WHERE per.idRue = :idRue";
         Query q = em.createQuery(queryString)
@@ -84,7 +70,6 @@ public class PersonaFacade extends AbstractFacade<Persona> {
      */
     @Override
     public List<Persona> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT per FROM Persona per "
                 + "ORDER BY per.nombreCompleto";
         Query q = em.createQuery(queryString);
@@ -92,7 +77,6 @@ public class PersonaFacade extends AbstractFacade<Persona> {
     } 
     
     public List<Persona> findAllByRol(Parametrica rol){
-        em = getEntityManager();
         String queryString = "SELECT per FROM Persona per "
                 + "WHERE per.rolPersona = :rol "
                 + "ORDER BY per.nombreCompleto";
@@ -108,7 +92,6 @@ public class PersonaFacade extends AbstractFacade<Persona> {
      * @return 
      */
     public List<Persona> findByNombreCompeto(String param){
-        em = getEntityManager();
         String queryString = "SELECT per FROM Persona per "
                 + "WHERE LOWER(per.nombreCompleto) LIKE :param "
                 + "AND per.habilitado = true "
@@ -126,7 +109,6 @@ public class PersonaFacade extends AbstractFacade<Persona> {
      */
     public Persona findByCuitRol(Long cuit, Parametrica rol){
         List<Persona> lstPersonas;
-        em = getEntityManager();
         String queryString = "SELECT per FROM Persona per "
                 + "WHERE per.cuit = :cuit "
                 + "AND per.rolPersona = :rol "
@@ -148,7 +130,6 @@ public class PersonaFacade extends AbstractFacade<Persona> {
      * @return 
      */
     public List<Persona> findByRol(Parametrica rol){
-        em = getEntityManager();
         String queryString = "SELECT per FROM Persona per "
                 + "WHERE per.rolPersona = :rol "
                 + "AND per.habilitado = true "

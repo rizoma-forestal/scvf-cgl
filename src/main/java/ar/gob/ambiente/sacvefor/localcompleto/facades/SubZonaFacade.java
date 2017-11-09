@@ -5,8 +5,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.SubZona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ZonaIntervencion;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -15,14 +13,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class SubZonaFacade extends AbstractFacade<SubZona> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public SubZonaFacade() {
         super(SubZona.class);
@@ -36,8 +26,6 @@ public class SubZonaFacade extends AbstractFacade<SubZona> {
      */
     public SubZona getExistente(String nombre, ZonaIntervencion zona) {
         List<SubZona> lstSubZonas;
-        em = getEntityManager();
-        
         String queryString = "SELECT sub FROM SubZona sub "
                 + "WHERE sub.nombre = :nombre "
                 + "AND sub.zona = :zona";
@@ -58,7 +46,6 @@ public class SubZonaFacade extends AbstractFacade<SubZona> {
      */
     @Override
     public List<SubZona> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT sub FROM SubZona sub "
                 + "ORDER BY sub.nombre";
         Query q = em.createQuery(queryString);
@@ -72,7 +59,6 @@ public class SubZonaFacade extends AbstractFacade<SubZona> {
      * @return 
      */
     public List<SubZona> getHabilitadasByZona(ZonaIntervencion zona){
-        em = getEntityManager();
         String queryString = "SELECT sub FROM SubZona sub "
                 + "WHERE sub.habilitado = true "
                 + "AND sub.zona = :zona "

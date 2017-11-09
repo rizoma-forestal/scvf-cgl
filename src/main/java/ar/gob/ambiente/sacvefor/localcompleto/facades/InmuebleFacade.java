@@ -4,8 +4,6 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Inmueble;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -14,14 +12,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class InmuebleFacade extends AbstractFacade<Inmueble> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public InmuebleFacade() {
         super(Inmueble.class);
@@ -34,8 +24,6 @@ public class InmuebleFacade extends AbstractFacade<Inmueble> {
      */
     public Inmueble getExistenteByCatastro(String idCatastral) {
         List<Inmueble> lstInmuebles;
-        em = getEntityManager();
-        
         String queryString = "SELECT inm FROM Inmueble inm "
                 + "WHERE inm.idCatastral = :idCatastral";
         Query q = em.createQuery(queryString)
@@ -54,7 +42,6 @@ public class InmuebleFacade extends AbstractFacade<Inmueble> {
      */
     @Override
     public List<Inmueble> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT inm FROM Inmueble inm "
                 + "ORDER BY inm.nombre";
         Query q = em.createQuery(queryString);
@@ -68,7 +55,6 @@ public class InmuebleFacade extends AbstractFacade<Inmueble> {
      * @return 
      */
     public List<Inmueble> findByNombre(String param){
-        em = getEntityManager();
         String queryString = "SELECT inm FROM Inmueble inm "
                 + "WHERE LOWER(inm.nombre) LIKE :param "
                 + "AND inm.habilitado = true"
@@ -83,7 +69,6 @@ public class InmuebleFacade extends AbstractFacade<Inmueble> {
      * @return 
      */
     public List<Inmueble> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT inm FROM Inmueble inm "
                 + "WHERE inm.habilitado = true "
                 + "ORDER BY inm.nombre";

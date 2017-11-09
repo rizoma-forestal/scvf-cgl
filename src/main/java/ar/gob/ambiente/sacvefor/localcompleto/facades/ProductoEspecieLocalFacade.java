@@ -4,8 +4,6 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoEspecieLocal;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -14,14 +12,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLocal> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public ProductoEspecieLocalFacade() {
         super(ProductoEspecieLocal.class);
@@ -34,8 +24,6 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
      */
     public ProductoEspecieLocal getExistenteXNomVulgar(String nombreVulgar) {
         List<ProductoEspecieLocal> lstEspecies;
-        em = getEntityManager();
-        
         String queryString = "SELECT especie FROM ProductoEspecieLocal especie "
                 + "WHERE especie.nombreVulgar = :nombreVulgar";
         Query q = em.createQuery(queryString)
@@ -55,8 +43,6 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
      */
     public ProductoEspecieLocal getExistenteXNomCientifico(String nombreCientifico){
         List<ProductoEspecieLocal> lstEspecies;
-        em = getEntityManager();
-        
         String queryString = "SELECT especie FROM ProductoEspecieLocal especie "
                 + "WHERE especie.nombreCientifico = :nombreCientifico";
         Query q = em.createQuery(queryString)
@@ -75,7 +61,6 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
      */
     @Override
     public List<ProductoEspecieLocal> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT especie FROM ProductoEspecieLocal especie "
                 + "ORDER BY especie.nombreVulgar";
         Query q = em.createQuery(queryString);
@@ -88,7 +73,6 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
      * @return 
      */
     public List<ProductoEspecieLocal> getHabilitadas(){
-        em = getEntityManager();
         String queryString = "SELECT especie FROM ProductoEspecieLocal especie "
                 + "WHERE especie.habilitado = true "
                 + "ORDER BY especie.nombreVulgar";

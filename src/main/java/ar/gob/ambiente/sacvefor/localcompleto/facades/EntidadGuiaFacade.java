@@ -6,8 +6,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.AuditReader;
@@ -19,14 +17,6 @@ import org.hibernate.envers.AuditReaderFactory;
  */
 @Stateless
 public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public EntidadGuiaFacade() {
         super(EntidadGuia.class);
@@ -40,8 +30,6 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
      */
     public EntidadGuia getOrigenExistente(Long cuit, String inmNombre) {
         List<EntidadGuia> lstEntidadGuia;
-        em = getEntityManager();
-        
         String queryString = "SELECT entidad FROM EntidadGuia entidad "
                 + "WHERE entidad.cuit = :cuit "
                 + "AND entidad.inmNombre = :inmNombre";
@@ -64,8 +52,6 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
      */
     public EntidadGuia getDestinoExistente(Long cuit, Parametrica tipoEntidadGuia) {    
         List<EntidadGuia> lstEntidadGuia;
-        em = getEntityManager();
-        
         String queryString = "SELECT entidad FROM EntidadGuia entidad "
                 + "WHERE entidad.cuit = :cuit "
                 + "AND entidad.tipoEntidadGuia = :tipoEntidadGuia";
@@ -86,7 +72,6 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
      */
     @Override
     public List<EntidadGuia> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT entidad FROM EntidadGuia entidad "
                 + "ORDER BY entidad.nombreCompleto";
         Query q = em.createQuery(queryString);
@@ -100,7 +85,6 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
      * @return 
      */
     public List<EntidadGuia> findByNombreCompeto(String param){
-        em = getEntityManager();
         String queryString = "SELECT entidad FROM EntidadGuia entidad "
                 + "WHERE LOWER(entidad.nombreCompleto) LIKE :param "
                 + "AND entidad.habilitado = true "
@@ -117,7 +101,6 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
      */
     public EntidadGuia findByCuit(Long cuit){
         List<EntidadGuia> lstEntidadGuia;
-        em = getEntityManager();
         String queryString = "SELECT entidad FROM EntidadGuia entidad "
                 + "WHERE entidad.cuit = :cuit "
                 + "AND entidad.habilitado = true";
@@ -137,7 +120,6 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
      * @return 
      */
     public List<EntidadGuia> findByTipo (Parametrica tipoEntidadGuia){
-        em = getEntityManager();
         String queryString = "SELECT entidad FROM EntidadGuia entidad "
                 + "WHERE entidad.tipoEntidadGuia = :tipoEntidadGuia "
                 + "AND entidad.habilitado = true "

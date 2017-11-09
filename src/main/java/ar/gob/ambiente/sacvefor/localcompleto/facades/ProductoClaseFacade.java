@@ -5,8 +5,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoClase;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoUnidadMedida;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -15,14 +13,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public ProductoClaseFacade() {
         super(ProductoClase.class);
@@ -36,8 +26,6 @@ public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
      */
     public ProductoClase getExistente(String nombre, ProductoUnidadMedida unidad) {
         List<ProductoClase> lstClases;
-        em = getEntityManager();
-        
         String queryString = "SELECT clase FROM ProductoClase clase "
                 + "WHERE clase.nombre = :nombre "
                 + "AND clase.unidad = :unidad";
@@ -58,7 +46,6 @@ public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
      */
     @Override
     public List<ProductoClase> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT clase FROM ProductoClase clase "
                 + "ORDER BY clase.nombre";
         Query q = em.createQuery(queryString);
@@ -71,7 +58,6 @@ public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
      * @return 
      */
     public List<ProductoClase> getHabilitadas(){
-        em = getEntityManager();
         String queryString = "SELECT clase FROM ProductoClase clase "
                 + "WHERE clase.habilitado = true "
                 + "ORDER BY clase.nombre";

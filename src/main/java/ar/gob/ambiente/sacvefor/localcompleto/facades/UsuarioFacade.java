@@ -4,8 +4,6 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Usuario;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -14,14 +12,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class UsuarioFacade extends AbstractFacade<Usuario> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public UsuarioFacade() {
         super(Usuario.class);
@@ -34,8 +24,6 @@ public class UsuarioFacade extends AbstractFacade<Usuario> {
      */
     public Usuario getExistente(Long login) {
         List<Usuario> lstUsuarios;
-        em = getEntityManager();
-        
         String queryString = "SELECT us FROM Usuario us "
                 + "WHERE us.login = :login";
         Query q = em.createQuery(queryString)
@@ -54,7 +42,6 @@ public class UsuarioFacade extends AbstractFacade<Usuario> {
      * @return 
      */
     public List<Usuario> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT us FROM Usuario us "
                 + "WHERE us.habilitado = true";
         Query q = em.createQuery(queryString);
@@ -69,7 +56,6 @@ public class UsuarioFacade extends AbstractFacade<Usuario> {
      */
     public Usuario validar(Long login, String clave){
         List<Usuario> lUs;
-        em = getEntityManager();
         String queryString = "SELECT us FROM Usuario us "
                 + "WHERE us.login = :login "
                 + "AND us.clave = :clave";

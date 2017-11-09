@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.AuditReader;
@@ -23,14 +21,6 @@ import org.hibernate.envers.AuditReaderFactory;
 @Stateless
 public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
 
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
-
     public AutorizacionFacade() {
         super(Autorizacion.class);
     }
@@ -42,8 +32,6 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
      */
     public Autorizacion getExistente(String numero) {
         List<Autorizacion> lstAut;
-        em = getEntityManager();
-        
         String queryString = "SELECT aut FROM Autorizacion aut "
                 + "WHERE aut.numero = :numero";
         Query q = em.createQuery(queryString)
@@ -64,7 +52,6 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
      */
     public List<Autorizacion> getFuenteByProponente(Persona per){
         String rolProponente = ResourceBundle.getBundle("/Config").getString("Proponente");
-        em = getEntityManager();
         String queryString = "SELECT aut FROM Autorizacion aut "
                 + "INNER JOIN aut.personas per "
                 + "INNER JOIN per.rolPersona rol "
@@ -84,7 +71,6 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
      * @return 
      */
     public List<Autorizacion> getByPersona(Persona per, Parametrica rol){
-        em = getEntityManager();
         String queryString = "SELECT aut FROM Autorizacion aut "
                 + "INNER JOIN aut.personas per "
                 + "INNER JOIN per.rolPersona rol "
@@ -102,7 +88,6 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
      * @return 
      */
     public List<Autorizacion> getByIdProd(Long idProd){
-        em = getEntityManager();
         String queryString = "SELECT aut FROM Autorizacion aut "
                 + "INNER JOIN aut.items item "
                 + "WHERE item.idProd = :idProd";
@@ -117,7 +102,6 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
      * @return 
      */
     public List<Autorizacion> getByEstado(EstadoAutorizacion estado){
-        em = getEntityManager();
         String queryString = "SELECT aut FROM Autorizacion aut "
                 + "WHERE aut.estado = :estado";
         Query q = em.createQuery(queryString)

@@ -1,15 +1,12 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.facades;
 
-import ar.gob.ambiente.sacvefor.localcompleto.entities.EntidadGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.AuditReader;
@@ -22,14 +19,6 @@ import org.hibernate.envers.AuditReaderFactory;
 @Stateless
 public class GuiaFacade extends AbstractFacade<Guia> {
 
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
-
     public GuiaFacade() {
         super(Guia.class);
     }
@@ -41,8 +30,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      */
     public Guia getExistente(String codigo) {
         List<Guia> lstGuias;
-        em = getEntityManager();
-        
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.codigo = :codigo";
         Query q = em.createQuery(queryString)
@@ -61,7 +48,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getByOrigen(Long cuit){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.origen.cuit = :cuit";
         Query q = em.createQuery(queryString)
@@ -75,7 +61,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getByDestino(Long cuit){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.destino.cuit = :cuit";
         Query q = em.createQuery(queryString)
@@ -89,7 +74,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getByIdProd(Long idProd){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "INNER JOIN guia.items item "
                 + "WHERE item.idProd = :idProd";
@@ -104,7 +88,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getByEstado(EstadoGuia estado){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.estado = :estado";
         Query q = em.createQuery(queryString)
@@ -119,7 +102,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getByVehiculo(String matricula){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.transporte.vehiculo.matricula = :matricula";
         Query q = em.createQuery(queryString)
@@ -131,8 +113,7 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * Devuelve el último id registrado para una Guía
      * @return 
      */
-    public int getUltimoId(){    
-        em = getEntityManager();    
+    public int getUltimoId(){      
         String queryString = "SELECT MAX(id) FROM guia"; 
         Query q = em.createNativeQuery(queryString);
         BigInteger result = (BigInteger)q.getSingleResult();
@@ -150,7 +131,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> findByNumFuente(String numFuente){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.numFuente = :numFuente";
         Query q = em.createQuery(queryString)
@@ -164,7 +144,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getFuenteByTitular(Long cuit){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.origen.cuit = :cuit "
                 + "AND guia.tipo.habilitaDesc = true "
@@ -180,7 +159,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getEmitidasByDestinatario(Long cuit){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.destino.cuit = :cuit "
                 + "AND guia.estado.nombre = 'EMITIDA'";
@@ -195,7 +173,6 @@ public class GuiaFacade extends AbstractFacade<Guia> {
      * @return 
      */
     public List<Guia> getByMatricula(String matricula){
-        em = getEntityManager();
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.transporte.vehiculo.matricula = :matricula "
                 + "AND guia.estado.nombre = 'EMITIDA'";

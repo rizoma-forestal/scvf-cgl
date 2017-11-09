@@ -5,8 +5,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoTasa;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -15,14 +13,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class ProductoTasaFacade extends AbstractFacade<ProductoTasa> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public ProductoTasaFacade() {
         super(ProductoTasa.class);
@@ -36,8 +26,6 @@ public class ProductoTasaFacade extends AbstractFacade<ProductoTasa> {
      */
     public ProductoTasa getExistente(String nombre, Parametrica tipo) {
         List<ProductoTasa> lstTasas;
-        em = getEntityManager();
-        
         String queryString = "SELECT tasa FROM ProductoTasa tasa "
                 + "WHERE tasa.nombre = :nombre "
                 + "AND tasa.tipo = :tipo";
@@ -58,7 +46,6 @@ public class ProductoTasaFacade extends AbstractFacade<ProductoTasa> {
      */
     @Override
     public List<ProductoTasa> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT tasa FROM ProductoTasa tasa "
                 + "ORDER BY tasa.nombre";
         Query q = em.createQuery(queryString);
@@ -71,7 +58,6 @@ public class ProductoTasaFacade extends AbstractFacade<ProductoTasa> {
      * @return 
      */
     public List<ProductoTasa> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT tasa FROM ProductoTasa tasa "
                 + "WHERE tasa.habilitado = true "
                 + "ORDER BY tasa.nombre";

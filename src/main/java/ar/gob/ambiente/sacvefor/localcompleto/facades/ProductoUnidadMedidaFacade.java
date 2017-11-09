@@ -4,8 +4,6 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoUnidadMedida;
 import java.util.List;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -14,14 +12,6 @@ import javax.persistence.Query;
  */
 @Stateless
 public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMedida> {
-
-    @PersistenceContext(unitName = "sacvefor-gestionLocalCompletoPU")
-    private EntityManager em;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
-    }
 
     public ProductoUnidadMedidaFacade() {
         super(ProductoUnidadMedida.class);
@@ -34,8 +24,6 @@ public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMed
      */
     public ProductoUnidadMedida getExistenteByNombre(String nombre) {
         List<ProductoUnidadMedida> lstUnidad;
-        em = getEntityManager();
-        
         String queryString = "SELECT unidad FROM ProductoUnidadMedida unidad "
                 + "WHERE unidad.nombre = :nombre";
         Query q = em.createQuery(queryString)
@@ -55,8 +43,6 @@ public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMed
      */
     public ProductoUnidadMedida getExistenteByAbrev(String abrev) {
         List<ProductoUnidadMedida> lstUnidad;
-        em = getEntityManager();
-        
         String queryString = "SELECT unidad FROM ProductoUnidadMedida unidad "
                 + "WHERE unidad.abreviatura = :abrev";
         Query q = em.createQuery(queryString)
@@ -75,7 +61,6 @@ public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMed
      */
     @Override
     public List<ProductoUnidadMedida> findAll(){
-        em = getEntityManager();
         String queryString = "SELECT unidad FROM ProductoUnidadMedida unidad "
                 + "ORDER BY unidad.nombre";
         Query q = em.createQuery(queryString);
@@ -88,7 +73,6 @@ public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMed
      * @return 
      */
     public List<ProductoUnidadMedida> getHabilitados(){
-        em = getEntityManager();
         String queryString = "SELECT unidad FROM ProductoUnidadMedida unidad "
                 + "WHERE unidad.habilitado = true "
                 + "ORDER BY unidad.nombre";
