@@ -981,8 +981,22 @@ public class MbGuia {
      */
     public void saveDestino(){
         EstadoGuia estado = guia.getEstado();
-        // continúo según el Destino asignado ya existiera previamente
         try{
+            // continúo según el Destino asignado ya existiera previamente
+            if(entDestino.getId() == null){
+                Date fechaAlta = new Date(System.currentTimeMillis());
+                // obtengo la EntidadGuia (Origen) y seteo los datos de alta
+                entDestino.setFechaAlta(fechaAlta);
+                entDestino.setHabilitado(true);
+                // seteo los campos faltantes
+                entDestino.setUsuario(usLogueado);
+                String tmpDom = entDestino.getInmDomicilio().toUpperCase();
+                entDestino.setInmDomicilio(tmpDom);
+                TipoParam tipoParamEntGuia = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoEntidadGuia"));
+                entDestino.setTipoEntidadGuia(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TegDestino"), tipoParamEntGuia));
+                // creo el Destino
+                entGuiaFacade.create(entDestino);
+            }
             // chequeo los estados
             if(guia.getTipo().isAbonaTasa() && guia.getTransporte() != null && !guia.getItems().isEmpty()){
                 // si abona tasas, tiene transporte habilito la liquidación y tiene productos
@@ -1527,20 +1541,24 @@ public class MbGuia {
             // genero el reporte con todas las copias
             JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(guias);
             String reportPath;
-            if(guia.getTipo().isHabilitaTransp()){
+            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
                 reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaTransp.jasper");
+            }else if(guia.getTipo().isHabilitaTransp() && guia.getTipo().isMovInterno()){
+                reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaAcopio.jasper");
             }else{
                 reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guia.jasper");
             }
             
             jasperPrint =  JasperFillManager.fillReport(reportPath, new HashMap(), beanCollectionDataSource);
             HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
-            if(guia.getTipo().isHabilitaTransp()){
+            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
                 httpServletResponse.addHeader("Content-disposition", "attachment; filename=guiaTransp_" + guias.get(0).getCodigo() + ".pdf");
+            }else if(guia.getTipo().isHabilitaTransp() && guia.getTipo().isMovInterno()){
+                httpServletResponse.addHeader("Content-disposition", "attachment; filename=guiaAcopio_" + guias.get(0).getCodigo() + ".pdf");
             }else{
                 httpServletResponse.addHeader("Content-disposition", "attachment; filename=guia_" + guias.get(0).getCodigo() + ".pdf");
             }
-            
+
             ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
 
             JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
