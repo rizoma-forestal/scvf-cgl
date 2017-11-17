@@ -20,7 +20,7 @@
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Destino}"
                                             actionListener="#{mbGuia.cargarFrame('destino.xhtml')}" rendered="#{mbGuia.guia.tipo.habilitaTransp}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Transporte}"
-                                            actionListener="#{mbGuia.cargarFrame('transporte.xhtml')}" rendered="#{mbGuia.guia.tipo.habilitaTransp}" />
+                                            actionListener="#{mbGuia.cargarFrame('transporte.xhtml')}" rendered="#{mbGuia.guia.tipo.habilitaTransp and !mbGuia.guia.tipo.movInterno}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Productos}"
                                             actionListener="#{mbGuia.cargarFrame('productos.xhtml')}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Tasas}"

@@ -84,6 +84,8 @@
                             <p:outputLabel id="v_nombre" value="#{mbParamGuia.tipoGuia.nombre}"/>
                             <p:outputLabel value="Habilita transporte: " for="v_habTransp"/>
                             <p:selectBooleanCheckbox disabled="true" id="v_habTransp" value="#{mbParamGuia.tipoGuia.habilitaTransp}" />
+                            <p:outputLabel value="Movimiento interno: " for="v_movInterno" rendered="#{mbParamGuia.tipoGuia.habilitaTransp}" />
+                            <p:selectBooleanCheckbox disabled="true" id="v_movInterno" value="#{mbParamGuia.tipoGuia.movInterno}" rendered="#{mbParamGuia.tipoGuia.habilitaTransp}" />
                             <p:outputLabel value="Descuenta de Autorización: " for="v_descAut"/>
                             <p:selectBooleanCheckbox disabled="true" id="v_descAut" value="#{mbParamGuia.tipoGuia.descuentaAutoriz}" />
                             <p:outputLabel value="Habilita descuentos: " for="v_habDesc"/>
@@ -107,9 +109,17 @@
                             <p:outputLabel value="Nombre" for="nombre"/>
                             <p:inputText id="nombre" value="#{mbParamGuia.tipoGuia.nombre}" style="text-transform: uppercase; width: 250px"
                                      requiredMessage="Debe ingresar el Nombre" required="true"/>
+                        </h:panelGrid> 
+                        <h:panelGrid id="pgTransp" columns="2">
                             <p:outputLabel value="Habilita transporte: " for="habTransp"/>
-                            <p:selectBooleanCheckbox id="habTransp" value="#{mbParamGuia.tipoGuia.habilitaTransp}" />
-                            <p:outputLabel value="Descuenta de Autorización: " for="descAut"/>
+                            <p:selectBooleanCheckbox id="habTransp" value="#{mbParamGuia.tipoGuia.habilitaTransp}" >
+                                <p:ajax event="change" update="pgTransp" /> 
+                            </p:selectBooleanCheckbox>
+                            <p:outputLabel value="Movimiento interno: " for="movInterno" rendered="#{mbParamGuia.tipoGuia.habilitaTransp}" />
+                            <p:selectBooleanCheckbox id="movInterno" value="#{mbParamGuia.tipoGuia.movInterno}" rendered="#{mbParamGuia.tipoGuia.habilitaTransp}" /> 
+                        </h:panelGrid>    
+                        <h:panelGrid columns="2">
+                            <p:outputLabel value="Descuenta de Autorización: " for="descAut" />
                             <p:selectBooleanCheckbox id="descAut" value="#{mbParamGuia.tipoGuia.descuentaAutoriz}" />
                             <p:outputLabel value="Habilita descuentos: " for="habDesc"/>
                             <p:selectBooleanCheckbox id="habDesc" value="#{mbParamGuia.tipoGuia.habilitaDesc}" />

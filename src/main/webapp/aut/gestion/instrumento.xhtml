@@ -42,7 +42,7 @@
                     <h:panelGrid columns="4" cellpadding="5">
                         <p:outputLabel value="Número:" for="numeroExp"/>
                         <p:inputMask id="numeroExp" value="#{mbAutorizacion.autorizacion.numExp}" mask="#{config.maskExpediente}" requiredMessage="Debe ingresar el Número del Expediente" 
-                                 required="true" style="text-transform: uppercase" placeholder="#{config.maskExpediente}" />
+                                 required="true" style="text-transform: uppercase; width:250px" placeholder="#{config.maskExpediente}" />
                         <p:outputLabel value="Fecha de ingreso:" for="fechaExp" />
                         <p:calendar required="true" requiredMessage="Debe ingresar la fecha de ingreso del Expediente" 
                                     id="fechaExp" value="#{mbAutorizacion.autorizacion.fechaIngExpte}" />

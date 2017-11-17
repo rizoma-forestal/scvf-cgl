@@ -980,27 +980,27 @@ public class MbGuia {
      * Método para persistir el Destino de la Guía, en caso que lo requiera
      */
     public void saveDestino(){
+        EstadoGuia estado = guia.getEstado();
         // continúo según el Destino asignado ya existiera previamente
         try{
-            if(entDestino.getId() == null){
-                Date fechaAlta = new Date(System.currentTimeMillis());
-                // obtengo la EntidadGuia (Origen) y seteo los datos de alta
-                entDestino.setFechaAlta(fechaAlta);
-                entDestino.setHabilitado(true);
-                // seteo los campos faltantes
-                entDestino.setUsuario(usLogueado);
-                String tmpDom = entDestino.getInmDomicilio().toUpperCase();
-                entDestino.setInmDomicilio(tmpDom);
-                TipoParam tipoParamEntGuia = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoEntidadGuia"));
-                entDestino.setTipoEntidadGuia(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TegDestino"), tipoParamEntGuia));
-                // creo el Destino
-                entGuiaFacade.create(entDestino);
-                // chequeo los estados
-                if(!guia.getItems().isEmpty() && guia.getTransporte() != null){
-                    EstadoGuia estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConTransporte"));
-                    guia.setEstado(estado);
-                }
+            // chequeo los estados
+            if(guia.getTipo().isAbonaTasa() && guia.getTransporte() != null && !guia.getItems().isEmpty()){
+                // si abona tasas, tiene transporte habilito la liquidación y tiene productos
+                estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
+            }else if(guia.getTipo().isAbonaTasa() && guia.getTransporte() == null && guia.getTipo().isMovInterno() && !guia.getItems().isEmpty()){
+                // si abona tasas, no tiene transporte, tiene productos, es movimiento interno habilito la liquidación y tiene productos
+                estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
+            }else if(!guia.getTipo().isAbonaTasa() && guia.getTransporte() != null && !guia.getItems().isEmpty()){
+                // si no abona tasas, tiene transporte y productos, habilito el paso a emisión
+                estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConTransporte"));
+            }else if(!guia.getTipo().isAbonaTasa() && guia.getTransporte() == null && !guia.getItems().isEmpty() && guia.getTipo().isMovInterno()){
+                // si no abona tasas, no tiene transporte, tiene productos y es movimiento interno
+                estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConTransporte"));
             }
+            if(estado != guia.getEstado()){
+                guia.setEstado(estado);
+            }
+            
             guia.setDestino(entDestino);
             guia.setUsuario(usLogueado);
             guiaFacade.edit(guia);
@@ -1095,6 +1095,7 @@ public class MbGuia {
      * Sea edición o inserción
      */
     public void saveTransporte(){
+        EstadoGuia estado = guia.getEstado();
         // valido que tenga un Destino configurado
         if(guia.getDestino() == null){
             JsfUtil.addErrorMessage("Antes de guardar un Transporte, debería configurar un Destino para la Guía.");
@@ -1108,11 +1109,19 @@ public class MbGuia {
                 transporte.setCondNombre(nombre.toUpperCase());
                 guia.setTransporte(transporte);
                 guia.setUsuario(usLogueado);
+                
                 // chequeo los estados
-                if(!guia.getItems().isEmpty() && guia.getDestino() != null){
-                    EstadoGuia estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConTransporte"));
+                if(guia.getTipo().isAbonaTasa() && guia.getDestino() != null && !guia.getItems().isEmpty()){
+                    // si abona tasas, tiene destino y tiene productos habilito la liquidación
+                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
+                }else if(!guia.getTipo().isAbonaTasa() && guia.getDestino() != null && !guia.getItems().isEmpty()){
+                    // si no abona tasas, tiene transporte y productos, habilito el paso a emisión
+                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConTransporte"));
+                }
+                if(estado != guia.getEstado()){
                     guia.setEstado(estado);
                 }
+
                 guiaFacade.edit(guia);
                 matBuscar = "";
                 vehiculo = new Vehiculo();
@@ -1174,34 +1183,62 @@ public class MbGuia {
      * a un itemAsignado
      */
     public void addProducto(){
-        EstadoGuia estado;
+        EstadoGuia estado = guia.getEstado();
         boolean validaCantidad = true;
         // obtengo el tipoActual (item Autorizado) (tipoOrigen e itemOrigen van nulos
         Parametrica tipoActual = obtenerParametro(ResourceBundle.getBundle("/Config").getString("TipoItem"), ResourceBundle.getBundle("/Config").getString("Extraidos"));
         // valido la cantidad con el saldo
-        if(itemAsignado.getTotal() > itemAsignado.getSaldoOrigen()){
+        if(itemAsignado.getTotal() > itemAsignado.getSaldoOrigen() || itemAsignado.getTotal() == 0){
             if(!editandoItem) validaCantidad = false;
             else if(itemAsignado.getTotal() > itemAsignado.getSaldoTemp()) validaCantidad = false;
         }
-        // obtengo el Estado a setear según pague o no pague tasas
-        if(guia.getTipo().isAbonaTasa()){
-            estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
-        }else{
-            // actualizo estado de la Guía. Si es de transporte solo cambio el estado si el Transporte y el Destino ya están configurados
-            if(guia.getTipo().isHabilitaTransp()){
-                if(guia.getDestino() != null && guia.getTransporte() != null){
-                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConTransporte"));
-                }else{
-                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
-                }
-            }else{
-                estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
-            }
-        }
+
         // solo continúo si los parámetros están configurados
         if(tipoActual != null && estado != null && validaCantidad){
+            
             // actualizo el saldo del itemAsignado
-            itemAsignado.setSaldo(itemAsignado.getTotal());
+            itemAsignado.setSaldo(itemAsignado.getTotal());            
+            // obtengo el Estado a setear
+            if(guia.getTipo().isHabilitaTransp()){
+                // si es de transporte verifico si tiene Destino
+                if(guia.getDestino() == null){
+                    // si no tiene Destino solo habilito la edición de datos complementarios, no permito continuar más allá del seteo de productos
+                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaSinTransporte"));
+                }else if(guia.getTipo().isAbonaTasa() && guia.getTransporte() != null){
+                    // si tiene destino, transporte y abona tasas, habilito el pase a liquidación
+                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
+                }else if(guia.getTipo().isAbonaTasa() && guia.getTransporte() == null){
+                    // si tiene destino, no tiene transporte y paga tasas, verifico si es movimiento interno
+                    if(guia.getTipo().isMovInterno()){
+                        // si es movimiento interno, lo habilito el pase a liquidación
+                        estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
+                    }else{
+                        // si no es movimiento interno, no permito continuar más allá del seteo de productos 
+                        estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaSinTransporte"));
+                    }
+                }else if(!guia.getTipo().isAbonaTasa() && guia.getTransporte() != null){
+                    // si tiene destino, no abona tasa y tiene transporte, lo habilito a pasar a la emisión
+                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConTransporte"));
+                }else if(!guia.getTipo().isAbonaTasa() && guia.getTransporte() == null){
+                    // si tiene destino, no abona tasa y no tiene transporte, verifico si es movimiento interno
+                    if(guia.getTipo().isMovInterno()){
+                        // si no en movimiento interno, la dejo como liquidada y habilito emisión
+                        estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConDestino"));
+                    }else{
+                        // si no, no permito continuar más allá del seteo de productos 
+                        estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
+                    }
+                }
+            }else{
+                // si no es de transporte verifico si abona tasa
+                if(guia.getTipo().isAbonaTasa()){
+                    // si abona tasas, lo habilito a pasar a la liquidación
+                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaConProductos"));
+                }else{
+                    // si no abona tasas, lo habilito para la emisión
+                    estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaLiquidada"));
+                }
+            }
             try{
                 // actualizo el saldo del itemOrigen
                 for(ItemProductivo ip : lstItemsAutorizados){
@@ -1245,7 +1282,9 @@ public class MbGuia {
                     itemAsignado.setGuia(guia);
                     itemFacade.create(itemAsignado);
                     // asigno el estado
-                    guia.setEstado(estado);
+                    if(estado != guia.getEstado()){
+                        guia.setEstado(estado);
+                    }
                     guiaFacade.edit(guia);
                     guia.getItems().add(itemAsignado);
                     // actualizo el flag
@@ -1259,7 +1298,7 @@ public class MbGuia {
             JsfUtil.addErrorMessage("No se pudo encontrar un Parámetro para el Tipo de Item: 'Extraidos'.");
         }
         if(!validaCantidad){
-            JsfUtil.addErrorMessage("La cantidad a descontar debe ser menor o igual al saldo disponible.");
+            JsfUtil.addErrorMessage("La cantidad a descontar debe ser menor o igual al saldo disponible y mayor a 0.");
         }
         if(estado == null){
             JsfUtil.addErrorMessage("No se pudo encontrar un Estado de Guía para: 'GuiaConProductos'.");
@@ -1441,9 +1480,10 @@ public class MbGuia {
     }
     
     /**
-     * Método para emitir una Guía, con o sin transporte. En el caso de que se a de transporte, se detalla el proceso:
-     * Después de las validaciones se genera el pdf, luego se actualiza la Guía.
-     * Posteriormente se verifica la existencia de una cuenta de usuario para el Destinatario de la Guía
+     * Método para emitir una Guía, con o sin transporte. En el caso de que sea de transporte, se detalla el proceso:
+     * Después de las validaciones se genera el pdf, luego se actualiza la Guía.e
+     * Posteriormente, si la Guía no es de acopio interno (reporta Transporte) se registra en el Componente de Control y Verificación (CCV)
+     * Finalmente se verifica la existencia de una cuenta de usuario para el Destinatario de la Guía
      * en el Componente de Gestión de Trazabilidad. Si no es así, la genera mediante la API-TRAZ, si ya existe la cuenta 
      * solo se envía un correo al Destinatario dando aviso de la remisión de la Guía.
      */    
@@ -1508,75 +1548,93 @@ public class MbGuia {
             // actualizo la Guía
             guiaFacade.edit(guia);
             
-            // si la Guía habilita transporte, se impacta en el Componente de Control y Verificación (CCV) , además
-            // verifico la existencia de la cuenta de usuario del Destinatario en el componente de Gestión de Trazabilidad
+            // si la Guía habilita transporte y no es de acopio interno, se impacta en el Componente de Control y Verificación (CCV), 
+            // y se prosigue con la verificación de cuenta de usuario en el componente de Gestión de Trazabilidad (CGT), 
+            // si la Guía es de acopio interno, no se persiste en el CCV y pasa directamente a la verificación de la cuenta de usuario en el CGT 
             if(guia.getTipo().isHabilitaTransp()){
-                // seteo el listado de items
-                List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item> lstItemCtrl = new ArrayList<>();
-                ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item itemCtrl;
-                for(ItemProductivo item : guia.getItems()){
-                    itemCtrl = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item();
-                    itemCtrl.setCodigoOrigen(item.getCodigoProducto());
-                    itemCtrl.setNombreCientifico(item.getNombreCientifico());
-                    itemCtrl.setNombreVulgar(item.getNombreVulgar());
-                    itemCtrl.setClase(item.getClase());
-                    itemCtrl.setUnidad(item.getUnidad());
-                    itemCtrl.setTotal(item.getTotal());
-                    itemCtrl.setTotalKg(item.getTotalKg());
-                    lstItemCtrl.add(itemCtrl);
+                boolean persistidaCcv = false;
+                // si no es de acopio interno persisto la Guía en el CCV
+                if(!guia.getTipo().isMovInterno()){
+                    List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item> lstItemCtrl = new ArrayList<>();
+                    ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item itemCtrl;
+                    for(ItemProductivo item : guia.getItems()){
+                        itemCtrl = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item();
+                        itemCtrl.setCodigoOrigen(item.getCodigoProducto());
+                        itemCtrl.setNombreCientifico(item.getNombreCientifico());
+                        itemCtrl.setNombreVulgar(item.getNombreVulgar());
+                        itemCtrl.setClase(item.getClase());
+                        itemCtrl.setUnidad(item.getUnidad());
+                        itemCtrl.setTotal(item.getTotal());
+                        itemCtrl.setTotalKg(item.getTotalKg());
+                        lstItemCtrl.add(itemCtrl);
+                    }
+                    // creo la Guia a enviar
+                    ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia guiaCrtl = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia();
+                    guiaCrtl.setCodigo(guia.getCodigo());
+                    guiaCrtl.setTipo(guia.getTipo().getNombre());
+                    guiaCrtl.setTipoFuente(guia.getTipoFuente().getNombre());
+                    guiaCrtl.setNumFuente(guia.getNumFuente());
+                    guiaCrtl.setItems(lstItemCtrl);
+                    guiaCrtl.setNombreOrigen(guia.getOrigen().getNombreCompleto());
+                    guiaCrtl.setCuitOrigen(guia.getOrigen().getCuit());
+                    guiaCrtl.setLocOrigen(guia.getOrigen().getLocalidad() + " - " + guia.getOrigen().getProvincia());
+                    guiaCrtl.setNombreDestino(guia.getDestino().getNombreCompleto());
+                    guiaCrtl.setCuitDestino(guia.getDestino().getCuit());
+                    guiaCrtl.setLocDestino(guia.getDestino().getLocalidad() + " - " + guia.getDestino().getProvincia());
+                    guiaCrtl.setMatVehiculo(guia.getTransporte().getVehiculo().getMatricula());
+                    guiaCrtl.setMatAcoplado(guia.getTransporte().getAcoplado());
+                    guiaCrtl.setNombreConductor(guia.getTransporte().getCondNombre());
+                    guiaCrtl.setDniConductor(guia.getTransporte().getCondDni());
+                    guiaCrtl.setFechaEmision(guia.getFechaEmisionGuia());
+                    guiaCrtl.setFechaVencimiento(guia.getFechaVencimiento());
+                    guiaCrtl.setProvincia(guia.getProvincia());
+
+                    // persisto una copia de la Guía para ser controlada y verificada por el CCV
+                    guiaCtrlClient = new GuiaCtrlClient();
+                    Response responseCcv = guiaCtrlClient.create_JSON(guiaCrtl);
+                    guiaCtrlClient.close();
+                    
+                    if(responseCcv.getStatus() == 201){
+                        persistidaCcv = true;
+                    }
+                }else{
+                    persistidaCcv = true;
                 }
-                // creo la Guia a enviar
-                ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia guiaCrtl = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia();
-                guiaCrtl.setCodigo(guia.getCodigo());
-                guiaCrtl.setTipo(guia.getTipo().getNombre());
-                guiaCrtl.setTipoFuente(guia.getTipoFuente().getNombre());
-                guiaCrtl.setNumFuente(guia.getNumFuente());
-                guiaCrtl.setItems(lstItemCtrl);
-                guiaCrtl.setNombreOrigen(guia.getOrigen().getNombreCompleto());
-                guiaCrtl.setCuitOrigen(guia.getOrigen().getCuit());
-                guiaCrtl.setLocOrigen(guia.getOrigen().getLocalidad() + " - " + guia.getOrigen().getProvincia());
-                guiaCrtl.setNombreDestino(guia.getDestino().getNombreCompleto());
-                guiaCrtl.setCuitDestino(guia.getDestino().getCuit());
-                guiaCrtl.setLocDestino(guia.getDestino().getLocalidad() + " - " + guia.getDestino().getProvincia());
-                guiaCrtl.setMatVehiculo(guia.getTransporte().getVehiculo().getMatricula());
-                guiaCrtl.setMatAcoplado(guia.getTransporte().getAcoplado());
-                guiaCrtl.setNombreConductor(guia.getTransporte().getCondNombre());
-                guiaCrtl.setDniConductor(guia.getTransporte().getCondDni());
-                guiaCrtl.setFechaEmision(guia.getFechaEmisionGuia());
-                guiaCrtl.setFechaVencimiento(guia.getFechaVencimiento());
-                guiaCrtl.setProvincia(guia.getProvincia());
-                
-                // persisto una copia de la Guía para ser controlada y verificada por el CCV
-                guiaCtrlClient = new GuiaCtrlClient();
-                Response response = guiaCtrlClient.create_JSON(guiaCrtl);
-                guiaCtrlClient.close();
                 // solo continúo si no hubo error
-                if(response.getStatus() == 201){
+                if(persistidaCcv){
                     usuarioClient = new UsuarioClient();
                     GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario>> gTypeUs = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario>>() {};
-                    response = usuarioClient.findByQuery_JSON(Response.class, String.valueOf(guia.getDestino().getCuit()), null);
-                    List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario> listUs = response.readEntity(gTypeUs);
+                    Response responseCgt = usuarioClient.findByQuery_JSON(Response.class, String.valueOf(guia.getDestino().getCuit()), null);
+                    List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario> listUs = responseCgt.readEntity(gTypeUs);
                     if(!listUs.isEmpty()){
                         usuarioClient.close();
                         // el Usuario ya está registrado, entonces solo se envía el correo de aviso
                         if(!enviarCorreo()){
-                            msgErrorEmision = "La Guía ha sido emitida y se la reportó en el Componente de Control y Verificación para ser controlada, pero hubo un error enviando el correo al Destinatario, que deberá ser notificado.";
+                            if(guia.getTipo().isMovInterno()){
+                                msgErrorEmision = "La Guía ha sido emitida pero hubo un error enviando el correo al Destinatario, que deberá ser notificado.";
+                            }else{
+                                msgErrorEmision = "La Guía ha sido emitida y se la reportó en el Componente de Control y Verificación para ser controlada, pero hubo un error enviando el correo al Destinatario, que deberá ser notificado.";
+                            }
                         }else{
-                            msgExitoEmision = "La Guía se emitió correctamente, se la reportó en el Componente de Control y Verificación para ser controlada y se notificó por correo electrónico al Destinatario.";
+                            if(guia.getTipo().isMovInterno()){
+                                msgExitoEmision = "La Guía se emitió correctamente y se notificó por correo electrónico al Destinatario.";
+                            }else{
+                                msgExitoEmision = "La Guía se emitió correctamente, se la reportó en el Componente de Control y Verificación para ser controlada y se notificó por correo electrónico al Destinatario.";
+                            }
                         }
                     }else{
                         // seteo el usuario a crear en el componente de Gestión de Trazabilidad
                         // obtengo el TipoParam para el Rol
                         tipoParamClient = new TipoParamClient();
                         GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.TipoParam>> gTypeTipo = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.TipoParam>>() {};
-                        response = tipoParamClient.findByQuery_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("RolUsuarios"));
-                        List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.TipoParam> listTipos = response.readEntity(gTypeTipo);
+                        responseCgt = tipoParamClient.findByQuery_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("RolUsuarios"));
+                        List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.TipoParam> listTipos = responseCgt.readEntity(gTypeTipo);
                         ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica rol = null;
                         if(!listTipos.isEmpty()){
                             // obtengo el rol                    
                             GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica>> gTypeParam = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica>>() {};
-                            response = tipoParamClient.findParametricasByTipo_JSON(Response.class, String.valueOf(listTipos.get(0).getId()));
-                            List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica> listParam = response.readEntity(gTypeParam);
+                            responseCgt = tipoParamClient.findParametricasByTipo_JSON(Response.class, String.valueOf(listTipos.get(0).getId()));
+                            List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica> listParam = responseCgt.readEntity(gTypeParam);
                             tipoParamClient.close();
                             for(ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica param : listParam){
                                 if(param.getNombre().equals(ResourceBundle.getBundle("/Config").getString("Transformador"))){
@@ -1593,20 +1651,31 @@ public class MbGuia {
                             usTraz.setEmail(guia.getDestino().getEmail());
                             usTraz.setJurisdiccion(guia.getDestino().getProvincia());
                             usTraz.setLogin(guia.getDestino().getCuit());
-                            usTraz.setNombreCompleto(guia.getDestino().getNombreCompleto());
-                            usTraz.setRol(rol);
+                            
 
-                            response = usuarioClient.create_JSON(usTraz);
+                            responseCgt = usuarioClient.create_JSON(usTraz);
                             usuarioClient.close();
 
                             // solo continúo si no hubo error
-                            if(response.getStatus() == 201){
-                                msgExitoEmision = "Se reportó la Guía en el Componente de Control y Verificación para ser controlada y se creó la cuenta de Usuario para el Destinatario en el Componente de Trazabilidad del Sistema, desde ahí la Guía será cerrada por el Destinatario.";
+                            if(responseCgt.getStatus() == 201){
+                                if(guia.getTipo().isMovInterno()){
+                                    msgExitoEmision = "Se creó la cuenta de Usuario para el Destinatario en el Componente de Trazabilidad del Sistema, desde ahí la Guía será cerrada por el Destinatario.";
+                                }else{
+                                    msgExitoEmision = "Se reportó la Guía en el Componente de Control y Verificación para ser controlada y se creó la cuenta de Usuario para el Destinatario en el Componente de Trazabilidad del Sistema, desde ahí la Guía será cerrada por el Destinatario.";
+                                }
                             }else{
-                                msgErrorEmision = "Se reportó la Guía en el Componente de Control y Verificación para ser controlada pero no se pudo generar el Usuario en el Componente de Trazabilidad del Sistema, deberá solicitar su registro al Administrador del mismo.";
+                                if(guia.getTipo().isMovInterno()){
+                                    msgErrorEmision = "No se pudo generar el Usuario en el Componente de Trazabilidad del Sistema, deberá solicitar su registro al Administrador del mismo.";
+                                }else{
+                                    msgErrorEmision = "Se reportó la Guía en el Componente de Control y Verificación para ser controlada pero no se pudo generar el Usuario en el Componente de Trazabilidad del Sistema, deberá solicitar su registro al Administrador del mismo.";
+                                }
                             }   
                         }else{
-                            msgErrorEmision = "Se reportó la Guía en el Componente de Control y Verificación para ser controlada pero no se pudo obtener el Rol del Usuario del Destinatario en el Componente de Trazabilidad del Sistema para crear la respectiva cuenta de Usuario.";
+                            if(guia.getTipo().isMovInterno()){
+                                msgErrorEmision = "No se pudo obtener el Rol del Usuario del Destinatario en el Componente de Trazabilidad del Sistema para crear la respectiva cuenta de Usuario.";
+                            }else{
+                                msgErrorEmision = "Se reportó la Guía en el Componente de Control y Verificación para ser controlada pero no se pudo obtener el Rol del Usuario del Destinatario en el Componente de Trazabilidad del Sistema para crear la respectiva cuenta de Usuario.";
+                            }
                         }
                     }
                 }else{

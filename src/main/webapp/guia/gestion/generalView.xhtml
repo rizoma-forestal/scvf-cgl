@@ -63,6 +63,45 @@
                     </p:fieldset>
                 </h:panelGrid>
                 
+                <h:panelGrid columns="2" rendered="#{mbGuia.guia.tipo.habilitaTransp}">
+                    <p:fieldset toggleable="true" legend="Destino" style="margin-bottom:20px" rendered="#{mbGuia.guia.destino ne null}">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Nombre completo: " />
+                            <p:outputLabel value="#{mbGuia.guia.destino.nombreCompleto}" style=" font-weight: bold" />
+                            <p:outputLabel value="CUIT: " />
+                            <p:outputLabel value="#{mbGuia.guia.destino.cuit}" style=" font-weight: bold" />
+                            <p:outputLabel value="E-Mail: " />
+                            <p:outputLabel value="#{mbGuia.guia.destino.email}" style=" font-weight: bold" />
+                            <p:outputLabel value="Domicilio: " />
+                            <p:outputLabel value="#{mbGuia.guia.destino.inmDomicilio}" style=" font-weight: bold" />
+                            <p:outputLabel value="Provincia: " />
+                            <p:outputLabel value="#{mbGuia.guia.destino.provincia}" style=" font-weight: bold" />
+                            <p:outputLabel value="Departamento: " />
+                            <p:outputLabel value="#{mbGuia.guia.destino.departamento}" style=" font-weight: bold" />
+                            <p:outputLabel value="Localidad: " />
+                            <p:outputLabel value="#{mbGuia.guia.destino.localidad}" style=" font-weight: bold" />
+                        </h:panelGrid>
+                    </p:fieldset>
+                    <p:fieldset toggleable="true" legend="Transporte" style="margin-bottom:20px" rendered="#{!mbGuia.guia.tipo.movInterno and mbGuia.guia.transporte ne null}">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Matrícula: " />
+                            <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.matricula}" style=" font-weight: bold" />
+                            <p:outputLabel value="Marca: " />
+                            <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.marca}" style=" font-weight: bold" />
+                            <p:outputLabel value="Modelo: " />
+                            <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.modelo}" style=" font-weight: bold" />
+                            <p:outputLabel value="Año: " />
+                            <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.anio}" style=" font-weight: bold" />
+                            <p:outputLabel value="Acoplado: " />
+                            <p:outputLabel value="#{mbGuia.guia.transporte.acoplado}" style=" font-weight: bold" />
+                            <p:outputLabel value="Conductor: " />
+                            <p:outputLabel value="#{mbGuia.guia.transporte.condNombre}" style=" font-weight: bold" />
+                            <p:outputLabel value="DNI: " />
+                            <p:outputLabel value="#{mbGuia.guia.transporte.condDni}" style=" font-weight: bold" />
+                        </h:panelGrid>
+                    </p:fieldset>
+                </h:panelGrid>
+                
                 <p:separator />
 
                 <h:panelGrid id="pgGuiaInmuebles" columns="1" >

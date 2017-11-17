@@ -26,7 +26,7 @@
                         <h:panelGrid columns="2">
                             <p:outputLabel value="Id Catastral" for="idCatastral" />
                             <p:inputMask placeholder="#{config.maskCatastro}" id="idCatastral" value="#{mbInmueble.inmueble.idCatastral}" 
-                                         mask="#{config.maskCatastro}" style="text-transform: uppercase" />
+                                         mask="#{config.maskCatastro}" style="text-transform: uppercase; width: 250px" />
                             <p:outputLabel value="Nombre" for="nombre"/>   
                             <p:inputText id="nombre" value="#{mbInmueble.inmueble.nombre}" style="text-transform: uppercase; width: 300px" 
                                      requiredMessage="Debe ingresar el Nombre del Inmueble" required="true"/>

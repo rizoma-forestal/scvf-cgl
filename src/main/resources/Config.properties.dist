@@ -156,6 +156,7 @@ GuiaIntervenida=INTERVENIDA
 GuiaSecuestrada=SECUESTRADA
 GuiaExtraviada=EXTRAVIADA
 GuiaConTransporte=CON TRANSP. Y PROD.
+GuiaSinTransporte=GUIA CON PROD. SIN TRANSP.
 
 # -------- #
 # Máscaras #

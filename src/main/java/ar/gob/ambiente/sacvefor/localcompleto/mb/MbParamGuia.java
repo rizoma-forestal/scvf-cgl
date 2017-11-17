@@ -74,7 +74,6 @@ public class MbParamGuia {
     public void setTipoGuiaTasa(TipoGuiaTasa tipoGuiaTasa) {
         this.tipoGuiaTasa = tipoGuiaTasa;
     }
-
     public List<Parametrica> getLstTiposTasas() {
         return lstTiposTasas;
     }
@@ -202,8 +201,8 @@ public class MbParamGuia {
         tipoGuiaTasa = new TipoGuiaTasa();
         TipoParam tipoParamTasa = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoTasa"));
         lstTiposTasas = paramFacade.getHabilitadas(tipoParamTasa);
-    }      
-    
+    }
+
     /**
      * Método para guardar el Tipo de Guía, sea inserción o edición.
      * Previa validación

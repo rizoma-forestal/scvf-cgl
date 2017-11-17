@@ -63,7 +63,12 @@ public class TipoGuia implements Serializable {
     private boolean abonaTasa;
     
     /**
-     * Tasas que deberá pagar el tipo de Guía 
+     * Indica si hay movimiento de productos dentro de una misma finca
+     */
+    private boolean movInterno;
+    
+    /**
+     * Tasas que deberá pagar el tipo de Guía
      * Podrá ser una, varias o ninguna
      */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
@@ -87,6 +92,14 @@ public class TipoGuia implements Serializable {
         tasas = new ArrayList<>();
     }
 
+    public boolean isMovInterno() {
+        return movInterno;
+    }
+
+    public void setMovInterno(boolean movInterno) {
+        this.movInterno = movInterno;
+    }
+    
     @XmlTransient
     public List<TipoGuiaTasa> getTasas() {
         return tasas;

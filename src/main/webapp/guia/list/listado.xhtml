@@ -90,7 +90,7 @@
                                     <p:outputLabel value="#{mbGuia.guia.destino.localidad}" style=" font-weight: bold" />
                                 </h:panelGrid>
                             </p:fieldset>
-                            <p:fieldset toggleable="true" legend="Transporte" style="margin-bottom:20px">
+                            <p:fieldset toggleable="true" legend="Transporte" style="margin-bottom:20px" rendered="#{!mbGuia.guia.tipo.movInterno}">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Matrícula: " />
                                     <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.matricula}" style=" font-weight: bold" />

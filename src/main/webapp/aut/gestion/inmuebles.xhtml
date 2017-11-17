@@ -16,7 +16,7 @@
                 <h:panelGrid columns="5">
                     <p:outputLabel value="Id Catastral" for="catastroBuscar"/>
                     <p:inputMask placeholder="#{config.maskCatastro}" id="catastroBuscar" value="#{mbAutorizacion.catastroBuscar}" 
-                                 style="text-transform: uppercase" requiredMessage="Debe ingresar el id Catastral" 
+                                 style="text-transform: uppercase; width: 250px" requiredMessage="Debe ingresar el id Catastral" 
                                  required="true" mask="#{config.maskCatastro}" />
                     <p:commandButton title="Buscar #{config.Inmueble} existente" styleClass="save" icon="fa fa-fw fa-search" 
                                      value="Buscar" action="#{mbAutorizacion.buscarInmueble()}" update="frInmuebles,messages"/>
