@@ -27,6 +27,7 @@ public class ApplicationConfig extends Application {
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.EstadoGuiaFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.GuiaFacadeREST.class);
+        resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.VehiculoFacadeREST.class);
     }
     
 }
