@@ -1669,7 +1669,8 @@ public class MbGuia {
                             usTraz.setEmail(guia.getDestino().getEmail());
                             usTraz.setJurisdiccion(guia.getDestino().getProvincia());
                             usTraz.setLogin(guia.getDestino().getCuit());
-                            
+                            usTraz.setNombreCompleto(guia.getDestino().getNombreCompleto());
+                            usTraz.setRol(rol);
 
                             responseCgt = usuarioClient.create_JSON(usTraz);
                             usuarioClient.close();
