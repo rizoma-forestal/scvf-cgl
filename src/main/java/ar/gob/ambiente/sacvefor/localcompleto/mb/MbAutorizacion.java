@@ -652,9 +652,7 @@ public class MbAutorizacion {
                         }
                     }
                 }
-                if(!lstTemSubZonas.isEmpty()){
-                    autorizacion.setSubZonas(lstTemSubZonas);
-                }
+                autorizacion.setSubZonas(lstTemSubZonas);
                 
                 // seteo los datos faltantes
                 autorizacion.setUsuario(usLogueado);

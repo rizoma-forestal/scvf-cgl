@@ -61,13 +61,20 @@
                         <p:outputLabel value="Uso del suelo: " />
                         <p:outputLabel value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold" />
                     </h:panelGrid>
-                    <h:panelGrid id="pgZonas" columns="1" cellpadding="1">
-                        <p:dataTable id="dtSubZonas" value="#{mbAutorizacion.autorizacion.subZonas}" var="subZona" styleClass="table" style="width: 500px" >
-                            <p:column headerText="Zona" style="width: 150px" >
-                                <p:outputLabel value="#{subZona.zona.codigo} - #{subZona.zona.nombre}"/>
+                    <h:panelGrid id="pgZonas" columns="1" cellpadding="1" rendered="#{mbAutorizacion.autorizacion.zonas.size() > 0}">
+                        <p:dataTable id="dtZonas" value="#{mbAutorizacion.autorizacion.zonas}" var="zona" styleClass="table" style="width: 200px" >
+                            <p:column headerText="Zonas" style="width: 150px" >
+                                <p:outputLabel value="#{zona.codigo} - #{zona.nombre}"/>
                             </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgSubZonas" columns="1" cellpadding="1" rendered="#{mbAutorizacion.autorizacion.subZonas.size() > 0}">
+                        <p:dataTable id="dtSubZonas" value="#{mbAutorizacion.autorizacion.subZonas}" var="subZona" styleClass="table" style="width: 500px" >
                             <p:column headerText="Sub Zonas" >
                                 <p:outputLabel value="#{subZona.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Perteneciente a:" style="width: 150px" >
+                                <p:outputLabel value="#{subZona.zona.codigo} - #{subZona.zona.nombre}"/>
                             </p:column>
                         </p:dataTable>
                     </h:panelGrid>
