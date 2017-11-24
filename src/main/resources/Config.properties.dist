@@ -113,7 +113,7 @@ RutaArchivos=C:\\wildfly\\resources
 SubdirTemp=C:\\wildfly\\TMP\\
 #SubdirTemp=/opt/wildfly/welcome-content/TMP/
 SubdirMartillos=\\martillos\\
-#SubdirMartillos=/martillos/
+#SubdirMartillos=/martillos/[provincia]/
 
 # ------------------- #
 # Tipos de parámetros #

@@ -1234,7 +1234,7 @@ public class MbPersona implements Serializable {
         Date date = new Date();
         String extension = file.getFileName().substring(file.getFileName().lastIndexOf(".") + 1);
         String sufijo = JsfUtil.getDateInString(date);
-        String nombreArchivo = persona.getCuit() + "_" + sufijo + "." + extension;
+        String nombreArchivo = ResourceBundle.getBundle("/Config").getString("IdProvinciaGt") + "_" + persona.getCuit() + "_" + sufijo + "." + extension;
         return nombreArchivo;
     }    
 

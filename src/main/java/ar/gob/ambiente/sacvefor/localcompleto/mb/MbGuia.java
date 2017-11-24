@@ -623,7 +623,7 @@ public class MbGuia {
                     DetalleTasas detTasa = new DetalleTasas();
                     // instancio el listado de TasasModel
                     List<TasaModel> lstTasaModel = new ArrayList<>();
-                    detTasa.setNombreProd(prod.getEspecieLocal().getNombreVulgar() + " - " + prod.getEspecieLocal().getNombreCientifico());
+                    detTasa.setNombreProd(prod.getEspecieLocal().getNombreVulgar());
                     detTasa.setClase(prod.getClase().getNombre());
                     detTasa.setCantidad(item.getTotal());
                     detTasa.setUnidad(item.getUnidad());
