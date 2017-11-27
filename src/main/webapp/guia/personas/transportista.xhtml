@@ -299,6 +299,8 @@
                             <p:outputLabel value="#{mbPersona.persona.nombreCompleto}" style="color: #0F4C20; font-weight: bold"/>
                             <p:outputLabel value="Tipo" />   
                             <p:outputLabel value="#{mbPersona.persona.tipo}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="E-Mail" />  
+                            <p:outputLabel value="#{mbPersona.persona.email}" style="color: #0F4C20; font-weight: bold"/>
                         </h:panelGrid>
                         <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveTransportista()}" 
@@ -321,6 +323,8 @@
                             <p:outputLabel id="v_cuit" value="#{mbPersona.persona.cuit}"/>
                             <p:outputLabel value="Tipo: " for="v_tipo"/>
                             <p:outputLabel id="v_tipo" value="#{mbPersona.persona.tipo}"/>
+                            <p:outputLabel value="E-mail: " for="v_email"/>
+                            <p:outputLabel id="v_email" value="#{mbPersona.persona.email}"/>
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
                                              actionListener="#{mbPersona.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
                         </h:panelGrid>

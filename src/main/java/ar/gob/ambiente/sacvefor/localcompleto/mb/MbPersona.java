@@ -630,10 +630,7 @@ public class MbPersona implements Serializable {
             if(personaRue.getRazonSocial() == null) persona.setNombreCompleto(personaRue.getNombreCompleto());
             persona.setCuit(personaRue.getCuit());
             persona.setTipo(personaRue.getTipo().getNombre());
-            if(rolPersona.getNombre().equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
-                // si es Destintatario seteo el correo electrónico
-                persona.setEmail(personaRue.getCorreoElectronico());
-            }
+            persona.setEmail(personaRue.getCorreoElectronico());
             personaRue = null;
             view = false;
             edit = true;

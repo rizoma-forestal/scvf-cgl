@@ -1761,6 +1761,7 @@ public class MbGuia {
             ent.setIdRue(per.getIdRue());
             ent.setNombreCompleto(per.getNombreCompleto());
             ent.setTipoPersona(per.getTipo());
+            ent.setEmail(per.getEmail());
             // entidad
             TipoParam tipoParamEntGuia = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoEntidadGuia"));
             ent.setTipoEntidadGuia(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TegFuente"), tipoParamEntGuia));
