@@ -409,7 +409,7 @@
                                           update="messagesLocal,frProponentes,pngMartilloDef,pngMartilloTemp,pnFrmView" sizeLimit="500000" fileLimit="3" allowTypes="/(\.|\/)(gif|jpe?g|png)$/" />
                         </h:panelGrid>
                         <h:panelGrid id="pngMartilloDef" columns="2" rendered="#{mbPersona.persona.rutaArchivo ne null and not mbPersona.persona.rutaTemporal}" >
-                            <img src="/martillos/#{mbPersona.persona.nombreArchivo}" width="150" />
+                            <img src="#{config.UrlMartillos}#{mbPersona.persona.nombreArchivo}" width="150" />
                         </h:panelGrid>
                         <h:panelGrid id="pngMartilloTemp" columns="2" rendered="#{mbPersona.persona.rutaArchivo ne null and mbPersona.persona.rutaTemporal}" >
                             <img src="/TMP/#{mbPersona.persona.nombreArchivo}" width="150" />
@@ -437,7 +437,7 @@
                             <p:outputLabel value="E-mail: " for="v_email"/>
                             <p:outputLabel id="v_email" value="#{mbPersona.persona.email}"/>
                             <p:outputLabel value="Martillo: " />
-                            <img src="/martillos/#{mbPersona.persona.nombreArchivo}" width="150" />
+                            <img src="#{config.UrlMartillos}#{mbPersona.persona.nombreArchivo}" width="150" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgBtn" columns="3" rendered="#{mbPersona.view}" >
