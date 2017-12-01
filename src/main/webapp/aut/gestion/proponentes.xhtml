@@ -35,7 +35,7 @@
                     <p:outputLabel value="Tipo de Persona: " />
                     <p:outputLabel value="#{mbAutorizacion.persona.tipo}" style=" font-weight: bold" />
                     <p:outputLabel value="Martillo: " />
-                    <img src="/martillos/#{mbAutorizacion.persona.nombreArchivo}" width="150" />
+                    <img src="#{config.UrlMartillos}#{mbAutorizacion.persona.nombreArchivo}" width="150" />
                 </h:panelGrid>
                 <h:panelGrid columns="2">
                     <p:commandButton title="Agregar el #{config.Proponente} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
