@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
  * Jersey REST client generated for REST resource:CentroPobladoFacadeREST
@@ -37,16 +38,22 @@ public class LocalidadClient {
         return resource.request(javax.ws.rs.core.MediaType.TEXT_PLAIN).get(String.class);
     }
 
-    public <T> T find_XML(Class<T> responseType, String id) throws ClientErrorException {
+    public <T> T find_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T find_JSON(Class<T> responseType, String id) throws ClientErrorException {
+    public <T> T find_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
     public <T> T findRange_XML(Class<T> responseType, String from, String to) throws ClientErrorException {
@@ -61,14 +68,20 @@ public class LocalidadClient {
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
     }
 
-    public <T> T findAll_XML(Class<T> responseType) throws ClientErrorException {
+    public <T> T findAll_XML(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findAll_JSON(Class<T> responseType) throws ClientErrorException {
+    public <T> T findAll_JSON(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
     public void close() {

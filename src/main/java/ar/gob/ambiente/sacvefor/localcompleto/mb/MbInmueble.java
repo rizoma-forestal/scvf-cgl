@@ -3,16 +3,20 @@ package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Inmueble;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.InmuebleFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.territ.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.DepartamentoClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.LocalidadClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.ProvinciaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import ar.gob.ambiente.sacvefor.servicios.territorial.CentroPoblado;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Departamento;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Provincia;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -23,6 +27,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
@@ -47,6 +52,9 @@ public class MbInmueble {
     private ProvinciaClient provClient;    
     private DepartamentoClient deptoClient;
     private LocalidadClient localidadClient;    
+    private UsuarioClient usuarioClient;
+    private Token token;
+    private String strToken;    
 
     /**
      * Campos para la gestión de los elementos territoriales en los combos del formulario.
@@ -315,11 +323,21 @@ public class MbInmueble {
         List<Provincia> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             provClient = new ProvinciaClient();
             // obtengo el listado de provincias 
             GenericType<List<Provincia>> gType = new GenericType<List<Provincia>>() {};
-            Response response = provClient.findAll_JSON(Response.class);
+            Response response = provClient.findAll_JSON(Response.class, token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con las provincias como un objeto Entidad Servicio
             listProvincias = new ArrayList<>();
@@ -347,11 +365,21 @@ public class MbInmueble {
         List<Departamento> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             provClient = new ProvinciaClient();
             // obtngo el listado
             GenericType<List<Departamento>> gType = new GenericType<List<Departamento>>() {};
-            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv));
+            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listDepartamentos = new ArrayList<>();
@@ -377,11 +405,21 @@ public class MbInmueble {
         List<CentroPoblado> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             deptoClient = new DepartamentoClient();
             // obtngo el listado
             GenericType<List<CentroPoblado>> gType = new GenericType<List<CentroPoblado>>() {};
-            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto));
+            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listLocalidades = new ArrayList<>();
@@ -406,9 +444,19 @@ public class MbInmueble {
         CentroPoblado cp;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             localidadClient = new LocalidadClient();
-            cp = localidadClient.find_JSON(CentroPoblado.class, String.valueOf(idLocGt));
+            cp = localidadClient.find_JSON(CentroPoblado.class, String.valueOf(idLocGt), token.getStrToken());
             // cierro el cliente
             localidadClient.close();
             // instancio las Entidades servicio
@@ -430,6 +478,23 @@ public class MbInmueble {
         }
     }
     
+    /**
+     * Método privado que obtiene y setea el token para autentificarse ante la API rest de Territorial
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     */
+    private void getTokenTerr(){
+        try{
+            usuarioClient = new UsuarioClient();
+            Response responseUs = usuarioClient.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTerr"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strToken = (String)lstHeaders.get(0); 
+            token = new Token(strToken, System.currentTimeMillis());
+            usuarioClient.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+        }
+    }        
     
     /*****************************
     ** Converter para Inmueble  **

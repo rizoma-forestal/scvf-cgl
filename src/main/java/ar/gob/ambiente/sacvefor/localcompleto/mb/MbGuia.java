@@ -37,6 +37,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.util.DetalleTasas;
 import ar.gob.ambiente.sacvefor.localcompleto.util.DetalleTasas.TasaModel;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
 import ar.gob.ambiente.sacvefor.localcompleto.util.LiqTotalTasas;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -117,6 +119,9 @@ public class MbGuia {
     private EntidadGuia entDestino;
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona personaRue;
     private PersonaClient personaClient;
+    private ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient usClientRue;
+    private Token tokenRue;
+    private String strTokenRue;   
     private static final Logger logger = Logger.getLogger(Persona.class.getName());    
     private boolean editCuit;
     private boolean cuitProcesado;
@@ -184,7 +189,15 @@ public class MbGuia {
     private Message mensaje;    
     private UsuarioClient usuarioClient;
     private TipoParamClient tipoParamClient;
+    private ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.UsuarioApiClient usClientTraz;
+    private String strTokenTraz;
+    private Token tokenTraz;
+    
     private GuiaCtrlClient guiaCtrlClient;
+    private ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.UsuarioApiClient usClientCtrl;
+    private String strTokenCtrl;
+    private Token tokenCtrl;
+    
     private String msgExitoEmision;
     private String msgErrorEmision;
     
@@ -1606,10 +1619,21 @@ public class MbGuia {
                     guiaCrtl.setFechaEmision(guia.getFechaEmisionGuia());
                     guiaCrtl.setFechaVencimiento(guia.getFechaVencimiento());
                     guiaCrtl.setProvincia(guia.getProvincia());
-
+                    
+                    // obtengo el token si no está seteado o está vencido
+                    if(tokenCtrl == null){
+                        getTokenCtrl();
+                    }else try {
+                        if(!tokenCtrl.isVigente()){
+                            getTokenCtrl();
+                        }
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+                    }
+                    
                     // persisto una copia de la Guía para ser controlada y verificada por el CCV
                     guiaCtrlClient = new GuiaCtrlClient();
-                    Response responseCcv = guiaCtrlClient.create_JSON(guiaCrtl);
+                    Response responseCcv = guiaCtrlClient.create_JSON(guiaCrtl, tokenCtrl.getStrToken());
                     guiaCtrlClient.close();
                     
                     if(responseCcv.getStatus() == 201){
@@ -1620,9 +1644,19 @@ public class MbGuia {
                 }
                 // solo continúo si no hubo error
                 if(persistidaCcv){
+                    // obtengo el token si no está seteado o está vencido
+                    if(tokenTraz == null){
+                        getTokenTraz();
+                    }else try {
+                        if(!tokenTraz.isVigente()){
+                            getTokenTraz();
+                        }
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+                    }
                     usuarioClient = new UsuarioClient();
                     GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario>> gTypeUs = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario>>() {};
-                    Response responseCgt = usuarioClient.findByQuery_JSON(Response.class, String.valueOf(guia.getDestino().getCuit()), null);
+                    Response responseCgt = usuarioClient.findByQuery_JSON(Response.class, String.valueOf(guia.getDestino().getCuit()), null, tokenTraz.getStrToken());
                     List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario> listUs = responseCgt.readEntity(gTypeUs);
                     if(!listUs.isEmpty()){
                         usuarioClient.close();
@@ -1642,16 +1676,26 @@ public class MbGuia {
                         }
                     }else{
                         // seteo el usuario a crear en el componente de Gestión de Trazabilidad
+                        // obtengo el token si no está seteado o está vencido
+                        if(tokenTraz == null){
+                            getTokenTraz();
+                        }else try {
+                            if(!tokenTraz.isVigente()){
+                                getTokenTraz();
+                            }
+                        } catch (IOException ex) {
+                            logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+                        }
                         // obtengo el TipoParam para el Rol
                         tipoParamClient = new TipoParamClient();
                         GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.TipoParam>> gTypeTipo = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.TipoParam>>() {};
-                        responseCgt = tipoParamClient.findByQuery_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("RolUsuarios"));
+                        responseCgt = tipoParamClient.findByQuery_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("RolUsuarios"), tokenTraz.getStrToken());
                         List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.TipoParam> listTipos = responseCgt.readEntity(gTypeTipo);
                         ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica rol = null;
                         if(!listTipos.isEmpty()){
                             // obtengo el rol                    
                             GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica>> gTypeParam = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica>>() {};
-                            responseCgt = tipoParamClient.findParametricasByTipo_JSON(Response.class, String.valueOf(listTipos.get(0).getId()));
+                            responseCgt = tipoParamClient.findParametricasByTipo_JSON(Response.class, String.valueOf(listTipos.get(0).getId()), tokenTraz.getStrToken());
                             List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica> listParam = responseCgt.readEntity(gTypeParam);
                             tipoParamClient.close();
                             for(ar.gob.ambiente.sacvefor.servicios.trazabilidad.Parametrica param : listParam){
@@ -1672,7 +1716,7 @@ public class MbGuia {
                             usTraz.setNombreCompleto(guia.getDestino().getNombreCompleto());
                             usTraz.setRol(rol);
 
-                            responseCgt = usuarioClient.create_JSON(usTraz);
+                            responseCgt = usuarioClient.create_JSON(usTraz, tokenTraz.getStrToken());
                             usuarioClient.close();
 
                             // solo continúo si no hubo error
@@ -1803,8 +1847,20 @@ public class MbGuia {
             ent.setEmail(per.getEmail());
             // destino
             try{
+                // obtengo el token si no está seteado o está vencido
+                if(tokenRue == null){
+                    getTokenRue();
+                }else try {
+                    if(!tokenRue.isVigente()){
+                        getTokenRue();
+                    }
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+                }
+                
+                
                 personaClient = new PersonaClient();
-                personaRue = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(per.getIdRue()));
+                personaRue = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(per.getIdRue()), tokenRue.getStrToken());
                 personaClient.close();
                 ent.setIdLocGT(personaRue.getDomicilio().getIdLocalidadGt());
                 ent.setInmDomicilio(personaRue.getDomicilio().getCalle() + "-" + personaRue.getDomicilio().getNumero());
@@ -1941,4 +1997,58 @@ public class MbGuia {
             lstInmueblesOrigen.add(inm);
         }
     }
+    
+    /**
+     * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     */
+    private void getTokenRue(){
+        try{
+            usClientRue = new ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient();
+            Response responseUs = usClientRue.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestRue"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strTokenRue = (String)lstHeaders.get(0); 
+            tokenRue = new Token(strTokenRue, System.currentTimeMillis());
+            usClientRue.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+        }
+    }      
+    
+    /**
+     * Método privado que obtiene y setea el tokenTraz para autentificarse ante la API rest de trazabilidad
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     */    
+    private void getTokenTraz(){
+        try{
+            usClientTraz = new ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.UsuarioApiClient();
+            Response responseUs = usClientTraz.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestSvf"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strTokenTraz = (String)lstHeaders.get(0); 
+            tokenTraz = new Token(strTokenTraz, System.currentTimeMillis());
+            usClientTraz.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+        }
+    }
+    
+    /**
+     * Método privado que obtiene y setea el tokenTraz para autentificarse ante la API rest de control y verificación
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     */    
+    private void getTokenCtrl(){
+        try{
+            usClientCtrl = new ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.UsuarioApiClient();
+            Response responseUs = usClientCtrl.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestSvf"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strTokenCtrl = (String)lstHeaders.get(0); 
+            tokenCtrl = new Token(strTokenCtrl, System.currentTimeMillis());
+            usClientCtrl.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+        }
+    }    
 }

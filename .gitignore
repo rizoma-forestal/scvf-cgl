@@ -2,6 +2,11 @@
 build/
 bin/
 target/
+doc/
+template/
+
+# ignoro el apidoc
+apidoc.json
 
  
 # OS Files #

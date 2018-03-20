@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 /**
@@ -33,16 +34,22 @@ public class MarcaClient {
         webTarget = client.target(BASE_URI).path("vehiculos_marcas");
     }
 
-    public <T> T findModelosByMarca_XML(Class<T> responseType, String id) throws ClientErrorException {
+    public <T> T findModelosByMarca_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/modelos", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findModelosByMarca_JSON(Class<T> responseType, String id) throws ClientErrorException {
+    public <T> T findModelosByMarca_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/modelos", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
     public String countREST() throws ClientErrorException {
@@ -51,24 +58,33 @@ public class MarcaClient {
         return resource.request(javax.ws.rs.core.MediaType.TEXT_PLAIN).get(String.class);
     }
 
-    public Response edit_XML(Object requestEntity, String id) throws ClientErrorException {
-        return webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{id})).request(javax.ws.rs.core.MediaType.APPLICATION_XML).put(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML));
+    public Response edit_XML(Object requestEntity, String id, String token) throws ClientErrorException {
+        return webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{id}))
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .put(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML));
     }
 
-    public Response edit_JSON(Object requestEntity, String id) throws ClientErrorException {
-        return webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{id})).request(javax.ws.rs.core.MediaType.APPLICATION_JSON).put(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_JSON));
+    public Response edit_JSON(Object requestEntity, String id, String token) throws ClientErrorException {
+        return webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{id}))
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .put(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_JSON));
     }
 
-    public <T> T find_XML(Class<T> responseType, String id) throws ClientErrorException {
+    public <T> T find_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
     }
 
-    public <T> T find_JSON(Class<T> responseType, String id) throws ClientErrorException {
+    public <T> T find_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
     public <T> T findRange_XML(Class<T> responseType, String from, String to) throws ClientErrorException {
@@ -83,44 +99,63 @@ public class MarcaClient {
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
     }
 
-    public Response create_XML(Object requestEntity) throws ClientErrorException {
-        return webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML).post(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML));
+    public Response create_XML(Object requestEntity, String token) throws ClientErrorException {
+        return webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .post(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML));
     }
 
-    public Response create_JSON(Object requestEntity) throws ClientErrorException {
-        return webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).post(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_JSON));
+    public Response create_JSON(Object requestEntity, String token) throws ClientErrorException {
+        return webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .post(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_JSON));
     }
 
-    public <T> T findByName_XML(Class<T> responseType, String name) throws ClientErrorException {
+    public <T> T findByName_XML(Class<T> responseType, String name, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         if (name != null) {
             resource = resource.queryParam("name", name);
         }
         resource = resource.path("query");
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findByName_JSON(Class<T> responseType, String name) throws ClientErrorException {
+    public <T> T findByName_JSON(Class<T> responseType, String name, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         if (name != null) {
             resource = resource.queryParam("name", name);
         }
         resource = resource.path("query");
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findAll_XML(Class<T> responseType) throws ClientErrorException {
+    public <T> T findAll_XML(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findAll_JSON(Class<T> responseType) throws ClientErrorException {
+    public <T> T findAll_JSON(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public void remove(String id) throws ClientErrorException {
-        webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{id})).request().delete();
+    public void remove(String id, String token) throws ClientErrorException {
+        webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{id}))
+                .request()
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .delete();
     }
 
     public void close() {

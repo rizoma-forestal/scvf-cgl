@@ -18,8 +18,10 @@ import ar.gob.ambiente.sacvefor.localcompleto.rue.client.TipoSociedadClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.DepartamentoClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.LocalidadClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.ProvinciaClient;
+import ar.gob.ambiente.sacvefor.localcompleto.territ.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import ar.gob.ambiente.sacvefor.servicios.rue.Domicilio;
 import ar.gob.ambiente.sacvefor.servicios.rue.TipoEntidad;
 import ar.gob.ambiente.sacvefor.servicios.rue.TipoPersona;
@@ -43,6 +45,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -97,10 +100,16 @@ public class MbPersona implements Serializable {
     private PersonaClient personaClient;  
     private TipoEntidadClient tipoEntClient;
     private TipoSociedadClient tipoSocClient;
+    private ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient usClientRue;
+    private Token tokenRue;
+    private String strTokenRue; 
     // Clientes REST para la gestión del API Territorial
     private ProvinciaClient provClient;    
     private DepartamentoClient deptoClient;
     private LocalidadClient locClient;
+    private UsuarioClient usuarioClient;
+    private Token token;
+    private String strToken;
     
     /**
      * Campos para la gestión de las Entidades provenientes de la API
@@ -978,13 +987,22 @@ public class MbPersona implements Serializable {
                 personaRue.setProvinciaGestion(ResourceBundle.getBundle("/Config").getString("Provincia"));
                 
                 
-                // utilizo el cliente rest secún corresponda
+                // utilizo el cliente rest secún corresponda, obtengo el token si no está seteado o está vencido
+                if(tokenRue == null){
+                    getTokenRue();
+                }else try {
+                    if(!tokenRue.isVigente()){
+                        getTokenRue();
+                    }
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+                }
                 personaClient = new PersonaClient();
                 Response res;
                 if(personaRue.getId() == 0){
-                    res = personaClient.create_JSON(personaRue);
+                    res = personaClient.create_JSON(personaRue, tokenRue.getStrToken());
                 }else{
-                    res = personaClient.edit_JSON(personaRue, String.valueOf(personaRue.getId()));
+                    res = personaClient.edit_JSON(personaRue, String.valueOf(personaRue.getId()), tokenRue.getStrToken());
                 }
                 
                 personaClient.close();
@@ -1182,10 +1200,19 @@ public class MbPersona implements Serializable {
         List<ar.gob.ambiente.sacvefor.servicios.rue.Persona> listPersonas = new ArrayList<>();
         
         try{
-            // instancio el cliente para la obtención de la Persona
+            // instancio el cliente para la obtención de la Persona, obtengo el token si no está seteado o está vencido
+            if(tokenRue == null){
+                getTokenRue();
+            }else try {
+                if(!tokenRue.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             personaClient = new PersonaClient();
             GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Persona>> gType = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Persona>>() {};
-            Response response = personaClient.findByQuery_JSON(Response.class, null, String.valueOf(cuitBusqRue), null);
+            Response response = personaClient.findByQuery_JSON(Response.class, null, String.valueOf(cuitBusqRue), null, tokenRue.getStrToken());
             listPersonas = response.readEntity(gType); 
             // cierro el cliente
             personaClient.close();
@@ -1209,9 +1236,18 @@ public class MbPersona implements Serializable {
      */
     private void cargarPersona() {
         try{
-            // instancio el cliente para la obtención de la Persona
+            // instancio el cliente para la obtención de la Persona, obtengo el token si no está seteado o está vencido
+            if(tokenRue == null){
+                getTokenRue();
+            }else try {
+                if(!tokenRue.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             personaClient = new PersonaClient();
-            personaRue = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(persona.getIdRue()));
+            personaRue = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(persona.getIdRue()), tokenRue.getStrToken());
             personaClient.close();
         }catch(ClientErrorException ex){
             // muestro un mensaje al usuario
@@ -1273,11 +1309,20 @@ public class MbPersona implements Serializable {
         List<TipoEntidad> listSrv;
         
         try{
-            // instancio el cliente para la selección de los Tipos de Entidad
+            // instancio el cliente para la selección de los Tipos de Entidad, obtengo el token si no está seteado o está vencido
+            if(tokenRue == null){
+                getTokenRue();
+            }else try {
+                if(!tokenRue.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             tipoEntClient = new TipoEntidadClient();
             // obtengo el listado de Tipos de Entidad 
             GenericType<List<TipoEntidad>> gType = new GenericType<List<TipoEntidad>>() {};
-            Response response = tipoEntClient.findAll_JSON(Response.class);
+            Response response = tipoEntClient.findAll_JSON(Response.class, tokenRue.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con los Tipos de Entidad como un objeto Entidad Servicio
             listTipoEntidad = new ArrayList<>();
@@ -1303,11 +1348,20 @@ public class MbPersona implements Serializable {
         List<TipoSociedad> listSrv;
         
         try{
-            // instancio el cliente para la selección de los Tipos de Sociedad
+            // instancio el cliente para la selección de los Tipos de Sociedad, obtengo el token si no está seteado o está vencido
+            if(tokenRue == null){
+                getTokenRue();
+            }else try {
+                if(!tokenRue.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             tipoSocClient = new TipoSociedadClient();
             // obtengo el listado de Tipos de Sociedad 
             GenericType<List<TipoSociedad>> gType = new GenericType<List<TipoSociedad>>() {};
-            Response response = tipoSocClient.findAll_JSON(Response.class);
+            Response response = tipoSocClient.findAll_JSON(Response.class, tokenRue.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con los Tipos de Sociedad como un objeto Entidad Servicio
             listTipoSoc = new ArrayList<>();
@@ -1333,11 +1387,21 @@ public class MbPersona implements Serializable {
         List<Provincia> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token TERR", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             provClient = new ProvinciaClient();
             // obtengo el listado de provincias 
             GenericType<List<Provincia>> gType = new GenericType<List<Provincia>>() {};
-            Response response = provClient.findAll_JSON(Response.class);
+            Response response = provClient.findAll_JSON(Response.class, token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con las provincias como un objeto Entidad Servicio
             listProvincias = new ArrayList<>();
@@ -1366,11 +1430,21 @@ public class MbPersona implements Serializable {
         List<Departamento> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token TERR", ex.getMessage()});
+            }
             // instancio el cliente para la selección de los Departamentos
             provClient = new ProvinciaClient();
             // obtngo el listado
             GenericType<List<Departamento>> gType = new GenericType<List<Departamento>>() {};
-            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv));
+            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listDepartamentos = new ArrayList<>();
@@ -1397,11 +1471,21 @@ public class MbPersona implements Serializable {
         List<CentroPoblado> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token TERR", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las Localidades
             deptoClient = new DepartamentoClient();
             // obtngo el listado
             GenericType<List<CentroPoblado>> gType = new GenericType<List<CentroPoblado>>() {};
-            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto));
+            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listLocalidades = new ArrayList<>();
@@ -1426,9 +1510,19 @@ public class MbPersona implements Serializable {
         CentroPoblado cp;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token TERR", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             locClient = new LocalidadClient();
-            cp = locClient.find_JSON(CentroPoblado.class, String.valueOf(idLocalidad));
+            cp = locClient.find_JSON(CentroPoblado.class, String.valueOf(idLocalidad), token.getStrToken());
             // cierro el cliente
             locClient.close();
             // instancio las Entidades servicio
@@ -1501,9 +1595,19 @@ public class MbPersona implements Serializable {
                 try{
                     // instancio el cliente para verificar la existencia de una Persona con el mismo CUIT
                     List<ar.gob.ambiente.sacvefor.servicios.rue.Persona> listPersonas = new ArrayList<>();
+                    // obtengo el token si no está seteado o está vencido
+                    if(tokenRue == null){
+                        getTokenRue();
+                    }else try {
+                        if(!tokenRue.isVigente()){
+                            getTokenRue();
+                        }
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+                    }
                     personaClient = new PersonaClient();
                     GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Persona>> gType = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Persona>>() {};
-                    Response response = personaClient.findByQuery_JSON(Response.class, null, String.valueOf(String.valueOf(c)), null);
+                    Response response = personaClient.findByQuery_JSON(Response.class, null, String.valueOf(String.valueOf(c)), null, tokenRue.getStrToken());
                     listPersonas = response.readEntity(gType);
                     // cierro el cliente
                     personaClient.close();
@@ -1649,9 +1753,18 @@ public class MbPersona implements Serializable {
      */
     private TipoEntidad obtenerTipoEntidad() {
         try{
-            // instancio el cliente para la selección de los Tipos de Entidad
+            // instancio el cliente para la selección de los Tipos de Entidad, obtengo el token si no está seteado o está vencido
+            if(tokenRue == null){
+                getTokenRue();
+            }else try {
+                if(!tokenRue.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             tipoEntClient = new TipoEntidadClient();
-            TipoEntidad response = tipoEntClient.find_JSON(TipoEntidad.class, String.valueOf(tipoEntidadSelected.getId()));
+            TipoEntidad response = tipoEntClient.find_JSON(TipoEntidad.class, String.valueOf(tipoEntidadSelected.getId()), tokenRue.getStrToken());
             tipoEntClient.close();
             return response;
         }catch(ClientErrorException ex){
@@ -1669,9 +1782,18 @@ public class MbPersona implements Serializable {
      */
     private TipoSociedad obtenerTipoSociedad() {
         try{
-            // instancio el cliente para la selección de los Tipos de Sociedad
+            // instancio el cliente para la selección de los Tipos de Sociedad, obtengo el token si no está seteado o está vencido
+            if(tokenRue == null){
+                getTokenRue();
+            }else try {
+                if(!tokenRue.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             tipoSocClient = new TipoSociedadClient();
-            TipoSociedad response = tipoSocClient.find_JSON(TipoSociedad.class, String.valueOf(tipoSocSelected.getId()));
+            TipoSociedad response = tipoSocClient.find_JSON(TipoSociedad.class, String.valueOf(tipoSocSelected.getId()), tokenRue.getStrToken());
             tipoSocClient.close();
             return response;
         }catch(ClientErrorException ex){
@@ -1689,9 +1811,18 @@ public class MbPersona implements Serializable {
      */
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona buscarPersonaRueById() {
         try{
-            // instancio el cliente para la selección de la Persona RUE
+            // instancio el cliente para la selección de la Persona RUE, obtengo el token si no está seteado o está vencido
+            if(tokenRue == null){
+                getTokenRue();
+            }else try {
+                if(!tokenRue.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             personaClient = new PersonaClient();
-            ar.gob.ambiente.sacvefor.servicios.rue.Persona response = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(persona.getIdRue()));
+            ar.gob.ambiente.sacvefor.servicios.rue.Persona response = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(persona.getIdRue()), tokenRue.getStrToken());
             personaClient.close();
             return response;
         }catch(ClientErrorException ex){
@@ -1755,4 +1886,40 @@ public class MbPersona implements Serializable {
         }
         return result;
     }
+    
+    /**
+     * Método privado que obtiene y setea el token para autentificarse ante la API rest de Territorial
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     */
+    private void getTokenTerr(){
+        try{
+            usuarioClient = new UsuarioClient();
+            Response responseUs = usuarioClient.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTerr"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strToken = (String)lstHeaders.get(0); 
+            token = new Token(strToken, System.currentTimeMillis());
+            usuarioClient.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token para la API Territorial: " + ex.getMessage());
+        }
+    } 
+    
+    /**
+     * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     */
+    private void getTokenRue(){
+        try{
+            usClientRue = new ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient();
+            Response responseUs = usClientRue.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestRue"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strTokenRue = (String)lstHeaders.get(0); 
+            tokenRue = new Token(strTokenRue, System.currentTimeMillis());
+            usClientRue.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token para la API RUE: " + ex.getMessage());
+        }
+    }       
 }

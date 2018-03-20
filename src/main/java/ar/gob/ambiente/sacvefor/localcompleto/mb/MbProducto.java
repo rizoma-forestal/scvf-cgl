@@ -18,11 +18,14 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.EspecieClient;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.FamiliaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.GeneroClient;
+import ar.gob.ambiente.sacvefor.localcompleto.tax.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import ar.gob.ambiente.sacvefor.servicios.especies.Especie;
 import ar.gob.ambiente.sacvefor.servicios.especies.Familia;
 import ar.gob.ambiente.sacvefor.servicios.especies.Genero;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +42,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
@@ -92,6 +96,9 @@ public class MbProducto {
     private EspecieClient especieClient;    
     private FamiliaClient familiaClient;
     private GeneroClient generoClient;
+    private UsuarioClient usuarioClient;
+    private Token token;
+    private String strToken;
     
     /**
      * Campos para la gestión de los elementos forestales provenientes de la API 
@@ -810,11 +817,22 @@ public class MbProducto {
         List<Familia> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la selección de las provincias
             familiaClient = new FamiliaClient();
             // obtengo el listado de provincias 
             GenericType<List<Familia>> gType = new GenericType<List<Familia>>() {};
-            Response response = familiaClient.findAll_JSON(Response.class);
+            Response response = familiaClient.findAll_JSON(Response.class, token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con las provincias como un objeto Entidad Servicio
             listFamilias = new ArrayList<>();
@@ -879,11 +897,22 @@ public class MbProducto {
         List<Genero> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la selección de las provincias
             familiaClient = new FamiliaClient();
             // obtengo el listado
             GenericType<List<Genero>> gType = new GenericType<List<Genero>>() {};
-            Response response = familiaClient.findByFamilia_JSON(Response.class, String.valueOf(idFamilia));
+            Response response = familiaClient.findByFamilia_JSON(Response.class, String.valueOf(idFamilia), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listGeneros = new ArrayList<>();
@@ -909,11 +938,22 @@ public class MbProducto {
         List<Especie> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la selección de las provincias
             generoClient = new GeneroClient();
             // obtngo el listado
             GenericType<List<Especie>> gType = new GenericType<List<Especie>>() {};
-            Response response = generoClient.findByGenero_JSON(Response.class, String.valueOf(idGenero));
+            Response response = generoClient.findByGenero_JSON(Response.class, String.valueOf(idGenero), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listEspecies = new ArrayList<>();
@@ -939,9 +979,20 @@ public class MbProducto {
          Especie espLocal;
          
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la obtención de la Especie
             especieClient = new EspecieClient();
-            espLocal = especieClient.find_JSON(Especie.class, String.valueOf(idTax));
+            espLocal = especieClient.find_JSON(Especie.class, String.valueOf(idTax), token.getStrToken());
             // cierro el cliente
             especieClient.close();
             // instancio las Entidades servicio
@@ -962,6 +1013,24 @@ public class MbProducto {
                     + "servicio REST de Taxonomía", ex.getMessage()});
         }
     }
+    
+    /**
+     * Método privado que obtiene y setea el token para autentificarse ante la API rest de Taxonomías
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     */
+    private void getTokenTax(){
+        try{
+            usuarioClient = new UsuarioClient();
+            Response responseUs = usuarioClient.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTax"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strToken = (String)lstHeaders.get(0); 
+            token = new Token(strToken, System.currentTimeMillis());
+            usuarioClient.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+        }
+    }    
 
     /*****************************
     ** Converter para Producto  **

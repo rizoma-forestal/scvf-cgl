@@ -7,6 +7,17 @@ UrlEntidades=/rue/rest
 UrlTrazabilidad=/trazabilidad/rest
 UrlCtrlVerif=/ctrlVerif/rest
 
+# Usuarios de acceso a API's REST:
+# UsRestTax y UsRestTerr => sacvefor (para los servicios de taxonomías y territorial)
+# UsRestRue => admin [Provincia] para el estándar y admin_[provincia] para los locales (para el RUE)
+# UsRestSvf => cgl-[provincia] para las provincias y gestionLocal para el estándar (para TRAZ y CTRL)
+UsRestTax=sacvefor
+UsRestTerr=sacvefor
+UsRestRue=admin [Provincia]
+UsRestSvf=gestionLocal
+# Tiempo de vigencia del token recibido
+TimeToken=3600000
+
 # Parámetros de Gestión de Trazabilidad
 TrazServer=http://localhost:8080
 TrazRutaAplicacion=/trazabilidad
