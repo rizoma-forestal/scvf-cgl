@@ -22,31 +22,77 @@ import org.primefaces.context.RequestContext;
  * y sus respectivas Sub zonas
  * ZonaIntervención: Se refiere a las diferentes Zonas según el ordenamiento ambiental:
  * Roja, Amarilla, Verde, etc
- * SubZona: Se refiere a las diferentes sub zonas en las que se pueden agrupar las zonas verde y amarilla
+ * SubZona: Se refiere a las diferentes sub zonas en las que se pueden agrupar las zonas verde y amarilla.
+ * Gestiona las vista aut/zonas/subZona.xhtml y zona.xhtml
  * @author rincostante
  */
 public class MbZona {
 
+    /**
+     * Variable privada: zona a gestionar
+     */
     private ZonaIntervencion zona;
-    private SubZona subZona;
-    private List<ZonaIntervencion> lstZonas;
-    private List<SubZona> lstSubZonas;
-    private List<ZonaIntervencion> lstZonaFilters;
-    private List<SubZona> lstSubZonaFilters;
-    private boolean view;
-    private boolean edit;
     
+    /**
+     * Variable privada: subzona a gestionar
+     */
+    private SubZona subZona;
+    
+    /**
+     * Variable privada: listado de las zonas existentes
+     */
+    private List<ZonaIntervencion> lstZonas;
+    
+    /**
+     * Variable privada: listado de las sub zonas existentes
+     */
+    private List<SubZona> lstSubZonas;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de las zonas
+     */
+    private List<ZonaIntervencion> lstZonaFilters;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de las sub zonas
+     */
+    private List<SubZona> lstSubZonaFilters;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando no está editable
+     */
+    private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando es existente
+     */
+    private boolean edit;
+
+    ///////////////////////////////////////////////////
+    // acceso a datos mediante inyección de recursos //
+    ///////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ZonaIntervencion
+     */  
     @EJB
     private ZonaIntervencionFacade zonaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de SubZona
+     */  
     @EJB
     private SubZonaFacade subZonaFacade;
     
+    /**
+     * Constructor
+     */
     public MbZona() {
     }
         
-    /**********************
-     * Métodos de acceso **
-     **********************/  
+    ///////////////////////
+    // Métodos de acceso //
+    /////////////////////// 
     public boolean isEdit() {
         return edit;
     }
@@ -114,9 +160,13 @@ public class MbZona {
     }
     
     
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
+    
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar
+     */  
     @PostConstruct
     public void init(){
         zona = new ZonaIntervencion();
@@ -328,21 +378,32 @@ public class MbZona {
     
 
     
-    /*********************
-     * Métodos privados **
-     *********************/    
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
+    
+    /**
+     * Meétodo que obtiene una zona de intervención según si id para el converter de Zonas
+     * @param key Long identificador de la zona
+     * @return Object zona de intervención correspondiente al id
+     */
     private Object getZonaIntervencion(Long key) {
         return zonaFacade.find(key);
     }
 
+    /**
+     * Meétodo que obtiene una sub zona de intervención según si id para el converter de sub zonas
+     * @param key Long identificador de la sub zona
+     * @return Object sub zona de intervención correspondiente al id
+     */
     private Object getSubZona(Long key) {
         return subZonaFacade.find(key);
     }
 
  
-    /********************************
-    ** Converter ZonaIntervencion  **
-    *********************************/    
+    /////////////////////////////////
+    // Converter ZonaIntervencion  //
+    ///////////////////////////////// 
     @FacesConverter(forClass = ZonaIntervencion.class)
     public static class ZonaConverter implements Converter {
 
@@ -389,9 +450,9 @@ public class MbZona {
         }
     }     
     
-    /***********************
-    ** Converter SubZona  **
-    ************************/ 
+    ////////////////////////
+    // Converter SubZona  //
+    ////////////////////////
     @FacesConverter(forClass = SubZona.class)
     public static class SubZonaConverter implements Converter {
 

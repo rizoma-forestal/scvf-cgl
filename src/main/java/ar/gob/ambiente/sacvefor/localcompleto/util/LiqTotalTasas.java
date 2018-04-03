@@ -17,24 +17,55 @@ import java.util.logging.Logger;
  */
 public class LiqTotalTasas implements Serializable{
     
+    ///////////////////////////////////////////////
+    // Campos para leer archivo de configuracion //
+    ///////////////////////////////////////////////
+    
     /**
-     * Campos para leer archivo de configuracion
+     * Variable privada: objeto para gestionar el archivo de propuedades
      */
     Properties properties;
+    
+    /**
+     * Variable privada: objeto para obtener el flujo con el archivo de propiedades
+     */
     InputStream inputStream;
     
+    /**
+     * Variable privada: guarda el nombre de la provincia correspondiente al componente local
+     */
     private String provincia;
+    
+    /**
+     * Variable privada: guarda el tipo de guía gestionada
+     */
     private String tipoGuia;
+    
+    /**
+     * Variable privada: guarda el código único de la guía
+     */
     private String codGuia;
+    
+    /**
+     * Variable privada: fecha de emisión del volante con las tasas
+     */
     private Date fechaEmisionVolante;
+    
+    /**
+     * Variable privada: total a abonar por el titular de la guía en concepto
+     * de las tasas que correspondan a la totalidad de los productos
+     */
     private float totalALiquidar;
-   
+    
+    /**
+     * Variable privada: listado de los detalles de tasas por cada producto incluído en la guía
+     */
     private List<DetalleTasas> detalles;
 
     /**
      * Método que devuelve el total por Tasa
-     * @param nombreTasa : nombre de la Tasa a calcular su total
-     * @return 
+     * @param nombreTasa String nombre de la Tasa a calcular su total
+     * @return float total a abonar para la tasa recibida
      */    
     public float getTotalByTasa(String nombreTasa) {
         float result = 0;
@@ -48,12 +79,15 @@ public class LiqTotalTasas implements Serializable{
         return result;
     }
     
+    /**
+     * Constructor que instacia el objeto properties
+     */
     public LiqTotalTasas(){
         properties = new Properties();
     }
     /**
      * Método que devuelve el total a pagar por tasas para todos los Items de la Guía
-     * @return 
+     * @return float monto correspondiente
      */
     public float getTotalALiquidar(){
         float result = 0;
@@ -66,7 +100,7 @@ public class LiqTotalTasas implements Serializable{
 
     /**
      * Método que retorna la Provincia configurada en el archivo de propiedades
-     * @return 
+     * @return String nombre de la provincia
      */
     public String getProvincia() {
         // instancio el stream

@@ -1,6 +1,7 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.service;
 
+import ar.gob.ambiente.sacvefor.localcompleto.annotation.Secured;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.EstadoGuiaFacade;
 import java.util.ArrayList;
@@ -24,40 +25,118 @@ public class EstadoGuiaFacadeREST {
 
     @EJB
     private EstadoGuiaFacade estadoFacade;
-    
+
     /**
-     * Método para obtener un EstadoGuia según si id
-     * Ej: [PATH]/estadosguia/1
-     * @param id: id del EstadoGuia a obtener
-     * @return 
-     */
+     * @api {get} /estadosguia/:id Ver un Estado de guía según su id
+     * @apiExample {curl} Ejemplo de uso:
+     *     curl -X GET -d [PATH_SERVER]/:cgl-prov/rest/estadosguia/3 -H "authorization: xXyYvWzZ"
+     * @apiVersion 1.0.0
+     * @apiName GetEstadoGuia
+     * @apiGroup EstadoGuia
+     * @apiHeader {String} Authorization Token recibido al autenticar el usuario
+     * @apiHeaderExample {json} Ejemplo de header:
+     *     {
+     *       "Authorization": "xXyYvWzZ"
+     *     } 
+     * @apiParam {Long} id Identificador único del EstadoGuia
+     * @apiDescription Método para obtener un EstadoGuia existente según el id remitido.
+     * Obtiene el estado de guía mediante el método local find(Long id)
+     * @apiSuccess {ar.gob.ambiente.sacvefor.servicios.cgl.EstadoGuia} EstadoGuia Detalle del estado de guía registrado.
+     * @apiSuccessExample Respuesta exitosa:
+     *     HTTP/1.1 200 OK
+     *     {
+     *          {"id": "3",
+     *          "nombre": "EN TRANSITO"}
+     *     }
+     * @apiError EstadoGuiaNotFound No existe estado de guía registrado con ese id.
+     * @apiErrorExample Respuesta de error:
+     *     HTTP/1.1 400 Not Found
+     *     {
+     *       "error": "No hay estado de guía registrado con el id recibido"
+     *     }
+     */        
     @GET
     @Path("{id}")
+    @Secured
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public EstadoGuia find(@PathParam("id") Long id) {
         return estadoFacade.find(id);
     }
 
     /**
-     * Método para obtener los EstadoGuia habilitados
-     * Ej: [PATH]/estadosguia
-     * @return 
+     * @api {get} /estadosguia Ver todos los EstadoGuia
+     * @apiExample {curl} Ejemplo de uso:
+     *     curl -X GET -d [PATH_SERVER]/:cgl-prov/rest/estadosguia -H "authorization: xXyYvWzZ"
+     * @apiVersion 1.0.0
+     * @apiName GetEstadoGuia
+     * @apiGroup EstadoGuia
+     * @apiHeader {String} Authorization Token recibido al autenticar el usuario
+     * @apiHeaderExample {json} Ejemplo de header:
+     *     {
+     *       "Authorization": "xXyYvWzZ"
+     *     } 
+     * @apiDescription Método para obtener un listado de los estados de guías existentes.
+     * Obtiene los estados de guías mediante el método local findAll()
+     * @apiSuccess {ar.gob.ambiente.sacvefor.servicios.cgl.EstadoGuia} EstadoGuia Listado con todos los estados de guías registrados.
+     * @apiSuccessExample Respuesta exitosa:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "estadosguia": [
+     *          {"id": "1",
+     *          "nombre": "CARGA INICIAL"},
+     *          {"id": "2",
+     *          "nombre": "CERRADA"},
+     *          {"id": "3",
+     *          "nombre": "EN TRANSITO"}
+     *       ]
+     *     }
+     * @apiError EstadosGuiaNotFound No existen estados de guías registrados.
+     * @apiErrorExample Respuesta de error:
+     *     HTTP/1.1 400 Not Found
+     *     {
+     *       "error": "No hay estados de guías registrados"
+     *     }
      */
     @GET
+    @Secured
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public List<EstadoGuia> findAll() {
         return estadoFacade.getHabilitados();
     }
-    
+
     /**
-     * Método que retorna un Estdo según el parámetro de consulta
-     * Por ahora será el nombre
-     * @param nombre : Nombre del Estado a consultar
-     * Ej: [PATH]/estadosguia/query?nombre=CERRADA
-     * @return 
-     */        
+     * @api {get} /estadosguia/query?nombre=:nombre Ver Estados de guías según su nombre.
+     * @apiExample {curl} Ejemplo de uso:
+     *     curl -X GET -d [PATH_SERVER]/:cgl-prov/rest/estadosguia/query?nombre=CERRADA -H "authorization: xXyYvWzZ"
+     * @apiVersion 1.0.0
+     * @apiName GetEstadoGuiaQuery
+     * @apiGroup EstadoGuia
+     * @apiHeader {String} Authorization Token recibido al autenticar el usuario
+     * @apiHeaderExample {json} Ejemplo de header:
+     *     {
+     *       "Authorization": "xXyYvWzZ"
+     *     }
+     * @apiParam {String} nombre nombre de la Parametrica solicitada
+     * @apiDescription Método para obtener la  paramétrica según su nombre.
+     * Obtiene la paramétrica con el método local getExistente(String nombre)
+     * @apiSuccess {ar.gob.ambiente.sacvefor.servicios.cgl.EstadoGuia} EstadoGuia estado de la guía obtenida.
+     * @apiSuccessExample Respuesta exitosa:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "estadoguia": 
+     *          {"id": "3",
+     *          "nombre": "EN TRANSITO"}
+     *     }
+     * @apiError EstadoGuiaNotFound No existe estado de guía registrado con ese nombre.
+     * @apiErrorExample Respuesta de error:
+     *     HTTP/1.1 400 Not Found
+     *     {
+     *       "error": "No hay estado de guía registrado con con ese nombre"
+     *     }
+     */     
     @GET
     @Path("/query")
+    @Secured
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public List<EstadoGuia> findByQuery(@QueryParam("nombre") String nombre) {
         List<EstadoGuia> result = new ArrayList<>();
@@ -68,27 +147,17 @@ public class EstadoGuiaFacadeREST {
         return result;
     }       
 
-    /**
-     * Método que obtiene un listado de EstadoGuia cuyos id se encuentran entre los parámetros de inicio y fin recibidos
-     * Ej: [PATH]/estadosguia/1/10
-     * @param from: parámetro 'desde' el cual se inicia el listado
-     * @param to: parámetro 'hasta' el cual se completa el listado
-     * @return 
-     */
     @GET
     @Path("{from}/{to}")
+    @Secured
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public List<EstadoGuia> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return estadoFacade.findRange(new int[]{from, to});
     }
 
-    /**
-     * Método que devuelve un entero con la totalidad de los Usuarios registrados
-     * Ej: [PATH]/estadosguia/count
-     * @return 
-     */
     @GET
     @Path("count")
+    @Secured
     @Produces(MediaType.TEXT_PLAIN)
     public String countREST() {
         return String.valueOf(estadoFacade.count());

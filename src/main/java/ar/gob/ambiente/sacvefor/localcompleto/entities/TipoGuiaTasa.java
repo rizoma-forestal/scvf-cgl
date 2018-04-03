@@ -18,18 +18,23 @@ import javax.validation.constraints.NotNull;
 public class TipoGuiaTasa implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Paramétrica cuyo tipo es "Tipos de Tasa"
+     * Variable privada: Paramétrica cuyo tipo es "Tipos de Tasa"
      */
     @ManyToOne
     @JoinColumn(name="tipoTasa_id", nullable=false)
     @NotNull(message = "Debe existir un Tipo")
     private Parametrica tipo;    
 
+    // métodos de acceso     
     public Parametrica getTipo() {
         return tipo;
     }

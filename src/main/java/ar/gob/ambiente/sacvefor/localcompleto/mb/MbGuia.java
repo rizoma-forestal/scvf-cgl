@@ -75,168 +75,429 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 /**
  * Bean de respaldo para la gestión de Guías.
  * Implica la creación, edición y lectura de los datos 
- * y la emisión de la Guía
+ * y la emisión de la Guía. Gestiona las vistas de /guia/gestion/
  * @author rincostante
  */
 public class MbGuia {
 
+    /**
+     * Variable privada: setea la página inicial para mostrar en el frame
+     */
     private String page = "general.xhtml";
+    
+    /**
+     * Variable privada: objeto principal a gestionar
+     */
     private Guia guia;
+    
+    /**
+     * Variable privada: listado de las guías existentes
+     */
     private List<Guia> listado;
+    
+    /**
+     * Variable privada: listado para filtrar la tabla de guías existentes
+     */
     private List<Guia> listadoFilter;
+    
+    /**
+     * Variable privada: número de la guía para obtenerla para su gestión
+     */
     private String guiaNumero;
+    
+    /**
+     * Variable privada: flag que indica que la guía que se está gestionando es existente
+     */
     private boolean edit;
+    
+    /**
+     * Variable privada: flag que indica que la guía que se está gestionando no está editable
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: MbSesion para gestionar las variables de sesión del usuario
+     */  
     private MbSesion sesion;
+    
+    /**
+     * Variable privada: Usuario de sesión
+     */
     private Usuario usLogueado;
     
-    /*********************
-     * Fuente y Titular **
-     *********************/
+    //////////////////////
+    // Fuente y Titular //
+    //////////////////////
     /**
-     * Listado de Tipos de Guías para su selección
+     * Listado de Tipos de Guías para poblar el combo para su selección
      */
     private List<TipoGuia> lstTiposGuia;
     
+    ///////////////////////////////////////
+    // Listado de Fuentes para las Guías //
+    ///////////////////////////////////////
     /**
-     * Listado de Fuentes para las Guías
+     * Variable privada: listado de las Autorizaciones disponibles para tomar como fuente de productos para la guía
      */
     private List<Autorizacion> lstAutorizaciones;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de Autorizaciones disponibles
+     */
     private List<Autorizacion> lstAutFilters;
+    
+    /**
+     * Variable privada: listado de Guías de acopio disponibles para tomar como fuente de productos para la guía 
+     */
     private List<Guia> lstGuiasMadre;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de Guías de acopio disponibles
+     */
     private List<Guia> lstGuiasMadreFilters;
+    
+    /**
+     * Variable privada: listado de las guías que tomaron productos de la que se está gestionando
+     */
     private List<Guia> lstGuiasHijas;
+    
+    /**
+     * Variable privada: autorización seleccionada para descontar productos
+     */
     private Autorizacion autSelected;
+    
+    /**
+     * Variable privada: guia seleccionada para descontar productos
+     */
     private Guia guiaSelected;
+    
+    /**
+     * Variable privada: cuit del productor a buscar para asignarlo como Entidad Guía titular
+     */
     private Long cuitBuscar;
+    
+    /**
+     * Variable privada: productor a asignar a la Entidad Guía como titular
+     */
     private Persona productor;
+    
+    /**
+     * Variable privada: Entidad Guía que oficiará de titular de la guía
+     */
     private EntidadGuia entOrigen;
     
-    /************
-     * Destino **
-     ************/
+    /////////////
+    // Destino //
+    /////////////
+    /**
+     * Variable privada: Persona a seleccionada para conformar la Entidad Guía destino
+     */
     private Persona destinatario;
+    
+    /**
+     * Variable privada: Entidad Guía que hará las veces de destinatario de la Guía
+     */
     private EntidadGuia entDestino;
+    
+    /**
+     * Variable privada: Persona del paquete paqRue.jar que encapsulará los datos de la Persona en el
+     * Registro Unico de entidades (RUE)
+     */
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona personaRue;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Personas en el RUE
+     */
     private PersonaClient personaClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Usuarios en el RUE
+     */
     private ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient usClientRue;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API del RUE
+     */
     private Token tokenRue;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API del RUE
+     */
     private String strTokenRue;   
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */ 
     private static final Logger logger = Logger.getLogger(Persona.class.getName());    
+    
+    /**
+     * Variable privada: flag que indica que se está editando el destino
+     */
     private boolean editCuit;
+    
+    /**
+     * Variable privada: flag que indica que se está buscando el destino
+     */
     private boolean cuitProcesado;
     
-    /***************
-     * Transporte **
-     ***************/
+    ////////////////
+    // Transporte //
+    ////////////////
+    /**
+     * Variable privada: Transporte a asignar a la Guía
+     */
     private Transporte transporte;
+    
+    /**
+     * Variable privada: Vehículo que compondrá el transporte para la Guía
+     */    
     private Vehiculo vehiculo;
+    
+    /**
+     * Variable privada: matrícula del vehículo a buscar
+     */    
     private String matBuscar;
+    
+    /**
+     * Variable privada: flag que indica si se está editando el transporte
+     */    
     private boolean editTransporte;
-    private boolean viewTransporte;
+    
+    /**
+     * Variable privada: flag que indica si se está buscando un nuevo vehículo
+     */    
     private boolean buscarVehNuevo;
     
-    /**************
-     * Productos **
-     **************/   
+    ///////////////
+    // Productos //
+    /////////////// 
     /**
-     * Flag que habilita la asignación de productos
+     * Variable privada: Flag que habilita la asignación de productos
      */
     private boolean habilitarProd;
+    
     /**
-     * Listado de items de los cuales se tomarán productos para la Guía
+     * Variable privada: Listado de items de los cuales se tomarán productos para la Guía
      */
     private List<ItemProductivo> lstItemsOrigen;
+    
     /**
-     * Listado de items autorizados para descontar desde la Guía ya registrada
+     * Variable privada: Listado de items autorizados para descontar desde la Guía ya registrada
      */
     private List<ItemProductivo> lstItemsAutorizados;
-    private boolean descontandoProd;
+    
     /**
-     * Item productivo seleccionado para obtener productos
+     * Variable privada: flag que indica si se está descontando cupo de un producto
+     */
+    private boolean descontandoProd;
+    
+    /**
+     * Variable privada: Item productivo seleccionado para obtener productos
      */
     private ItemProductivo itemFuente;
+    
     /**
-     * Item productivo asignado a la Guía
+     * Variable privada: Item productivo asignado a la Guía
      */
     private ItemProductivo itemAsignado;
-
+    
+    /**
+     * Variable privada: flag que indica si se está editando un ítem ya asignado a la Guía
+     */
     private boolean editandoItem;
     
     /**
-     * Listado de Items para tomar productos, sean de Guías o Autorizaciones
+     * Variable privada: Listado de Items para tomar productos, sean de Guías o Autorizaciones
      */
     private List<ItemProductivo> lstItemsAsignados;
     
-    /**********
-     * Tasas **
-     **********/     
+    ///////////
+    // Tasas //
+    ///////////   
     /**
-     * Listado con los nombres de las tasas a liquidar
+     * Variable privada: Listado con los nombres de las tasas a liquidar
      */
     private List<String> lstNombresTasas;
+    
+    /**
+     * Variable privada: listado de las tasas para un item productivo
+     */
     private List<DetalleTasas> lstDetallesTasas;
+    
+    /**
+     * Variable privada: liquidación total de tasas para un ítem productivo
+     */
     private LiqTotalTasas liquidacion;
+    
+    /**
+     * Variable privada: listado de las liquidaciones totales correspondientes a los ítems de la guía
+     */
     private List<LiqTotalTasas> liquidaciones;
+    
+    /**
+     * Variable privada: objeto para gestionar el reporte para la emisión de la Guía
+     */
     JasperPrint jasperPrint;
+    
+    /**
+     * Variable estática privada y final: indica la ruta de los reportes 
+     */
     private static final String RUTA_VOLANTE = "/resources/reportes/";
     
-    /********************************************************
-     * Notificación al Destinatario de Guías de transporte **
-     ********************************************************/
-    @Resource(mappedName ="java:/mail/ambientePrueba")    
+    /////////////////////////////////////////////////////////
+    // Notificación al Destinatario de Guías de transporte //
+    /////////////////////////////////////////////////////////
+    /**
+     * Variable privada: sesión de mail del servidor
+     */
+    @Resource(mappedName ="java:/mail/ambientePrueba") 
     private Session mailSesion;
-    private Message mensaje;    
-    private UsuarioClient usuarioClient;
+    
+    /**
+     * Variable privada: String mensaje a enviar por correo electrónico
+     */ 
+    private Message mensaje;   
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de usuarios de Trazabilidad
+     */
+    private UsuarioClient usuarioClientTraz;
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Tipo de paramétrica de Trazabilidad
+     */
     private TipoParamClient tipoParamClient;
-    private ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.UsuarioApiClient usClientTraz;
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Validación de usuarios para el acceso a Trazabilidad
+     */
+    private ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.UsuarioApiClient usApiClientTraz;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API de Trazabilidad
+     */ 
     private String strTokenTraz;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API de Trazabilidad
+     */    
     private Token tokenTraz;
     
+    /**
+     * Variable privada: cliente para el acceso a la API de Guías de Control y verificación
+     */
     private GuiaCtrlClient guiaCtrlClient;
-    private ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.UsuarioApiClient usClientCtrl;
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Validación de usuarios para el acceso a Control y verificación
+     */
+    private ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.UsuarioApiClient usApiClientCtrl;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API de Control y verificación
+     */ 
     private String strTokenCtrl;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API de Control y verificación
+     */    
     private Token tokenCtrl;
     
+    /**
+     * Variable privada: mensaje devuelto al usuario en caso de éxito de la emisión de la Guía
+     */
     private String msgExitoEmision;
+    
+    /**
+     * Variable privada: mensaje devuelto al usuario en caso de error de la emisión de la Guía
+     */
     private String msgErrorEmision;
     
-    /*****************************************************************
-     * Listado de inmuebles vinculados a la Autorización del predio **
-     * desde el cual provienen los productos vinculados a la Guía, ***
-     * cualquier sea su tipo. A mostrar en el detalle de la Guía. ****
-     *****************************************************************/
+    /**
+     * Variable privada: Listado de inmuebles vinculados a la Autorización del predio
+     * desde el cual provienen los productos vinculados a la Guía,
+     * cualquier sea su tipo. A mostrar en el detalle de la Guía.
+     */
     private List<Inmueble> lstInmueblesOrigen;
 
-    /********************
-     * Accesos a datos **
-     ********************/
+    /////////////////////
+    // Accesos a datos mediante inyección de recursos //
+    /////////////////////
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Guia
+     */   
     @EJB
     private GuiaFacade guiaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoGuia
+     */   
     @EJB
     private TipoGuiaFacade tipoGuiaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Persona
+     */   
     @EJB
     private PersonaFacade perFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */   
     @EJB
     private TipoParamFacade tipoParamFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica
+     */   
     @EJB
     private ParametricaFacade paramFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Autorizacion
+     */   
     @EJB
     private AutorizacionFacade autFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ItemProductivo
+     */   
     @EJB
     private ItemProductivoFacade itemFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de EntidadGuia
+     */   
     @EJB
     private EntidadGuiaFacade entGuiaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de EstadoGuia
+     */   
     @EJB
     private EstadoGuiaFacade estadoFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Producto
+     */   
     @EJB
     private ProductoFacade prodFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Vehiculo
+     */   
     @EJB
     private VehiculoFacade vehFacade;
     
+    /**
+     * Constructor
+     */
     public MbGuia() {
     }
 
+    ///////////////////////
+    // métodos de acceso //
+    ///////////////////////
     public List<Inmueble> getLstInmueblesOrigen() {
         return lstInmueblesOrigen;
     }
@@ -309,14 +570,6 @@ public class MbGuia {
         this.editTransporte = editTransporte;
     }
 
-    public boolean isViewTransporte() {
-        return viewTransporte;
-    }
-
-    public void setViewTransporte(boolean viewTransporte) {
-        this.viewTransporte = viewTransporte;
-    }
-
     public boolean isCuitProcesado() {
         return cuitProcesado;
     }
@@ -373,6 +626,10 @@ public class MbGuia {
         this.guiaSelected = guiaSelected;
     }
 
+    /**
+     * Método para completar el listado con los ítems autorizados de la guía
+     * @return 
+     */
     public List<ItemProductivo> getLstItemsAutorizados() {
         if(guia.getTipoFuente().getNombre().equals(ResourceBundle.getBundle("/Config").getString("Autorizacion"))){
             // tomo los productos de la Autorización
@@ -601,6 +858,10 @@ public class MbGuia {
     /******************************
      * Métodos de inicialización **
      ******************************/
+    
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa el bean de sesión y el usuario
+     */
     @PostConstruct
     public void init(){
     	// obtento el usuario
@@ -609,13 +870,16 @@ public class MbGuia {
         usLogueado = sesion.getUsuario();
     }    
     
-    /***********************
-     * Métodos operativos **
-     ***********************/   
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////  
     /**
-     * Método que carga la vista que se mostrará en el iframe complementario
+     * Método que carga la vista que se mostrará en el iframe complementario.
+     * Según la vista solicitada se instanciarán los objetos a gestionar.
+     * Las vistas con tratamiento específico podrán ser:
+     * tasas.xhtml, tasas.xhtml, transporte.xhtml o emision.xhtml
      * Por defecto será "general.xhtml"
-     * @param strPage : vista a cargar recibida como parámetro
+     * @param strPage String vista a cargar recibida como parámetro
      */
     public void cargarFrame(String strPage){
         // para la vista de Tasas preparo la liquidación
@@ -675,7 +939,8 @@ public class MbGuia {
                     detTasa.setTasas(lstTasaModel);
                     // agrego el DetalleTasa al listado
                     lstDetallesTasas.add(detTasa);
-                }   // instancio la Liquidación y el array para el reporte
+                }   
+                // instancio la Liquidación y el array para el reporte
                 liquidacion = new LiqTotalTasas();
                 liquidaciones = new ArrayList<>();
                 // seteo los datos para mostrar en el reporte
@@ -843,8 +1108,7 @@ public class MbGuia {
     }
     
     /**
-     * Método para mostrar el detalle de la Fuente seleccionada como fuente.
-     * Tanto sea una Autorización o una Guía
+     * Método para mostrar el detalle de la Autorización o Guía seleccionada como fuente de productos.
      * @param fuente : Tipo de Fuente cuyo detalle se solicita
      */
     public void verDetalleFuente(String fuente){
@@ -873,7 +1137,7 @@ public class MbGuia {
     /**
      * Método para resetear la Fuente de productos
      * Tanto sea una Autorización o una Guía
-     * @param fuente : Tipo de Fuente que se desea resetear
+     * @param fuente String Tipo de Fuente que se desea resetear
      */
     public void deleteFuenteGuardada(String fuente){
         if(fuente.equals(ResourceBundle.getBundle("/Config").getString("Autorizacion"))){
@@ -888,7 +1152,7 @@ public class MbGuia {
     /**
      * Método para guardar la Fuente de productos para la Guía.
      * Sea Autorización o Guía
-     * @param tipoFuente 
+     * @param tipoFuente String tipo específico de fuente
      */
     public void guardarFuente(String tipoFuente){
         if(tipoFuente.equals(ResourceBundle.getBundle("/Config").getString("Autorizacion"))){
@@ -958,9 +1222,9 @@ public class MbGuia {
 
     }
     
-    /************
-     * Destino **
-     ************/
+    /////////////
+    // Destino //
+    /////////////
     /**
      * Método para buscar la/s fuente/s de productos que correspondan según el tipo de Guía.
      * También setea el Prductor (Persona) según el CUIT obtenido.
@@ -976,6 +1240,9 @@ public class MbGuia {
         }
     }
     
+    /**
+     * Método para limpiar el cuit seleccionado para buscar la persona
+     */
     public void limpiarCuitDest(){
         view = false;
         cuitBuscar = null;
@@ -983,6 +1250,9 @@ public class MbGuia {
         entDestino = null;
     }
     
+    /**
+     * Método para restaurar el destino de la Guía
+     */
     public void restaurarDestino(){
         entDestino = guia.getDestino();
        	editCuit = false;
@@ -990,7 +1260,8 @@ public class MbGuia {
     }
     
     /**
-     * Método para persistir el Destino de la Guía, en caso que lo requiera
+     * Método para persistir el Destino de la Guía, en caso que lo requiera,
+     * dado que no todos los movimientos implican un destinatario distinto al titular.
      */
     public void saveDestino(){
         EstadoGuia estado = guia.getEstado();
@@ -1067,9 +1338,9 @@ public class MbGuia {
         cuitBuscar = null;
     }
     
-    /***************
-     * Transporte **
-     ***************/
+    ////////////////
+    // Transporte //
+    ////////////////
     
     /**
      * Método para buscar un Vehículo a partir de su matrícula.
@@ -1172,9 +1443,9 @@ public class MbGuia {
         editTransporte = true;
     }
     
-    /**************
-     * Productos **
-     **************/
+    ///////////////
+    // Productos //
+    ///////////////
     /**
      * Método para generar un ItemAsignado con el consecuente descuento del itemFuente correspondiente
      */
@@ -1206,8 +1477,8 @@ public class MbGuia {
     }
     
     /**
-     * Método para agregar Productos provenientes de un itemFuente
-     * a un itemAsignado
+     * Método para agregar Productos provenientes de un itemFuente a un itemAsignado, 
+     * incluye la actualización del saldo del itemFuente
      */
     public void addProducto(){
         EstadoGuia estado = guia.getEstado();
@@ -1401,15 +1672,16 @@ public class MbGuia {
         itemAsignado = null;
     }
     
-    /*************************************************
-     * Métodos para el detalle de Tasasa a liquidar **
-     *************************************************/
+    //////////////////////////////////////////////////
+    // Métodos para el detalle de Tasasa a liquidar //
+    //////////////////////////////////////////////////
     /**
-     * Método que muestra el valor unitario de tasa para cada Producto del Item 
-     * @param nombreProd : nombre del Producto del item
-     * @param clase : clase del Producto del item
-     * @param nombreTasa : nombre de la Tasa del Prducto
-     * @return 
+     * Método que muestra el valor unitario de tasa para cada Producto del Item.
+     * Hace uso de la clase útil TasaModel
+     * @param nombreProd String nombre del Producto del item
+     * @param clase String clase del Producto del item
+     * @param nombreTasa String nombre de la Tasa del Prducto
+     * @return float valor unitario de la tasa
      */
     public float getLiqUnitarioByTasa(String nombreProd, String clase, String nombreTasa){
         float result = 0;
@@ -1428,10 +1700,11 @@ public class MbGuia {
     
     /**
      * Método que muestra el total a liquidar por cada tasa para cada item
-     * @param nombreProd : nombre del Producto del item
-     * @param clase : clase del Producto del item
-     * @param nombreTasa : nombre de la Tasa del Prducto
-     * @return 
+     * Hace uso de la clase útil TasaModel
+     * @param nombreProd String nombre del Producto del item
+     * @param clase String clase del Producto del item
+     * @param nombreTasa String nombre de la Tasa del Prducto
+     * @return float valor correspondiente al total a liquidar por la tasa
      */
     public float getLiqTotalByTasa(String nombreProd, String clase, String nombreTasa){
         float result = 0;
@@ -1450,8 +1723,8 @@ public class MbGuia {
     
     /**
      * Método que muestra el total por cada tasa
-     * @param nombreTasa : nombre de la Tasa liquidada
-     * @return 
+     * @param nombreTasa String nombre de la Tasa liquidada
+     * @return float total solicitado
      */
     public float getLiqTotales(String nombreTasa){
         return liquidaciones.get(0).getTotalByTasa(nombreTasa);
@@ -1459,7 +1732,7 @@ public class MbGuia {
     
     /**
      * Método que muestra el total liquidado para la Guía
-     * @return 
+     * @return float total liquidado
      */
     public float getTotalLiquidado(){
         return liquidaciones.get(0).getTotalALiquidar();
@@ -1495,6 +1768,7 @@ public class MbGuia {
     
     /**
      * Método para registrar un Código de recibo para la Guía.
+     * Una vez efectuado el pago de las tasas
      */
     public void registrarCodRecibo(){
         try{
@@ -1654,12 +1928,12 @@ public class MbGuia {
                     } catch (IOException ex) {
                         logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
                     }
-                    usuarioClient = new UsuarioClient();
+                    usuarioClientTraz = new UsuarioClient();
                     GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario>> gTypeUs = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario>>() {};
-                    Response responseCgt = usuarioClient.findByQuery_JSON(Response.class, String.valueOf(guia.getDestino().getCuit()), null, tokenTraz.getStrToken());
+                    Response responseCgt = usuarioClientTraz.findByQuery_JSON(Response.class, String.valueOf(guia.getDestino().getCuit()), null, tokenTraz.getStrToken());
                     List<ar.gob.ambiente.sacvefor.servicios.trazabilidad.Usuario> listUs = responseCgt.readEntity(gTypeUs);
                     if(!listUs.isEmpty()){
-                        usuarioClient.close();
+                        usuarioClientTraz.close();
                         // el Usuario ya está registrado, entonces solo se envía el correo de aviso
                         if(!enviarCorreo()){
                             if(guia.getTipo().isMovInterno()){
@@ -1716,8 +1990,8 @@ public class MbGuia {
                             usTraz.setNombreCompleto(guia.getDestino().getNombreCompleto());
                             usTraz.setRol(rol);
 
-                            responseCgt = usuarioClient.create_JSON(usTraz, tokenTraz.getStrToken());
-                            usuarioClient.close();
+                            responseCgt = usuarioClientTraz.create_JSON(usTraz, tokenTraz.getStrToken());
+                            usuarioClientTraz.close();
 
                             // solo continúo si no hubo error
                             if(responseCgt.getStatus() == 201){
@@ -1750,9 +2024,9 @@ public class MbGuia {
         }
     }
     
-    /*************************************
-     * Métodos para el listado de Guias **
-     *************************************/
+    //////////////////////////////////////
+    // Métodos para el listado de Guias //
+    //////////////////////////////////////
     /**
      * Método para inicializar el listado Autorizaciones
      */
@@ -1761,6 +2035,11 @@ public class MbGuia {
         view = false;
     }
     
+    /**
+     * Método para inicializar la vista detalle de la Guía.
+     * Instancia las posibles guías que toman productos de la presente
+     * y el o los inmueble/s de origen
+     */
     public void prepareViewDetalle(){
         // Busco las Guías de las que pudiera ser fuente la Autorización
         lstGuiasHijas = guiaFacade.findByNumFuente(guia.getCodigo());
@@ -1769,12 +2048,13 @@ public class MbGuia {
         view = true;
     }    
     
-    /*********************
-     * Métodos privados **
-     *********************/
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
 
     /**
-     * Método para limpiar resetear el listado con los tipos
+     * Método para limpiar resetear el listado con los tipos.
+     * utilizado en prepareNew(), prepareEdit() y limpiarForm()
      */
     private void resetearCampos() {
         lstTiposGuia = tipoGuiaFacade.getHabilitados();
@@ -1782,8 +2062,8 @@ public class MbGuia {
 
     /**
      * Método para obtener la EntidadGuia de origen, si no existe se crea.
-     * Solo seteo los datos del Productor
-     * @return 
+     * Solo seteo los datos del Productor. Utilizado en save()
+     * @return EntidadGuia entidad guía generada
      */
     private EntidadGuia obtenerEntidadOrigen(Persona per, Parametrica tipoFuente) {
         EntidadGuia ent;
@@ -1826,8 +2106,8 @@ public class MbGuia {
     
     /**
      * Método para obtener la EntidadGuia de destino, si no existe se crea.
-     * Solo seteo los datos del Destinatario
-     * @return 
+     * Solo seteo los datos del Destinatario. Utilizado en buscarDestinatario()
+     * @return EntidadGuia entidad guía generada
      */
     private EntidadGuia obtenerEntidadDestino(Persona per) {
         EntidadGuia ent;
@@ -1883,8 +2163,9 @@ public class MbGuia {
 
     /**
      * Método que crea el código de la Guía
-     * De acuerdo a la configuración del Config.properties
-     * @return 
+     * De acuerdo a la configuración del Config.properties.
+     * Utilizado en save()
+     * @return String código generado
      */
     private String setCodigoGuia() {
         String codigo;
@@ -1924,10 +2205,11 @@ public class MbGuia {
     }
 
     /**
-     * Método para obtener una Paramétrica según su nombre y nombre del Tipo
-     * @param nomTipo : nombre del Tipo de Paramétrica
-     * @param nomParam : nombre de la Paramétrica
-     * @return 
+     * Método para obtener una Paramétrica según su nombre y nombre del Tipo.
+     * Utilizado en buscarDestinatario() y addProducto()
+     * @param nomTipo String nombre del Tipo de Paramétrica
+     * @param nomParam String nombre de la Paramétrica
+     * @return Parametrica paramétrica obtenida
      */
     private Parametrica obtenerParametro(String nomTipo, String nomParam) {
         TipoParam tipo = tipoParamFacade.getExistente(nomTipo);
@@ -1935,10 +2217,9 @@ public class MbGuia {
     }
     
     /**
-     * Método para enviar un correo electrónico al usuario
-     * @param us
-     * @param motivo
-     * @return 
+     * Método para enviar un correo electrónico al usuario.
+     * Utilizado en emitir()
+     * @return boolean verdadero o falso según el correo se haya enviado o no
      */
     private boolean enviarCorreo(){  
         SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -1979,7 +2260,8 @@ public class MbGuia {
     }       
 
     /**
-     * Método para listar los inmuebles vinculados a la Autorización de la cual provienen los productos de la Guía
+     * Método para listar los inmuebles vinculados a la Autorización de la cual provienen los productos de la Guía.
+     * Utilizado en buscar(), prepareView(), save() y prepareViewDetalle()
      */
     private void setearInmueblesOrigen() {
         lstInmueblesOrigen = new ArrayList<>();
@@ -2000,7 +2282,8 @@ public class MbGuia {
     
     /**
      * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en obtenerEntidadDestino(Persona per)
      */
     private void getTokenRue(){
         try{
@@ -2018,17 +2301,18 @@ public class MbGuia {
     
     /**
      * Método privado que obtiene y setea el tokenTraz para autentificarse ante la API rest de trazabilidad
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en emitir()
      */    
     private void getTokenTraz(){
         try{
-            usClientTraz = new ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.UsuarioApiClient();
-            Response responseUs = usClientTraz.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestSvf"));
+            usApiClientTraz = new ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.UsuarioApiClient();
+            Response responseUs = usApiClientTraz.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestSvf"));
             MultivaluedMap<String, Object> headers = responseUs.getHeaders();
             List<Object> lstHeaders = headers.get("Authorization");
             strTokenTraz = (String)lstHeaders.get(0); 
             tokenTraz = new Token(strTokenTraz, System.currentTimeMillis());
-            usClientTraz.close();
+            usApiClientTraz.close();
         }catch(ClientErrorException ex){
             System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
         }
@@ -2036,17 +2320,18 @@ public class MbGuia {
     
     /**
      * Método privado que obtiene y setea el tokenTraz para autentificarse ante la API rest de control y verificación
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en emitir()
      */    
     private void getTokenCtrl(){
         try{
-            usClientCtrl = new ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.UsuarioApiClient();
-            Response responseUs = usClientCtrl.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestSvf"));
+            usApiClientCtrl = new ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.UsuarioApiClient();
+            Response responseUs = usApiClientCtrl.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestSvf"));
             MultivaluedMap<String, Object> headers = responseUs.getHeaders();
             List<Object> lstHeaders = headers.get("Authorization");
             strTokenCtrl = (String)lstHeaders.get(0); 
             tokenCtrl = new Token(strTokenCtrl, System.currentTimeMillis());
-            usClientCtrl.close();
+            usApiClientCtrl.close();
         }catch(ClientErrorException ex){
             System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
         }

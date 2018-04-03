@@ -26,21 +26,37 @@ import javax.xml.bind.annotation.XmlTransient;
 public class TipoParam implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    /**
+     * Variable privada: nombre del tipo de paramétrica
+     */
     @Column (nullable=false, length=50, unique=true)
     @NotNull(message = "El campo nombre no puede ser nulo")
     @Size(message = "El campo nombre no puede tener más de 50 caracteres", min = 1, max = 50)    
     private String nombre;    
     
+    /**
+     * Variable privada: listado de las paramétricas del tipo correspondiente
+     */
     @OneToMany (mappedBy="tipo", orphanRemoval = true)
     @Basic(fetch = FetchType.LAZY)
     private List<Parametrica> parametricas;   
     
+    /**
+     * Variable privada: condición de habilitado del tipo de paramétrica
+     */
     private boolean habilitado;
     
+    /**
+     * Constructor que instancia el listado de paramétricas de este tipo
+     */
     public TipoParam(){
         parametricas = new ArrayList<>();
     }
@@ -69,6 +85,12 @@ public class TipoParam implements Serializable {
         this.nombre = nombre;
     }
 
+    /**
+     * Método que retorna las paramétricas del tipo correspondiente
+     * no incluido en la entidad de para la API Rest
+     * @return List<Parametrica> listado de paramétricas
+     */
+    
     @XmlTransient
     public List<Parametrica> getParametricas() {
         return parametricas;

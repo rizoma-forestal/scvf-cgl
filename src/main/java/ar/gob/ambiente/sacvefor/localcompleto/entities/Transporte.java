@@ -24,12 +24,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Transporte implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Vehículo que compone el transporte
+     * Variable privada: Vehículo que compone el transporte
      */
     @ManyToOne
     @JoinColumn(name="vehiculo_id", nullable=false)
@@ -37,22 +41,26 @@ public class Transporte implements Serializable {
     private Vehiculo vehiculo;
     
     /**
-     * En los casos que corresponda, se agregará la matrícula del acoplado
+     * Variable privada: En los casos que corresponda, se agregará la matrícula del acoplado
      */
     @Column (length=20)
     @Size(message = "El campo acoplado no puede tener más de 20 caracteres", max = 20)
     private String acoplado;
     
     /**
-     * Nombre completo del Conductor del Vehículo que realizará el transporte
+     * Variable privada: Nombre completo del Conductor del Vehículo que realizará el transporte
      */
     @Column (length=100, nullable=false)
     @NotNull(message = "Debe existir una condNombre")
     @Size(message = "El campo condNombre no puede tener más de 100 caracteres", max = 100)
     private String condNombre;
     
+    /**
+     * Variable privada: DNI del conductor
+     */
     private Long condDni;
 
+    // métodos de acceso
     public String getCondNombre() {
         return condNombre;
     }

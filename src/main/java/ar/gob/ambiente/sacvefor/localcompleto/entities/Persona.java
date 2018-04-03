@@ -33,17 +33,21 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 public class Persona implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Referencia al id de la Personas en el Registro Unico de Entidades (RUE)
+     * Variable privada: Referencia al id de la Personas en el Registro Unico de Entidades (RUE)
      */
     private Long idRue;
     
     /**
-     * Nombre completo o razón social de la persona, cacheado del servicio del RUE
+     * Variable privada: Nombre completo o razón social de la persona, cacheado del servicio del RUE
      */
     @Column (nullable=false, length=100)
     @NotNull(message = "El campo nombreCompleto no puede ser nulo")
@@ -51,12 +55,12 @@ public class Persona implements Serializable {
     private String nombreCompleto;
     
     /**
-     * CUIT cacheado el RUE
+     * Variable privada: CUIT cacheado el RUE
      */
     private Long cuit;
     
     /**
-     * Guarda el correo electrónico de la Persona, registrado en el RUE
+     * Variable privada: Guarda el correo electrónico de la Persona, registrado en el RUE
      * Solo para los de que tengan el rol de Destinatario
      */
     @Column (length=100)
@@ -64,7 +68,7 @@ public class Persona implements Serializable {
     private String email;
     
     /**
-     * Paramétrica que indica el rol que cumple la Persona en el modelo:
+     * Variable privada: Paramétrica que indica el rol que cumple la Persona en el modelo
      * Proponente
      * Técnico
      * Apoderado
@@ -77,19 +81,19 @@ public class Persona implements Serializable {
     private Parametrica rolPersona;
     
     /**
-     * Para los casos de Técnicos y Apoderados, fecha de inicio de la vigencia del rol
+     * Variable privada: Para los casos de Técnicos y Apoderados, fecha de inicio de la vigencia del rol
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date inicioVigencia;
     
     /**
-     * Para los casos de Técnicos y Apoderados, fecha de fin de la vigencia del rol
+     * Variable privada: Para los casos de Técnicos y Apoderados, fecha de fin de la vigencia del rol
      */    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date finVigencia;
     
     /**
-     * Campo que cachea el tipo de Persona del que se trata:
+     * Variable privada: Campo que cachea el tipo de Persona del que se trata:
      * Física o Jurídica
      */
     @Column (nullable=false, length=20)
@@ -98,23 +102,23 @@ public class Persona implements Serializable {
     private String tipo;
     
     /**
-     * Para los Proponentes, ruta del martillo
+     * Variable privada: Para los Proponentes, ruta del martillo
      */
     private String rutaArchivo;
     
     /**
-     * Para los Proponentes, nombre del archivo
+     * Variable privada: Para los Proponentes, nombre del archivo
      */
     private String nombreArchivo;
     
     /**
-     * Fecha de alta de la Persona
+     * Variable privada: Fecha de alta de la Persona
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaAlta;
     
     /**
-     * Usuario que gestiona la inserciones o ediciones
+     * Variable privada: Usuario que gestiona la inserciones o ediciones
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -123,23 +127,30 @@ public class Persona implements Serializable {
     private Usuario usuario;
     
     /**
-     * Condición de habilitado de la Persona
+     * Variable privada: Condición de habilitado de la Persona
      */
     private boolean habilitado;
     
     /**
-     * Campo que mostrará la fecha de las revisiones
-     * No se persiste
+     * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
     private Date fechaRevision;    
     
     /**
-     * Campo que indica si la ruta a la imagen del martillo es temporal o definitiva
+     * Variable privada no persistida: Campo que indica si la ruta a la imagen del martillo es temporal o definitiva
+     * no incluido en la entidad de para la API Rest
      */
     @Transient
     private boolean rutaTemporal;
+    
+    // métodos de acceso
 
+    /**
+     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
+     * no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */
     @XmlTransient
     public boolean isRutaTemporal() {
         return rutaTemporal;
@@ -157,6 +168,11 @@ public class Persona implements Serializable {
         this.rutaTemporal = rutaTemporal;
     }
 
+    /**
+     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
+     * no incluido en la entidad de para la API Rest
+     * @return String nombre del archivo
+     */    
     @XmlTransient
     public String getNombreArchivo() {
         return nombreArchivo;
@@ -190,6 +206,11 @@ public class Persona implements Serializable {
         this.cuit = cuit;
     }
 
+    /**
+     * Método que retorna la Parametrica correspondiente al rol de la Persona
+     * no incluido en la entidad de para la API Rest
+     * @return Parametrica rol de la persona
+     */        
     @XmlTransient
     public Parametrica getRolPersona() {
         return rolPersona;
@@ -199,6 +220,11 @@ public class Persona implements Serializable {
         this.rolPersona = rolPersona;
     }
 
+    /**
+     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
+     * no incluido en la entidad de para la API Rest
+     * @return Date inicio de la vigencia de la persona
+     */        
     @XmlTransient
     public Date getInicioVigencia() {
         return inicioVigencia;
@@ -208,6 +234,11 @@ public class Persona implements Serializable {
         this.inicioVigencia = inicioVigencia;
     }
 
+    /**
+     * Método que retorna la fecha de fin de vigencia de la Guía
+     * no incluido en la entidad de para la API Rest
+     * @return Date fin de la vigencia de la persona
+     */      
     @XmlTransient
     public Date getFinVigencia() {
         return finVigencia;
@@ -225,6 +256,11 @@ public class Persona implements Serializable {
         this.tipo = tipo;
     }
 
+    /**
+     * Método que retorna la ruta del archivo de la imagen del martillo del productor
+     * no incluido en la entidad de para la API Rest
+     * @return String ruta del archivo
+     */      
     @XmlTransient
     public String getRutaArchivo() {
         return rutaArchivo;
@@ -234,6 +270,11 @@ public class Persona implements Serializable {
         this.rutaArchivo = rutaArchivo;
     }
 
+    /**
+     * Método que retorna la fecha de alta de la persona
+     * no incluido en la entidad de para la API Rest
+     * @return Date fecha de alta de la persona
+     */      
     @XmlTransient
     public Date getFechaAlta() {
         return fechaAlta;
@@ -243,6 +284,11 @@ public class Persona implements Serializable {
         this.fechaAlta = fechaAlta;
     }
 
+    /**
+     * Método que retorna el usuario que registró o modificó la Persona
+     * no incluido en la entidad de para la API Rest
+     * @return Usuairio usuario correspondiente
+     */      
     @XmlTransient
     public Usuario getUsuario() {
         return usuario;
@@ -253,7 +299,8 @@ public class Persona implements Serializable {
     }
 
     /**
-     * Para los roles que impliquen período de vigencia
+     * Método que retorna el estado de vigencia de la persona, para los roles que impliquen período de vigencia
+     * @return boolean verdadero o falso según la persona esté o no vigente
      */
     @XmlTransient
     public boolean getVigencia() {
@@ -264,6 +311,11 @@ public class Persona implements Serializable {
         return habilitado;
     }
     
+    /**
+     * Método que retorna la condición de habilitada de la persona
+     * no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */      
     @XmlTransient
     public boolean getHabilitado() {
         return habilitado;
@@ -273,6 +325,11 @@ public class Persona implements Serializable {
         this.habilitado = habilitado;
     }
 
+    /**
+     * Método que retorna la fecha de revisión de la persona para su auditoría
+     * no incluido en la entidad de para la API Rest
+     * @return Date fecha de revisión
+     */      
     @XmlTransient
     public Date getFechaRevision() {
         return fechaRevision;

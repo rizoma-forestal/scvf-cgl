@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class TipoGuiaFacade extends AbstractFacade<TipoGuia> {
 
+    /**
+     * Constructor
+     */
     public TipoGuiaFacade() {
         super(TipoGuia.class);
     }
     
     /**
      * Método para validar la existencia de un TipoGuia en función de su nombre
-     * @param nombre : Nombre del TipoGuia a validar
-     * @return 
+     * @param nombre String Nombre del TipoGuia a validar
+     * @return TipoGuia tipo de guía existente
      */
     public TipoGuia getExistente(String nombre) {
         List<TipoGuia> lstTipos;
@@ -38,7 +41,7 @@ public class TipoGuiaFacade extends AbstractFacade<TipoGuia> {
     
     /**
      * Método sobreescrito que lista los EstadoGuia ordenadas por nombre
-     * @return 
+     * @return List<TipoGuia> listado de los tipos de guía ordenados
      */
     @Override
     public List<TipoGuia> findAll(){
@@ -50,7 +53,7 @@ public class TipoGuiaFacade extends AbstractFacade<TipoGuia> {
     
     /**
      * Método que devuelve todos los tipos de Guía habilitados
-     * @return 
+     * @return List<TipoGuia> listado de los tipos de guía habilitados
      */
     public List<TipoGuia> getHabilitados(){
         String queryString = "SELECT tipo FROM TipoGuia tipo "

@@ -20,17 +20,21 @@ import javax.validation.constraints.Size;
 public class ProductoEspecieLocal implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Id de referenica a la Especie en el servicio de Taxonomía (especiesVegetales)
+     * Variable privada: Id de referenica a la Especie en el servicio de Taxonomía (especiesVegetales)
      */
     private Long idTax;
     
     /**
-     * Nombre científico cacheado del servicio, compuesto por género/especie
+     * Variable privada: Nombre científico cacheado del servicio, compuesto por género/especie
      */
     @Column (nullable=false, length=100, unique=true)
     @NotNull(message = "El campo nombreCientifico no puede ser nulo")
@@ -38,7 +42,7 @@ public class ProductoEspecieLocal implements Serializable {
     private String nombreCientifico;
     
     /**
-     * Nombre vulgar de la especie en el ámbito local
+     * Variable privada: Nombre vulgar de la especie en el ámbito local
      * ingresado al momento de registrar. Editable
      */
     @Column (nullable=false, length=50, unique=true)
@@ -47,14 +51,18 @@ public class ProductoEspecieLocal implements Serializable {
     private String nombreVulgar;
     
     /**
-     * En este campo se cacheará el sinónimo del servicio, se podrá agregar más datos al momento del registro o edición
+     * Variable privada: En este campo se cacheará el sinónimo del servicio, se podrá agregar más datos al momento del registro o edición
      */
     @Column (nullable=true, length=500)
     @Size(message = "El campo obs no puede tener más de 3500 caracteres", max = 500)    
     private String obs;
     
+    /**
+     * Variable privada: condición de habilitada de la especie
+     */
     private boolean habilitado; 
 
+    // métodos de acceso
     public Long getIdTax() {
         return idTax;
     }

@@ -14,15 +14,18 @@ import javax.persistence.Query;
 @Stateless
 public class ParametricaFacade extends AbstractFacade<Parametrica> {
 
+    /**
+     * Constructor
+     */
     public ParametricaFacade() {
         super(Parametrica.class);
     }
     
     /**
      * Método para validar la existencia de un parámetro
-     * @param nombre : Nombre cuya existencia se quiere validar
-     * @param tipo : TipoParam correspondiente a la Paramétrica a validar
-     * @return 
+     * @param nombre String Nombre cuya existencia se quiere validar
+     * @param tipo TipoParam TipoParam correspondiente a la Paramétrica a validar
+     * @return Parametrica existente
      */
     public Parametrica getExistente(String nombre, TipoParam tipo) {
         List<Parametrica> lstParam;
@@ -42,7 +45,7 @@ public class ParametricaFacade extends AbstractFacade<Parametrica> {
     
     /**
      * Método sobreescrito que lista las Paramétricas ordenadas por nombre
-     * @return 
+     * @return List<Parametrica> listado de las paramétricas registradas ordenadas por nombre
      */
     @Override
     public List<Parametrica> findAll(){
@@ -55,8 +58,8 @@ public class ParametricaFacade extends AbstractFacade<Parametrica> {
     /**
      * Mátodo que solo devuelve las Parametricas habilitadas, según el tipo.
      * Para poblar combos de selección.
-     * @param tipo : Tipo de Paramétrica buscado
-     * @return 
+     * @param tipo TipoParam Tipo de Paramétrica buscado
+     * @return List<Parametrica> listado de las paramétricas registradas del tipo remitido
      */
     public List<Parametrica> getHabilitadas(TipoParam tipo){
         String queryString = "SELECT param FROM Parametrica param "

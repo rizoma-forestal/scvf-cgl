@@ -24,7 +24,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 
 /**
- * Bean de respaldo para la gestión de Paramétricas de Guías
+ * Bean de respaldo para la gestión de Paramétricas de Guías.
+ * Gestiona las vistas guia/param/
  * TipoGuia: Se refiere a los diferentes Tipos de Guías que podrán configurarse:
  * Acopio, Acopio y Transporte, Transporte, etc.
  * EstadoGuia: Se refiere a los diferentes Estados que podrá tomar una Guía:
@@ -34,39 +35,128 @@ import javax.faces.convert.FacesConverter;
  */
 public class MbParamGuia {
 
+    /**
+     * Variable privada: objeto de tipo TipoGuia
+     */
     private TipoGuia tipoGuia;
+    
+    /**
+     * Variable privada: objeto de tipo EstadoGuia
+     */
     private EstadoGuia estadoGuia;
+    
+    /**
+     * Variable privada: objeto de tipo CopiaGuia
+     */
     private CopiaGuia copia;
+    
+    /**
+     * Variable privada: listado de los tipos de guía existentes
+     */
     private List<TipoGuia> lstTipos;
+    
+    /**
+     * Variable privada: listado de los tipos de los estados de guía existentes
+     */
     private List<EstadoGuia> lstEstados;
+    
+    /**
+     * Variable privada: listado de las copias de guía existentes
+     */
     private List<CopiaGuia> lstCopias;
+    
+    /**
+     * Variable privada: listado para filtrar los tipos en la tabla correspondiente
+     */
     private List<TipoGuia> lstTiposFilters;
+    
+    /**
+     * Variable privada: listado para filtrar los estados en la tabla correspondiente
+     */
     private List<EstadoGuia> lstEstadosFilters;
+    
+    /**
+     * Variable privada: listado para filtrar las copias en la tabla correspondiente
+     */
     private List<CopiaGuia> lstCopiasFilters;
+    
+    /**
+     * Variable privada: listado de las copias a imprimir por tipo de guía
+     */
     private List<CopiaGuia> lstCopiasXTipo;
+    
+    /**
+     * Variable privada: listado de los tipos de guía habilitados
+     */
     private List<TipoGuia> lstTiposHab;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando no está editable
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando es existente
+     */
     private boolean edit;
     
-    // tasas por tipo de Guía
+    ////////////////////////////
+    // tasas por tipo de Guía //
+    ////////////////////////////
+    
+    /**
+     * Variable privada: tasa correspondiente al tipo de  guía
+     */
     private TipoGuiaTasa tipoGuiaTasa;
+    
+    /**
+     * Variable privada: listado de tasas por tipo de guía
+     */
     private List<Parametrica> lstTiposTasas;
     
+    ///////////////////////////////////////////////////
+    // acceso a datos mediante inyección de recursos //
+    ///////////////////////////////////////////////////
     
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoGuia
+     */ 
     @EJB
     private TipoGuiaFacade tipoFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de EstadoGuia
+     */ 
     @EJB
     private EstadoGuiaFacade estadoFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Copia
+     */ 
     @EJB
     private CopiaFacade copiaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica
+     */ 
     @EJB
     private ParametricaFacade paramFacade;  
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */ 
     @EJB
     private TipoParamFacade tipoParamFacade;   
     
+    /**
+     * Constructor
+     */
     public MbParamGuia() {
     }
 
+    ///////////////////////
+    // métodos de acceso //
+    ///////////////////////
     public TipoGuiaTasa getTipoGuiaTasa() {
         return tipoGuiaTasa;
     }
@@ -189,9 +279,13 @@ public class MbParamGuia {
         this.edit = edit;
     }
     
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Mátodos operativos //
+    ////////////////////////
+    
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar
+     */  
     @PostConstruct
     public void init(){
         tipoGuia = new TipoGuia();
@@ -326,9 +420,9 @@ public class MbParamGuia {
         }
     }
     
-    /*************************************
-     * Métodos para la gestión de Tasas **
-     *************************************/
+    //////////////////////////////////////
+    // Métodos para la gestión de Tasas //
+    //////////////////////////////////////
     /**
      * Método para agregar una Tasa al producto.
      * Primero valida que ya no esté agregada //tipoGuia
@@ -519,25 +613,44 @@ public class MbParamGuia {
     }      
 
     
-    /*********************
-     * Métodos privados **
-     *********************/     
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
+
+    /**
+     * Método para obtener un Tipo de Guía según si id
+     * Utilizado por el converter de Tipo de Guía
+     * @param key Long identificador del Tipo de Guía
+     * @return Object Tipo de guía solicitado
+     */
     private Object getTipoGuia(Long key) {
         return tipoFacade.find(key);
     }
 
+    /**
+     * Método para obtener un Estado de Guía según si id
+     * Utilizado por el converter de Estado de Guía
+     * @param key Long identificador del Estado de Guía
+     * @return Object Estado de guía solicitado
+     */    
     private Object getEstadoGuia(Long key) {
         return estadoFacade.find(key);
     }
     
+    /**
+     * Método para obtener un Copia de Guía según si id
+     * Utilizado por el converter de Copia de Guía
+     * @param key Long identificador del Copia de Guía
+     * @return Object Copia de guía solicitado
+     */   
     private Object getCopia(Long key) {
         return copiaFacade.find(key);
     }    
    
     
-    /************************
-     ** Converter TipoGuia **
-     ************************/    
+    ////////////////////////
+    // Converter TipoGuia //
+    ////////////////////////   
     @FacesConverter(forClass = TipoGuia.class)
     public static class TipoGuiaConverter implements Converter {
 
@@ -584,9 +697,9 @@ public class MbParamGuia {
         }
     }   
     
-    /**************************
-     ** Converter EstadoGuia **
-     **************************/    
+    //////////////////////////
+    // Converter EstadoGuia //
+    //////////////////////////    
     @FacesConverter(forClass = EstadoGuia.class)
     public static class EstadoGuiaConverter implements Converter {
 
@@ -633,9 +746,9 @@ public class MbParamGuia {
         }
     }    
     
-    /*********************
-     ** Converter Copia **
-     *********************/ 
+    /////////////////////
+    // Converter Copia //
+    ///////////////////// 
     @FacesConverter(forClass = CopiaGuia.class)
     public static class CopiaConverter implements Converter {
 

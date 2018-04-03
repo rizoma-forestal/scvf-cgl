@@ -11,68 +11,42 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Entidad que será usada como:
- * TipoAutorizacion
- * TipoIntervencion
- * UsuSuelo
- * TipoItem
- * Rol persona
- * Tipo entidad guía
+ * Entidad para gestionar los datos de los clientes de la API
+ * (CTRL y TRAZ). Estos usuarios serán los que inserten o editen entidades locales desde la API
  * @author rincostante
  */
 @Entity
-@XmlRootElement
-public class Parametrica implements Serializable {
+public class UsuarioApi implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
     /**
      * Variable privada: Identificador único
-     */
+     */   
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Variable privada: tipo de paramétrica
+     * Variable privada: indica el nombre que identificará al cliente de la API
+     * Ej: scvf-ctrl, scvf-traz, etc.
      */
-    @ManyToOne
-    @JoinColumn(name="tipo_id", nullable=false)
-    @NotNull(message = "Debe existir un Tipo de parámetro")
-    private TipoParam tipo;
-    
-    /**
-     * Variable privada: nombre de la paramétrica
-     */
-    @Column (nullable=false, length=100)
+    @Column(nullable=false, length=20, unique=true)
     @NotNull(message = "El campo nombre no puede ser nulo")
-    @Size(message = "El campo nombre no puede tener más de 100 caracteres", min = 1, max = 100)    
+    @Size(message = "El campo nombre no puede tener más de 20 caracteres", min = 1, max = 20)    
     private String nombre;
     
     /**
-     * Variable privada: condición de habilitado
+     * Variable privada: indica el rol (de tipo Parametrica) que tiene el usuario,
+     * es decir, a qué cliente pertenece Ej: CLIENTE_CTRL, CLIENTE_TRAZ, etc.
      */
-    private boolean habilitado;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public TipoParam getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(TipoParam tipo) {
-        this.tipo = tipo;
-    }
-
+    @ManyToOne
+    @JoinColumn(name="rol_id", nullable=false)
+    @NotNull(message = "Debe existir un Rol")
+    private Parametrica rol;
+    
     public String getNombre() {
         return nombre;
     }
@@ -81,12 +55,20 @@ public class Parametrica implements Serializable {
         this.nombre = nombre;
     }
 
-    public boolean isHabilitado() {
-        return habilitado;
+    public Parametrica getRol() {
+        return rol;
     }
 
-    public void setHabilitado(boolean habilitado) {
-        this.habilitado = habilitado;
+    public void setRol(Parametrica rol) {
+        this.rol = rol;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @Override
@@ -99,10 +81,10 @@ public class Parametrica implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Parametrica)) {
+        if (!(object instanceof UsuarioApi)) {
             return false;
         }
-        Parametrica other = (Parametrica) object;
+        UsuarioApi other = (UsuarioApi) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -111,7 +93,7 @@ public class Parametrica implements Serializable {
 
     @Override
     public String toString() {
-        return "ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica[ id=" + id + " ]";
+        return "ar.gob.ambiente.sacvefor.localcompleto.entities.UsuarioApi[ id=" + id + " ]";
     }
     
 }

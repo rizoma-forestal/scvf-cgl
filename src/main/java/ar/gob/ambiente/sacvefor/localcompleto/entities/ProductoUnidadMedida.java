@@ -24,30 +24,44 @@ import javax.validation.constraints.Size;
 public class ProductoUnidadMedida implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    /**
+     * Variable privada: nombre de la unidad de medida
+     */
     @Column (nullable=false, length=30, unique=true)
     @NotNull(message = "El campo nombreCompleto no puede ser nulo")
     @Size(message = "El campo nombre no puede tener más de 30 caracteres", min = 1, max = 30)       
     private String nombre;
     
+    /**
+     * Variable privada: abreviatura de la unidad de medida
+     */
     @Column (nullable=false, length=10, unique=true)
     @NotNull(message = "El campo abreviatura no puede ser nulo")
     @Size(message = "El campo abreviatura no puede tener más de 10 caracteres", min = 1, max = 10)       
     private String abreviatura;
     
     /**
-     * Guarda el rol al que pertenece el usuario
+     * Variable privada: Guarda el rol al que pertenece el usuario
      */
     @ManyToOne
     @JoinColumn(name="tipoNum_id", nullable=false)
     @NotNull(message = "Debe existir un Tipo numérico")    
-    private Parametrica tipoNum;    
+    private Parametrica tipoNum;  
     
+    /**
+     * Variable privada: condición de habilitada de la unidad de medida
+     */
     private boolean habilitado;
 
+    // métodos de acceso
     public Parametrica getTipoNum() {
         return tipoNum;
     }

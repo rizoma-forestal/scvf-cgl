@@ -8,7 +8,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
 
 /**
- * Jersey REST client generated for REST resource:CentroPobladoFacadeREST
+ * Cliente REST Jersey generado para el recurso CentroPobladoFacadeREST de la API Territorial
  * [centrospoblados]<br>
  * USAGE:
  * <pre>
@@ -22,11 +22,26 @@ import javax.ws.rs.core.HttpHeaders;
  */
 public class LocalidadClient {
 
+    /**
+     * Variable privada: WebTarget path de acceso a la API específica de Centros poblados
+     */
     private WebTarget webTarget;
+    
+    /**
+     * Variable privada: Client cliente a setear a partir de webTarget
+     */
     private Client client;
+    
+    /**
+     * Variable privada estática y final: String url general de acceso al servicio.
+     * A partir de datos configurados en archivo de propiedades
+     */
     private static final String BASE_URI = ResourceBundle.getBundle("/Config").getString("ServerServicios") + "/"
             + "" + ResourceBundle.getBundle("/Config").getString("UrlTerritorial");
 
+    /**
+     * Constructor que instancia el cliente y el webTarget
+     */
     public LocalidadClient() {
         client = javax.ws.rs.client.ClientBuilder.newClient();
         webTarget = client.target(BASE_URI).path("centrospoblados");
@@ -38,6 +53,16 @@ public class LocalidadClient {
         return resource.request(javax.ws.rs.core.MediaType.TEXT_PLAIN).get(String.class);
     }
 
+    /**
+     * Método que obtiene un Centro poblado registrado habilitado según su id en formato XML
+     * GET /centrospoblados/:id
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será CentroPoblado
+     * @param id Long id del Centro poblado a obtener
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> CentroPoblado Localidad obtenida según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
     public <T> T find_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
@@ -47,6 +72,16 @@ public class LocalidadClient {
                 .get(responseType);
     }
 
+    /**
+     * Método que obtiene un Centro poblado registrado habilitado según su id en formato JSON
+     * GET /centrospoblados/:id
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será CentroPoblado
+     * @param id Long id del Centro poblado a obtener
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> CentroPoblado Localidad obtenida según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
     public <T> T find_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
@@ -68,6 +103,15 @@ public class LocalidadClient {
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
     }
 
+    /**
+     * Método que obtiene todos los Centros poblados registrados habilitados en formato XML
+     * GET /centrospoblados
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
     public <T> T findAll_XML(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         return resource
@@ -76,6 +120,15 @@ public class LocalidadClient {
                 .get(responseType);
     }
 
+    /**
+     * Método que obtiene todos los Centros poblados registrados habilitados en formato JSON
+     * GET /centrospoblados
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
     public <T> T findAll_JSON(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         return resource
@@ -84,8 +137,10 @@ public class LocalidadClient {
                 .get(responseType);
     }
 
+    /**
+     * Método para cerrar el cliente
+     */  
     public void close() {
         client.close();
     }
-    
 }

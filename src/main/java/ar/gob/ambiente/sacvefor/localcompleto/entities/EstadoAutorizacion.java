@@ -24,12 +24,16 @@ import javax.validation.constraints.Size;
 public class EstadoAutorizacion implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Nombre completo del Estado
+     * Variable privada: Nombre completo del Estado
      */
     @Column (nullable=false, length=50, unique=true)
     @NotNull(message = "El campo nombre no puede ser nulo")
@@ -37,7 +41,7 @@ public class EstadoAutorizacion implements Serializable {
     private String nombre;
     
     /**
-     * Código o abreviatura del Estado
+     * Variable privada: Código o abreviatura del Estado
      * ej: HAB
      */
     @Column (nullable=false, length=10, unique=true)
@@ -46,16 +50,20 @@ public class EstadoAutorizacion implements Serializable {
     private String codigo;
     
     /**
-     * Condición frente a la funcionalidad de edición
+     * Variable privada: Condición frente a la funcionalidad de edición
      */
     private boolean habilitaEdicion;
     
     /**
-     * Condición frente a la funcionalidad de emisión de Guías
+     * Variable privada: Condición frente a la funcionalidad de emisión de Guías
      */
     private boolean habilitaEmisionGuia;
     
+    /**
+     * Variable privada: Condición de habilitado del estado
+     */
     private boolean habilitado;    
+    
 
     public boolean isHabilitado() {
         return habilitado;

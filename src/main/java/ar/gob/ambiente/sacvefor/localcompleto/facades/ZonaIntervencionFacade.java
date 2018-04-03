@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class ZonaIntervencionFacade extends AbstractFacade<ZonaIntervencion> {
 
+    /**
+     * Constructor
+     */
     public ZonaIntervencionFacade() {
         super(ZonaIntervencion.class);
     }
     
     /**
      * Metodo para validar una Zona existente según su nombre
-     * @param nombre : Nombre que se pretende validar
-     * @return 
+     * @param nombre String Nombre que se pretende validar
+     * @return ZonaIntervencion zona existente
      */
     public ZonaIntervencion getExistenteByNombre(String nombre) {
         List<ZonaIntervencion> lstZonas;
@@ -38,8 +41,8 @@ public class ZonaIntervencionFacade extends AbstractFacade<ZonaIntervencion> {
     
     /**
      * Metodo para validar una Zona existente según su codigo
-     * @param codigo : Codigo que se pretende validar
-     * @return 
+     * @param codigo String Codigo que se pretende validar
+     * @return ZonaIntervencion zona existente
      */
     public ZonaIntervencion getExistenteByCodigo(String codigo) {
         List<ZonaIntervencion> lstZonas;
@@ -57,7 +60,7 @@ public class ZonaIntervencionFacade extends AbstractFacade<ZonaIntervencion> {
     
     /**
      * Método sobreescrito que lista las ZonaIntervencion ordenadas por nombre
-     * @return 
+     * @return List<ZonaIntervencion> listado de zonas ordenadas
      */
     @Override
     public List<ZonaIntervencion> findAll(){
@@ -69,7 +72,7 @@ public class ZonaIntervencionFacade extends AbstractFacade<ZonaIntervencion> {
     
     /**
      * Método para obtener todos los ZonaIntervencion habilitadas ordenados por nombre
-     * @return 
+     * @return List<ZonaIntervencion> listado de zonas habilitadas
      */
     public List<ZonaIntervencion> getHabilitadas(){
         String queryString = "SELECT zona FROM ZonaIntervencion zona "

@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLocal> {
 
+    /**
+     * Constructor
+     */
     public ProductoEspecieLocalFacade() {
         super(ProductoEspecieLocal.class);
     }
     
     /**
      * Método para validar la existencia de una Especie según su nombre vulgar
-     * @param nombreVulgar : Nombre vulgar a validar
-     * @return 
+     * @param nombreVulgar String Nombre vulgar a validar
+     * @return ProductoEspecieLocal especie local con el nombre vulgar remitido
      */
     public ProductoEspecieLocal getExistenteXNomVulgar(String nombreVulgar) {
         List<ProductoEspecieLocal> lstEspecies;
@@ -38,8 +41,8 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
     
     /**
      * Método para validar la existencia de una Especie según su nombre científico
-     * @param nombreCientifico
-     * @return 
+     * @param nombreCientifico String nombre científico de la especie
+     * @return ProductoEspecieLocal especie local con el nombre vulgar remitido
      */
     public ProductoEspecieLocal getExistenteXNomCientifico(String nombreCientifico){
         List<ProductoEspecieLocal> lstEspecies;
@@ -57,7 +60,7 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
     
     /**
      * Método sobreescrito que lista las ProductoEspecieLocal ordenadas por nombre
-     * @return 
+     * @return List<ProductoEspecieLocal> listado de especies locales ordenadas por nombre vulgar
      */
     @Override
     public List<ProductoEspecieLocal> findAll(){
@@ -70,7 +73,7 @@ public class ProductoEspecieLocalFacade extends AbstractFacade<ProductoEspecieLo
     /**
      * Mátodo que solo devuelve las ProductoEspecieLocal habilitadas.
      * Para poblar combos de selección.
-     * @return 
+     * @return List<ProductoEspecieLocal> listado de las especies locales habilitadas
      */
     public List<ProductoEspecieLocal> getHabilitadas(){
         String queryString = "SELECT especie FROM ProductoEspecieLocal especie "

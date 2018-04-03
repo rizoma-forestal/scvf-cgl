@@ -21,14 +21,17 @@ import org.hibernate.envers.AuditReaderFactory;
 @Stateless
 public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
 
+    /**
+     * Constructor
+     */
     public AutorizacionFacade() {
         super(Autorizacion.class);
     }
     
     /**
      * Metodo para validar una Autorización existente según el numero
-     * @param numero
-     * @return 
+     * @param numero String numero de la autorización a buscar 
+     * @return Autorizacion obtenida
      */
     public Autorizacion getExistente(String numero) {
         List<Autorizacion> lstAut;
@@ -47,8 +50,8 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
     /**
      * Método que devuelve las Autorizaciones vinculadas al Titular de una Guía
      * para ser tomada como fuente. Un estado que habilita emisión de Guía
-     * @param per
-     * @return 
+     * @param per Persona proponente cuyas autorizaciones se buscan
+     * @return List<Autorizacion> listado de Autorizaciones vinculadas al proponente
      */
     public List<Autorizacion> getFuenteByProponente(Persona per){
         String rolProponente = ResourceBundle.getBundle("/Config").getString("Proponente");
@@ -66,9 +69,9 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
     
     /**
      * Método que devuevle las Autorizaciones vinculadas a una Persona mediante un Rol determinado
-     * @param per : Persona cuyas Autorizaciones se quiere consultar
-     * @param rol = Rol mediante el cual se vinculan las Autorizaciones a la Persona
-     * @return 
+     * @param per Persona Persona cuyas Autorizaciones se quiere consultar
+     * @param rol Rol Rol mediante el cual se vinculan las Autorizaciones a la Persona
+     * @return List<Autorizacion> listado de Autorizaciones vinculadas a la persona
      */
     public List<Autorizacion> getByPersona(Persona per, Parametrica rol){
         String queryString = "SELECT aut FROM Autorizacion aut "
@@ -84,8 +87,8 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
     
     /**
      * Método para obtener las Autorizaciones según el id del Producto autorizado
-     * @param idProd : identificación del Producto incluido en la Autorización
-     * @return 
+     * @param idProd Long identificación del Producto incluido en la Autorización
+     * @return List<Autorizacion> listado de Autorizaciones que incluyen al producto entre sus ítems autorizados
      */
     public List<Autorizacion> getByIdProd(Long idProd){
         String queryString = "SELECT aut FROM Autorizacion aut "
@@ -98,8 +101,8 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
     
     /**
      * Método para obtener las Autorizaciones según su estado
-     * @param estado : estado en el cual deberán estar las Autorizaciones retornadas
-     * @return 
+     * @param estado EstadoAutorizacion estado en el cual deberán estar las Autorizaciones retornadas
+     * @return List<Autorizacion> listado de Autorizaciones con el estado indicado
      */
     public List<Autorizacion> getByEstado(EstadoAutorizacion estado){
         String queryString = "SELECT aut FROM Autorizacion aut "
@@ -111,8 +114,8 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
     
     /**
      * Método para obtener todas las revisiones de la entidad
-     * @param numero : Número del instrumento autorizante
-     * @return 
+     * @param numero String Número del instrumento autorizante
+     * @return List<Autorizacion> listado de revisiones para la autorización
      */
     public List<Autorizacion> findRevisions(String numero){  
         List<Autorizacion> lstProductos = new ArrayList<>();

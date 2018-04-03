@@ -12,35 +12,38 @@ import java.util.List;
 public class DetalleTasas implements Serializable{
     
     /**
-     * Nombre vulgar del prducto proveniente de la Entidad Producto, encapsulado en el Item
+     * Variablde privada: Nombre vulgar del prducto proveniente de la Entidad Producto, encapsulado en el Item
      */
     private String nombreProd;
     
     /**
-     * Clase del prducto proveniente de la Entidad Producto, encapsulado en el Item
+     * Variablde privada: Clase del prducto proveniente de la Entidad Producto, encapsulado en el Item
      */
     private String clase;    
     
     /**
-     * Unidad de medida del Producto, obtenida del Item
+     * Variablde privada: Unidad de medida del Producto, obtenida del Item
      */
     private String unidad;
     
     /**
-     * Cantidad de Producto, obtenida del Item
+     * Variablde privada: Cantidad de Producto, obtenida del Item
      */
     private float cantidad;
     
     /**
-     * Total a liquidar por todas las tasas configuradas
+     * Variablde privada: Total a liquidar por todas las tasas configuradas
      */
     private float total;
     
     /**
-     * Listado con los pares nombre-valor para cada tasa
+     * Variablde privada: Listado con los pares nombre-valor para cada tasa
      */
     private List<TasaModel> tasas;
 
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////
     public String getClase() {
         return clase;
     }

@@ -43,12 +43,16 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 public class Guia implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Cadena que constituye el código único de la Guía,
+     * Variable privada: Cadena que constituye el código único de la Guía,
      * el formato se configurará en el archivo de propiedades Config.
      */
     @Column (nullable=false, length=20, unique=true)
@@ -57,7 +61,7 @@ public class Guia implements Serializable {
     private String codigo;
     
     /**
-     * Tipo de Guía
+     * Variable privada: Tipo de Guía
      * Acopio,
      * Acopio y Transporte
      * Transporte
@@ -69,7 +73,7 @@ public class Guia implements Serializable {
     private TipoGuia tipo;
     
     /**
-     * Paramétrica que indica el tipo de Fuente de Productos:
+     * Variable privada: Paramétrica que indica el tipo de Fuente de Productos:
      * Autorización
      * Guía madre
      */
@@ -80,7 +84,7 @@ public class Guia implements Serializable {
     private Parametrica tipoFuente;
     
     /**
-     * Cadena que constituye el número identificatorio de la fuente de Productos,
+     * Variable privada: Cadena que constituye el número identificatorio de la fuente de Productos,
      * sea una Autorización o un Guía.
      */
     @Column (nullable=false, length=30)
@@ -89,72 +93,75 @@ public class Guia implements Serializable {
     private String numFuente;
     
     /**
-     * Listado de los items que constituyen el detalle de la Guía
+     * Variable privada: Listado de los items que constituyen el detalle de la Guía
      */
     @OneToMany (mappedBy="guia")
     @Basic(fetch = FetchType.LAZY)
     private List<ItemProductivo> items;     
     
     /**
-     * Para los casos de las Guías de Transporte, guarda el destino de la misma
+     * Variable privada: Para los casos de las Guías de Transporte, guarda el destino de la misma
      */
     @ManyToOne
     @JoinColumn(name="destino_id")
     private EntidadGuia destino;
     
     /**
-     * Para los casos de las Guías de Transporte, guarda el transporte que llevará los productos a destino
+     * Variable privada: Para los casos de las Guías de Transporte, guarda el transporte que llevará los productos a destino
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @OneToOne(cascade=CascadeType.ALL, orphanRemoval=true)
     @JoinColumn(name="transporte_id")
     private Transporte transporte;
     
+    /**
+     * Variable privada: Origen de la guía, instrumento desde el cuál descuenta cupos de productos
+     */
     @ManyToOne
     @JoinColumn(name="origen_id", nullable=false)
     @NotNull(message = "Debe existir una origen")
     private EntidadGuia origen;
 
     /**
-     * Fecha de registro del Vehículo
+     * Variable privada: Fecha de registro del Vehículo
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaAlta;  
     
     /**
-     * Fecha de emisión del voltante de pago de liquidación de tasas.
+     * Variable privada: Fecha de emisión del voltante de pago de liquidación de tasas.
      * Si correspondiera
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaEmisionVolante;   
     
     /**
-     * Código del recibo comprobante de pago de liquidación de Tasas
+     * Variable privada: Código del recibo comprobante de pago de liquidación de Tasas
      */
     private String codRecibo;
     
     /**
-     * Fecha de emisión de la Guía.
+     * Variable privada: Fecha de emisión de la Guía.
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaEmisionGuia;    
     
     /**
-     * Fecha de emisión de vencimiento de la Guía.
+     * Variable privada: Fecha de emisión de vencimiento de la Guía.
      * Si correspondiera
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaVencimiento; 
     
     /**
-     * Fecha de cierre de la Guía, para los casos de Guías de transporte,
+     * Variable privada: Fecha de cierre de la Guía, para los casos de Guías de transporte,
      * cuando el destinatario la acepta mediante la interface de intermediación
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaCierre;    
 
     /**
-     * Usuario que gestiona la inserciones o ediciones
+     * Variable privada: Usuario que gestiona la inserciones o ediciones
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -163,7 +170,7 @@ public class Guia implements Serializable {
     private Usuario usuario;    
     
     /**
-     * Estado que puede tomar una Guía
+     * Variable privada: Estado que puede tomar una Guía
      * Carga inicial
      * Cerrada
      * En tránsito
@@ -178,8 +185,7 @@ public class Guia implements Serializable {
     private EstadoGuia estado;
     
     /**
-     * Campo que mostrará la fecha de las revisiones
-     * No se persiste
+     * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
     private Date fechaRevision;    
@@ -192,27 +198,34 @@ public class Guia implements Serializable {
     private String destinoCopia;
  
     /**
-     * Campo temporal que contiene la Provincia que emite la Guía
+     * Variable privada no persistida: Campo temporal que contiene la Provincia que emite la Guía
      * obtenida de la EntidadGuia origen
      */
     @Transient
     private String provincia;
     
     /**
-     * Campos para leer archivo de configuracion
+     * Variable privada no persistida: Campos para leer archivo de configuracion
      */
     @Transient
     Properties properties;
+    
+    /**
+     * Variable privada no persistida: flujo para obtener el archivo de propiedades
+     */
     @Transient
     InputStream inputStream;    
 
+    /**
+     * Constructor, inicializa los ítems
+     */
     public Guia(){
         items = new ArrayList<>();
     }
 
     /**
-     * Método que retorna la Provincia configurada en el archivo de propiedades
-     * @return 
+     * Método que retorna el nombre de la provincia emisora de la Guía, no incluido en la entidad de para la API Rest
+     * @return String nombre de la provincia
      */
     @XmlTransient
     public String getProvincia() {
@@ -238,6 +251,10 @@ public class Guia implements Serializable {
         this.provincia = provincia;
     }
     
+    /**
+     * Método que retorna una cadena indicando el destino de la copia, no incluido en la entidad de para la API Rest
+     * @return String cadena con el destino de la copia
+     */
     @XmlTransient
     public String getDestinoCopia() {
         return destinoCopia;
@@ -247,6 +264,11 @@ public class Guia implements Serializable {
         this.destinoCopia = destinoCopia;
     }
 
+    /**
+     * Método que retorna una cadena con el código de recibo de los pagos de tasas de la guía, si corresponde, 
+     * no incluido en la entidad de para la API Rest
+     * @return String código de recibo
+     */
     @XmlTransient
     public String getCodRecibo() {
         return codRecibo;
@@ -256,6 +278,10 @@ public class Guia implements Serializable {
         this.codRecibo = codRecibo;
     }
 
+    /**
+     * Método que retorna una cadena indicando la fecha de emisión del volante de pago, no incluido en la entidad de para la API Rest
+     * @return Date fecha de emisión del volante de pago
+     */
     @XmlTransient
     public Date getFechaEmisionVolante() {
         return fechaEmisionVolante;
@@ -289,6 +315,10 @@ public class Guia implements Serializable {
         this.fechaCierre = fechaCierre;
     }
 
+    /**
+     * Método que retorna la Paramétrica correspondiente al tipo de fuente de la Guía, no incluido en la entidad de para la API Rest
+     * @return Parametrica tipo de fuente
+     */
     @XmlTransient
     public Parametrica getTipoFuente() {
         return tipoFuente;
@@ -314,6 +344,10 @@ public class Guia implements Serializable {
         this.estado = estado;
     }
 
+    /**
+     * Método que retorna la fecha de revisión de la Guía para su auditoría, no incluido en la entidad de para la API Rest
+     * @return Date fecha de revisión
+     */
     @XmlTransient
     public Date getFechaRevision() {
         return fechaRevision;
@@ -331,6 +365,10 @@ public class Guia implements Serializable {
         this.codigo = codigo;
     }
 
+    /**
+     * Método que retorna una Parametrica correspondiente al tipo de guía, no incluido en la entidad de para la API Rest
+     * @return Parametrica tipo de guía
+     */
     @XmlTransient
     public TipoGuia getTipo() {
         return tipo;
@@ -340,6 +378,10 @@ public class Guia implements Serializable {
         this.tipo = tipo;
     }
 
+    /**
+     * Método que retorna el listado con los ítems de productos de la guía, no incluido en la entidad de para la API Rest
+     * @return List<ItemProductivo> listado de ítems
+     */
     @XmlTransient
     public List<ItemProductivo> getItems() {
         return items;
@@ -381,6 +423,10 @@ public class Guia implements Serializable {
         this.fechaAlta = fechaAlta;
     }
 
+    /**
+     * Método que retorna el usuario que registró o modificó la Guía no incluido en la entidad de para la API Rest
+     * @return Usuario usuario correspondiente
+     */
     @XmlTransient
     public Usuario getUsuario() {
         return usuario;

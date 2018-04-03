@@ -14,16 +14,19 @@ import javax.persistence.Query;
 @Stateless
 public class CopiaFacade extends AbstractFacade<CopiaGuia> {
 
+    /**
+     * Constructor
+     */
     public CopiaFacade() {
         super(CopiaGuia.class);
     }
     
     /**
      * Método para validar la existencia de una Copia en función de su nombre y destino
-     * @param nombre : Nombre de la CopiaGuia a validar
-     * @param destino : Destino de la CopiaGuia a validar
-     * @param tipo : Tipo de Guía
-     * @return 
+     * @param nombre String Nombre de la CopiaGuia a validar
+     * @param destino String Destino de la CopiaGuia a validar
+     * @param tipo TipoGuia Tipo de Guía
+     * @return CopiaGuia copia de guía correspondiente a los parámetros indicados
      */
     public CopiaGuia getExistente(String nombre, String destino, TipoGuia tipo) {
         List<CopiaGuia> lstCopias;
@@ -45,8 +48,8 @@ public class CopiaFacade extends AbstractFacade<CopiaGuia> {
     
     /**
      * Método que devuelve todos las Copias habilitadas
-     * @param tipo : Tipo de Guía de la cual se pide las Copias
-     * @return 
+     * @param tipo TipoGuia Tipo de Guía de la cual se pide las Copias
+     * @return List<CopiaGuia> listado de las Copias del tipo de guía indicado
      */
     public List<CopiaGuia> getHabilitadosByTipo(TipoGuia tipo){
         String queryString = "SELECT copia FROM CopiaGuia copia "
@@ -59,7 +62,7 @@ public class CopiaFacade extends AbstractFacade<CopiaGuia> {
     
     /**
      * Método que devuelve todos las Copias habilitadas
-     * @return 
+     * @return List<CopiaGuia> listado de las copias habilitadas
      */
     public List<CopiaGuia> getHabilitados(){
         String queryString = "SELECT copia FROM CopiaGuia copia "

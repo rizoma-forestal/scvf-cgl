@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class UsuarioFacade extends AbstractFacade<Usuario> {
 
+    /**
+     * Constructor
+     */
     public UsuarioFacade() {
         super(Usuario.class);
     }
     
     /**
      * Método para validar la existencia de un Usuario según su DNI, utilizado como login
-     * @param login : DNI del Usuario
-     * @return 
+     * @param login Long DNI del Usuario
+     * @return Usuario usuario existente
      */
     public Usuario getExistente(Long login) {
         List<Usuario> lstUsuarios;
@@ -39,7 +42,7 @@ public class UsuarioFacade extends AbstractFacade<Usuario> {
     /**
      * Mátodo que solo devuelve los Usuarios habilitados.
      * Para poblar combos de selección.
-     * @return 
+     * @return List<Usuario> listado de los usuarios habilitados
      */
     public List<Usuario> getHabilitados(){
         String queryString = "SELECT us FROM Usuario us "
@@ -50,9 +53,9 @@ public class UsuarioFacade extends AbstractFacade<Usuario> {
 
     /**
      * Método para validar la existencia de un Usuario con las credenicales recibidas
-     * @param login : DNI del Usuario
-     * @param clave : clave encriptada
-     * @return 
+     * @param login Long DNI del Usuario
+     * @param clave String clave encriptada
+     * @return Usuario validado
      */
     public Usuario validar(Long login, String clave){
         List<Usuario> lUs;

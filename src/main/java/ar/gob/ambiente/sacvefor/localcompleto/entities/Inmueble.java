@@ -24,12 +24,16 @@ import javax.validation.constraints.Size;
 public class Inmueble implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Nombre por el cual se lo puede reconocer al Inmueble
+     * Variable privada: Nombre por el cual se lo puede reconocer al Inmueble
      */
     @Column (nullable=false, length=100)
     @NotNull(message = "El campo nombre no puede ser nulo")
@@ -37,12 +41,12 @@ public class Inmueble implements Serializable {
     private String nombre;
     
     /**
-     * Referencia al id de la Localidad en el Servicio Gestión Territorial
+     * Variable privada: Referencia al id de la Localidad en el Servicio Gestión Territorial
      */
     private Long idLocGt;
     
     /**
-     * Nombre de la Localidad, cacheado del Servicio
+     * Variable privada: Nombre de la Localidad, cacheado del Servicio
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo localidad no puede ser nulo")
@@ -50,7 +54,7 @@ public class Inmueble implements Serializable {
     private String localidad;
     
     /**
-     * Nombre del Departamente, cacheado del Servicio
+     * Variable privada: Nombre del Departamente, cacheado del Servicio
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo departamento no puede ser nulo")
@@ -58,7 +62,7 @@ public class Inmueble implements Serializable {
     private String departamento;
     
     /**
-     * Nombre de la Provincia, cacheado del Servicio
+     * Variable privada: Nombre de la Provincia, cacheado del Servicio
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo provincia no puede ser nulo")
@@ -66,7 +70,7 @@ public class Inmueble implements Serializable {
     private String provincia;
     
     /**
-     * Si el Inmueble hubiera surgido a partir de la subdivisión de otro Inmueble,
+     * Variable privada: Si el Inmueble hubiera surgido a partir de la subdivisión de otro Inmueble,
      * se guarda el inmueble origina.
      */
     @ManyToOne
@@ -74,47 +78,53 @@ public class Inmueble implements Serializable {
     private Inmueble inmOrigen;
     
     /**
-     * Si existiera, la identificación catastral
+     * Variable privada: Si existiera, la identificación catastral
      */
     @Column (length=20)
     @Size(message = "El campo idCatastral no puede tener más de 20 caracteres", max = 20) 
     private String idCatastral;
     
     /**
-     * Cadena con calle, número, y lo que corresponda, si corresponde
+     * Variable privada: Cadena con calle, número, y lo que corresponda, si corresponde
      */
     @Column (length=50)
     @Size(message = "El campo domicilio no puede tener más de 50 caracteres", max = 50)       
     private String domicilio;
     
     /**
-     * Superficie total del inmueble
+     * Variable privada: Superficie total del inmueble
      */
     private double superficie;
     
     /**
-     * Si existiera, coordenada de latitud para la ubicación puntual del inmueble
+     * Variable privada: Si existiera, coordenada de latitud para la ubicación puntual del inmueble
      */
     private double latitud;
     
     /**
-     * Si existiera, coordenada de longitud para la ubicación puntual del inmueble
+     * Variable privada: Si existiera, coordenada de longitud para la ubicación puntual del inmueble
      */
     private double longitud;
     
-    
+    /**
+     * Variable privada: Condición de habilitado del inmueble
+     */
     private boolean habilitado;
     
     /**
-     * Si el inmueble hubiera sido subdividido, muestra a los hijos
+     * Variable privada: Si el inmueble hubiera sido subdividido, muestra a los hijos
      */
     @OneToMany (mappedBy="inmOrigen")
     private List<Inmueble> inmHijos;
     
+    /**
+     * Constructor, instancia el listado de subdivisiones que el inmueble pudiera tener
+     */
     public Inmueble(){
         inmHijos = new ArrayList<>();
     }
 
+    // métodos de acceso
     public String getNombre() {
         return nombre;
     }

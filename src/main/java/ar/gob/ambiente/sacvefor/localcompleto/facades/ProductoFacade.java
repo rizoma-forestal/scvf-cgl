@@ -19,15 +19,18 @@ import org.hibernate.envers.AuditReaderFactory;
 @Stateless
 public class ProductoFacade extends AbstractFacade<Producto> {
 
+    /**
+     * Constructor
+     */
     public ProductoFacade() {
         super(Producto.class);
     }
     
     /**
      * Método para validar la existencia de un Producto según su Clase y Especie local
-     * @param clase : Clase cuya existencia se va a validar junto con la Especie
-     * @param especieLocal : Especie cuya existencia se va a validar junto con la Clase
-     * @return 
+     * @param clase ProductoClase Clase cuya existencia se va a validar junto con la Especie
+     * @param especieLocal ProductoEspecieLocal Especie cuya existencia se va a validar junto con la Clase
+     * @return Producto producto existente
      */
     public Producto getExistente(ProductoClase clase, ProductoEspecieLocal especieLocal) {
         List<Producto> lstProductos;
@@ -47,7 +50,7 @@ public class ProductoFacade extends AbstractFacade<Producto> {
     
     /**
      * Método sobreescrito que lista los Productos ordenadas por el nombre vulgar de la Especie
-     * @return 
+     * @return List<Producto> listado de productos ordenados por el nombre de la especie local
      */
     @Override
     public List<Producto> findAll(){
@@ -60,7 +63,7 @@ public class ProductoFacade extends AbstractFacade<Producto> {
     /**
      * Mátodo que solo devuelve los Productos habilitados.
      * Para poblar combos de selección.
-     * @return 
+     * @return List<Producto> listado de los productos habiltiados
      */
     public List<Producto> getHabilitados(){
         String queryString = "SELECT prod FROM Producto prod "
@@ -70,6 +73,11 @@ public class ProductoFacade extends AbstractFacade<Producto> {
         return q.getResultList();
     }  
     
+    /**
+     * Método que devuleve un producto según su especie local
+     * @param especieLocal ProductoEspecieLocal especie local del producto
+     * @return List<Producto> listado de los productos correspondientes
+     */
     public List<Producto> getByEspecieLocal(ProductoEspecieLocal especieLocal){
         String queryString = "SELECT prod FROM Producto prod "
                 + "WHERE prod.habilitado = true "
@@ -82,9 +90,9 @@ public class ProductoFacade extends AbstractFacade<Producto> {
     
     /**
      * Método para obtener todas las revisiones de la entidad
-     * @param clase : Clase que junto a la Especie definen el Producto cuyas revisiones se busca
-     * @param especieLocal : Especie que junto a la Clase definen el Producto cuyas revisiones se busca
-     * @return 
+     * @param clase ProductoClase Clase que junto a la Especie definen el Producto cuyas revisiones se busca
+     * @param especieLocal ProductoEspecieLocal Especie que junto a la Clase definen el Producto cuyas revisiones se busca
+     * @return List<Producto> listado de las revisiones de un producto para su auditoría
      */
     public List<Producto> findRevisions(ProductoClase clase, ProductoEspecieLocal especieLocal){  
         List<Producto> lstProductos = new ArrayList<>();

@@ -22,12 +22,16 @@ import javax.validation.constraints.Size;
 public class SubZona implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Zona correspondiente a la Sub Zona
+     * Variable privada: Zona correspondiente a la Sub Zona
      */
     @ManyToOne
     @JoinColumn(name="zona_id", nullable=false)
@@ -35,21 +39,25 @@ public class SubZona implements Serializable {
     private ZonaIntervencion zona;
     
     /**
-     * Nombre de la Sub Zona
+     * Variable privada: Nombre de la Sub Zona
      */    
     @Column (nullable=false, length=100)
     @NotNull(message = "El campo nombre no puede ser nulo")
     @Size(message = "El campo nombre no puede tener más de 100 caracteres", min = 1, max = 100)       
     private String nombre;
     
+    /**
+     * Variable privada: condición de habilitada de la sub zona
+     */
     private boolean habilitado;
     
     /**
-     * Campo que indica si la sub zona está o no seleccionada
+     * Variable privada no persistida: Campo que indica si la sub zona está o no seleccionada
      */
     @Transient
     private boolean selected;    
 
+    // métodos de acceso
     public boolean isSelected() {
         return selected;
     }

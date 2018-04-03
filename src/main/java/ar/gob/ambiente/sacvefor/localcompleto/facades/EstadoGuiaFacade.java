@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
 
+    /**
+     * constructor
+     */
     public EstadoGuiaFacade() {
         super(EstadoGuia.class);
     }
     
     /**
      * Método para validar la existencia de un EstadoGuia en función de su nombre
-     * @param nombre
-     * @return 
+     * @param nombre String nombre del estado de guía buscado
+     * @return EstadoGuia estado de guía con el nombre indicado
      */
     public EstadoGuia getExistente(String nombre) {
         List<EstadoGuia> lstEstados;
@@ -38,7 +41,7 @@ public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
     
     /**
      * Método sobreescrito que lista los EstadoGuia ordenadas por nombre
-     * @return 
+     * @return List<EstadoGuia> listado de los estados de guía ordenados por su nombre
      */
     @Override
     public List<EstadoGuia> findAll(){
@@ -51,8 +54,8 @@ public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
     /**
      * Mátodo que solo devuelve las EstadoGuia habilitados, menos el acutal.
      * Para poblar combos de selección de cambios de Estado.
-     * @param nombre
-     * @return 
+     * @param nombre String nombre del estado que no se incluirá en el listado obtenido
+     * @return List<EstadoGuia> listado de los estados de guía excluyendo aquel cuyo nombre se indica
      */
     public List<EstadoGuia> getHabilitadosSinUno(String nombre){
         String queryString = "SELECT est FROM EstadoGuia est "
@@ -66,7 +69,7 @@ public class EstadoGuiaFacade extends AbstractFacade<EstadoGuia> {
     
     /**
      * Método que devuelve todos los EstadoGuia habilitados
-     * @return 
+     * @return List<EstadoGuia> listado de todos los estados de guía habilitados
      */
     public List<EstadoGuia> getHabilitados(){
         String queryString = "SELECT est FROM EstadoGuia est "

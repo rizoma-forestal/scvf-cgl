@@ -19,14 +19,17 @@ import org.hibernate.envers.AuditReaderFactory;
 @Stateless
 public class GuiaFacade extends AbstractFacade<Guia> {
 
+    /**
+     * Constructor
+     */
     public GuiaFacade() {
         super(Guia.class);
     }
     
     /**
      * Metodo para validar una Guía existente según el codigo
-     * @param codigo
-     * @return 
+     * @param codigo String código único de la guía
+     * @return Guia guía solicitada
      */
     public Guia getExistente(String codigo) {
         List<Guia> lstGuias;
@@ -44,8 +47,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     
     /**
      * Método para obetener las Guías cuyo origen tiene el CUIT recibido como parámetro
-     * @param cuit : CUIT de la Persona vinculada a la Guía como origen 
-     * @return 
+     * @param cuit Long CUIT de la Persona vinculada a la Guía como origen 
+     * @return List<Guia> listado de las guías cuyo origen corresponde al cuit
      */
     public List<Guia> getByOrigen(Long cuit){
         String queryString = "SELECT guia FROM Guia guia "
@@ -57,8 +60,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     
     /**
      * Método para obetener las Guías cuyo destino tiene el CUIT recibido como parámetro
-     * @param cuit : CUIT de la Persona vinculada a la Guía como destino 
-     * @return 
+     * @param cuit Long CUIT de la Persona vinculada a la Guía como destino 
+     * @return List<Guia> listado de las guías cuyo destino corresponde al cuit
      */
     public List<Guia> getByDestino(Long cuit){
         String queryString = "SELECT guia FROM Guia guia "
@@ -70,8 +73,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
 
     /**
      * Método para obtener las Guías según el id del Producto extraído
-     * @param idProd : identificación del Producto incluido en la Guía
-     * @return 
+     * @param idProd Long identificación del Producto incluido en la Guía
+     * @return List<Guia> listado de las guías que contienen el producto
      */
     public List<Guia> getByIdProd(Long idProd){
         String queryString = "SELECT guia FROM Guia guia "
@@ -84,8 +87,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     
     /**
      * Método para obtener las Guías según su estado
-     * @param estado : estado en el cual deberán estar las Guías retornadas
-     * @return 
+     * @param estado EstadoGuia estado en el cual deberán estar las Guías retornadas
+     * @return List<Guia> listado de las guías con el estado remitido
      */
     public List<Guia> getByEstado(EstadoGuia estado){
         String queryString = "SELECT guia FROM Guia guia "
@@ -98,8 +101,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     /**
      * Método que devuelve las Guías de trasporte vinculadas a un vehículo determinado
      * identificado por su matrícula
-     * @param matricula : matrícula del Vehículo cuyas Guías se quiere obtener.
-     * @return 
+     * @param matricula String matrícula del Vehículo cuyas Guías se quiere obtener.
+     * @return List<Guia> listado de las guías transportadas por el vehículo
      */
     public List<Guia> getByVehiculo(String matricula){
         String queryString = "SELECT guia FROM Guia guia "
@@ -110,8 +113,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }
     
     /**
-     * Devuelve el último id registrado para una Guía
-     * @return 
+     * Método que devuelve el último id registrado para una Guía
+     * @return int identificador de la última guía registrada
      */
     public int getUltimoId(){      
         String queryString = "SELECT MAX(id) FROM guia"; 
@@ -127,8 +130,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     /**
      * Método que devuelve las Guías vinculadas a un número de fuente determinado.
      * Sea este de una Autorización o de una Guía
-     * @param numFuente : número de la fuente a buscar
-     * @return 
+     * @param numFuente String número de la fuente a buscar
+     * @return List<Guia> listado de las guías vinculadas a la fuente cuyo número se remite
      */
     public List<Guia> findByNumFuente(String numFuente){
         String queryString = "SELECT guia FROM Guia guia "
@@ -140,8 +143,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     
     /**
      * Metodo que devuelve las Guías en condiciones de ser fuentes de productos para el Productor cuyo CUIT se recibe
-     * @param cuit : cuit del Productor cuyas Guías se busca
-     * @return 
+     * @param cuit Long cuit del Productor cuyas Guías se busca
+     * @return List<Guia> listado de las guías correspondientes
      */
     public List<Guia> getFuenteByTitular(Long cuit){
         String queryString = "SELECT guia FROM Guia guia "
@@ -155,8 +158,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     
     /**
      * Metodo que devuelve las Guías emitidas que tengan como Destinatario al CUIT recibido
-     * @param cuit : cuit del Destinatario cuyas Guías se busca
-     * @return 
+     * @param cuit Long cuit del Destinatario cuyas Guías se busca
+     * @return List<Guia> listado de las guías destinadas al cuit remitido
      */
     public List<Guia> getEmitidasByDestinatario(Long cuit){
         String queryString = "SELECT guia FROM Guia guia "
@@ -169,8 +172,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     
     /**
      * Método que devuelve las Guías de Transporte emitidas cuyo Vehículo se corresponde con el de la matrícula ingresada
-     * @param matricula
-     * @return 
+     * @param matricula String matrícula del vehículo
+     * @return List<Guia> listado de las guías transportadas por el vehículo en estado de "emitida"
      */
     public List<Guia> getByMatricula(String matricula){
         String queryString = "SELECT guia FROM Guia guia "
@@ -183,8 +186,8 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     
     /**
      * Método para obtener todas las revisiones de la entidad
-     * @param codigo : Código único identificatorio de la Guía
-     * @return 
+     * @param codigo String Código único identificatorio de la Guía
+     * @return List<Guia> listado de las revisiones de una guía para su auditoría
      */
     public List<Guia> findRevisions(String codigo){  
         List<Guia> lstGuias = new ArrayList<>();

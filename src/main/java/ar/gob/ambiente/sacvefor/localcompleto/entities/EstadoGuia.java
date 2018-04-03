@@ -27,12 +27,16 @@ import javax.xml.bind.annotation.XmlTransient;
 public class EstadoGuia implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Nombre del Estado
+     * Variable privada: Nombre del Estado
      */
     @Column (nullable=false, length=20, unique=true)
     @NotNull(message = "El campo nombre no puede ser nulo")
@@ -40,7 +44,7 @@ public class EstadoGuia implements Serializable {
     private String nombre;
     
     /**
-     * Especifica si el estado permite la edición de los datos complementarios de la Guía:
+     * Variable privada: Especifica si el estado permite la edición de los datos complementarios de la Guía.
      * Productos
      * Transporte
      * Destino
@@ -48,46 +52,57 @@ public class EstadoGuia implements Serializable {
     private boolean habilitaEdicionComp;
     
     /**
-     * Especifica si el estado permite la edición de la Fuente de productos y Titular de la Guía
+     * Variable privada: Especifica si el estado permite la edición de la Fuente de productos y Titular de la Guía
      */
     private boolean habilitaEdicionFuente;
     
     /**
-     * Especifica si el estado permite el tránsito de la Guía en el caso en que se trate de una Guía de tránsito
+     * Variable privada: Especifica si el estado permite el tránsito de la Guía en el caso en que se trate de una Guía de tránsito
      */
     private boolean habilitaTransito;
     
     /**
-     * Especifica si el estado permite que la Guía sea fuente de Productos para otra Guía
+     * Variable privada: Especifica si el estado permite que la Guía sea fuente de Productos para otra Guía
      */
     private boolean habilitaFuenteProductos;
     
     /**
-     * Especifica si el estado permite que la Guía inicie el proceso de emisión
+     * Variable privada: Especifica si el estado permite que la Guía inicie el proceso de emisión
      */
     private boolean habilitaEmision;  
     
     /**
-     * Especifica si el estado permite liquidar tasas
+     * Variable privada: Especifica si el estado permite liquidar tasas
      */
     private boolean habilitaLiquidacion;    
     
     /**
-     * Especifica si el estado implica que la Guía completó su ciclo de vida
+     * Variable privada: Especifica si el estado implica que la Guía completó su ciclo de vida
      */
     private boolean completaCiclo;
     
+    /**
+     * Variable privada: muestra la condición de habilitado del estado
+     */
     private boolean habilitado;
 
+    /**
+     * Método que retorna la condición de habilitación de liquidación de la Guía, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */
     @XmlTransient
     public boolean isHabilitaLiquidacion() {
         return habilitaLiquidacion;
     }
-
+    
     public void setHabilitaLiquidacion(boolean habilitaLiquidacion) {
         this.habilitaLiquidacion = habilitaLiquidacion;
     }
 
+    /**
+     * Método que retorna la condición de habilitación de la emisión de la Guía, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */   
     @XmlTransient
     public boolean isHabilitaEmision() {
         return habilitaEmision;
@@ -97,6 +112,10 @@ public class EstadoGuia implements Serializable {
         this.habilitaEmision = habilitaEmision;
     }
 
+    /**
+     * Método que retorna la condición de habilitación de la edición de la fuente de la Guía, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */       
     @XmlTransient
     public boolean isHabilitaEdicionFuente() {
         return habilitaEdicionFuente;
@@ -114,6 +133,11 @@ public class EstadoGuia implements Serializable {
         this.nombre = nombre;
     }
 
+    /**
+     * Método que retorna la condición de habilitación de la edición de los datos complementarios de la Guía, 
+     * no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */       
     @XmlTransient
     public boolean isHabilitaEdicionComp() {
         return habilitaEdicionComp;
@@ -123,6 +147,10 @@ public class EstadoGuia implements Serializable {
         this.habilitaEdicionComp = habilitaEdicionComp;
     }
 
+    /**
+     * Método que retorna la condición de habilitación de tránsito de la Guía, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */       
     @XmlTransient
     public boolean isHabilitaTransito() {
         return habilitaTransito;
@@ -132,6 +160,10 @@ public class EstadoGuia implements Serializable {
         this.habilitaTransito = habilitaTransito;
     }
 
+    /**
+     * Método que retorna la condición de habilitación de la emisión de la Guía, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */       
     @XmlTransient
     public boolean isHabilitaFuenteProductos() {
         return habilitaFuenteProductos;
@@ -141,6 +173,10 @@ public class EstadoGuia implements Serializable {
         this.habilitaFuenteProductos = habilitaFuenteProductos;
     }
 
+    /**
+     * Método que retorna la condición de completar el ciclo de vida de la Guía, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */       
     @XmlTransient
     public boolean isCompletaCiclo() {
         return completaCiclo;
@@ -150,6 +186,10 @@ public class EstadoGuia implements Serializable {
         this.completaCiclo = completaCiclo;
     }
 
+    /**
+     * Método que retorna la condición de habilitación de la Guía, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */       
     @XmlTransient
     public boolean isHabilitado() {
         return habilitado;

@@ -20,14 +20,18 @@ import org.hibernate.envers.AuditReaderFactory;
 @Stateless
 public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
 
+    /**
+     * Constructor
+     */
     public ItemProductivoFacade() {
         super(ItemProductivo.class);
     }
     
     /**
-     * Metodo para validar un Item productivo existente según el código del producto
-     * @param codigoProducto
-     * @return 
+     * Metodo para validar un Item productivo existente según el código del producto.
+     * Debe recordarse que el código de producto es único.
+     * @param codigoProducto String código del producto
+     * @return ItemProductivo item correspondiente al producto remitido
      */
     public ItemProductivo getExistente(String codigoProducto) {
         List<ItemProductivo> lstItems;
@@ -44,9 +48,9 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     }   
     
     /**
-     * Devuelve los items según la Autorización enviada, todos los estados
-     * @param aut
-     * @return 
+     * Método que devuelve los items según la Autorización enviada, todos los estados
+     * @param aut Autorizacion autorización que contiene los ítems
+     * @return List<ItemProductivo> listado de los ítems de una Autorización
      */
     public List<ItemProductivo> getByAutorizacion(Autorizacion aut){
         String queryString = "SELECT item FROM ItemProductivo item "
@@ -57,9 +61,9 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     }
     
     /**
-     * Devuelve los items según la Guía enviada, todos los estados
-     * @param guia
-     * @return 
+     * Método que devuelve los items según la Guía enviada, todos los estados
+     * @param guia Guia guía que contiene a los ítems
+     * @return List<ItemProductivo> listado de los ítems de la guía
      */
     public List<ItemProductivo> getByGuia(Guia guia){
         String queryString = "SELECT item FROM ItemProductivo item "
@@ -72,8 +76,8 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     /**
      * Método que devuelve los items correspondientes a una Guía según su id.
      * Para el servicio.
-     * @param idGuia
-     * @return 
+     * @param idGuia Long identificador único de la guía
+     * @return List<ItemProductivo> listado de los items habilitados de la guía
      */
     public List<ItemProductivo> getByIdGuia(Long idGuia){
         String queryString = "SELECT item FROM ItemProductivo item "
@@ -85,9 +89,9 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     }       
     
     /**
-     * Devuelve los items habiliados según la Autorización enviada
-     * @param aut
-     * @return 
+     * Método que devuelve los items habiliados según la Autorización enviada
+     * @param aut Autorizacion autorización cuyos ítems se desea obtener
+     * @return List<ItemProductivo> listado de ítems habilitados de la autorización remitida
      */
     public List<ItemProductivo> getByAutorizacionHabilitados(Autorizacion aut){
         String queryString = "SELECT item FROM ItemProductivo item "
@@ -99,9 +103,9 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     }    
     
     /**
-     * Devuelve los items habiliados según la Guía enviada
-     * @param guia
-     * @return 
+     * Método que devuelve los items habiliados según la Guía enviada
+     * @param guia Guia Guía cuyos ítems se desa obtener
+     * @return List<ItemProductivo> listado de los ítmes habilitados de la guía
      */
     public List<ItemProductivo> getByGuiaHabilitados(Guia guia){
         String queryString = "SELECT item FROM ItemProductivo item "
@@ -112,6 +116,10 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
         return q.getResultList();
     }
     
+    /**
+     * Método que devuelve todos los ítems habilitados autorizados
+     * @return List<ItemProductivo> listado de todos los ítems habilitados autorizados
+     */
     public List<ItemProductivo> getAutorizadosHabilitados(){
         String autorizados = ResourceBundle.getBundle("/Config").getString("Autorizados");
         String queryString = "SELECT item FROM ItemProductivo item "
@@ -122,6 +130,10 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
         return q.getResultList();
     }
     
+    /**
+     * Método que devuelve todos los ítems extraídos habilitados
+     * @return List<ItemProductivo> listado de todos los ítems extraídos autorizados
+     */
     public List<ItemProductivo> getExtraidosHabilitados(){
         String extraidos = ResourceBundle.getBundle("/Config").getString("Extraidos");
         String queryString = "SELECT item FROM ItemProductivo item "
@@ -134,8 +146,8 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
     
     /**
      * Método para obtener todas las revisiones de la entidad
-     * @param codigoProducto : Código del producto del Item del que se quieren ver sus revisiones
-     * @return 
+     * @param codigoProducto String Código del producto del Item del que se quieren ver sus revisiones
+     * @return List<ItemProductivo> listado de todas las revisiones de un ítem para su auditoría
      */
     public List<ItemProductivo> findRevisions(String codigoProducto){  
         List<ItemProductivo> lstProductos = new ArrayList<>();
