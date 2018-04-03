@@ -25,31 +25,87 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
 /**
- * Bean de respaldo para la gestión de la sesión del usuario
+ * Bean de respaldo para la gestión de la sesión del usuario.
+ * Gestiona las vistas login.xhtml, primeraVez.xhtml e index.xhtml para el cambio de clave
  * @author rincostante
  */
 public class MbSesion implements Serializable{
 
+    /**
+     * Variable privada: dni que actúa como login del usuario
+     */  
     private Long dni;
+    
+    /**
+     * Variable privada: clave ingresada por el usuario
+     */   
     private String clave;
+    
+    /**
+     * Variable privada: clave encriptada para su validación
+     */  
     private String claveEncript;
+    
+    /**
+     * Variable privada: nueva clave solicitada al usuario en su primera sesión
+     */  
     private String newClave;
+    
+    /**
+     * Variable privada: repetición de la nueva clave
+     */  
     private String newClave2;
+    
+    /**
+     * Variable privada: Usuario logueado
+     */ 
     private Usuario usuario;
+    
+    /**
+     * Variable privada: flag que indica si el bean ya está instanciado
+     */
     private boolean iniciando;
+    
+    /**
+     * Variable privada: indica si el usuario está o no logeado
+     */  
     private boolean logeado = false;
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */  
     static final Logger LOG = Logger.getLogger(MbSesion.class);
     
-    // campos para la notificación al Usuario
+    ////////////////////////////////////////////
+    // campos para la notificación al Usuario //
+    ////////////////////////////////////////////
+    
+    /**
+     * Variable privada: sesión de mail del servidor
+     */
     @Resource(mappedName ="java:/mail/ambientePrueba")    
     private Session mailSesion;
+    
+    /**
+     * Variable privada: String mensaje a enviar por correo electrónico
+     */  
     private Message mensaje;       
     
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Usuario
+     */  
     @EJB
-    private UsuarioFacade usuarioFacade;     
+    private UsuarioFacade usuarioFacade;    
+    
+    /**
+     * Constructor
+     */
     public MbSesion() {
     }
 
+    ///////////////////////
+    // métodos de acceso //
+    ///////////////////////
     public Long getDni() {
         return dni;
     }
@@ -114,18 +170,21 @@ public class MbSesion implements Serializable{
         this.logeado = logeado;
     }
     
-    /******************************
-     * Métodos de inicialización **
-     ******************************/ 
+    ///////////////////////////////
+    // Métodos de inicialización //
+    ///////////////////////////////
 
+    /**
+     * Método que se ejecuta luego de instanciada la clase, setea el flag de inicio
+     */      
     @PostConstruct
     public void init(){
         iniciando = true;
     }       
     
-    /***********************
-     * Métodos operativos **
-     ***********************/ 
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
     
     /**
      * Método para validar los datos del usuario
@@ -249,9 +308,19 @@ public class MbSesion implements Serializable{
         } 
     }    
     
-    /*********************
-     * Métodos privados **
-     *********************/
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
+
+    /**
+     * Método privado para notificar al usuario la actualización de su clave.
+     * Envía un correo electrónico al usuario con la nueva clave ingresada.
+     * mediante el objeto de sesión para el envío de mails "mailSesion".
+     * @param correo String dirección de correo electrónico del usuario
+     * @param motivo String cadena con el motívo de la notificación.
+     * Utilizado en actualizarClave()
+     * @return boolean true o false según el correo se haya enviado correctamente o no
+     */
     private boolean enviarCorreo(String correo, String motivo){  
         boolean result;
         String bodyMessage;

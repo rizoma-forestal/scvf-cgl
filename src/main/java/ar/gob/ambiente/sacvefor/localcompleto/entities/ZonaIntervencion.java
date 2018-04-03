@@ -28,12 +28,16 @@ import javax.validation.constraints.Size;
 public class ZonaIntervencion implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Código o abreviatura de la Zona (I, II, III, etc)
+     * Variable privada: Código o abreviatura de la Zona (I, II, III, etc)
      */
     @Column (nullable=false, length=10, unique=true)
     @NotNull(message = "El campo codigo no puede ser nulo")
@@ -41,28 +45,34 @@ public class ZonaIntervencion implements Serializable {
     private String codigo;
     
     /**
-     * Nombre de la Zona (Verde, Roja, Amarilla, etc)
+     * Variable privada: Nombre de la Zona (Verde, Roja, Amarilla, etc)
      */
     @Column (nullable=false, length=50, unique=true)
     @NotNull(message = "El campo nombre no puede ser nulo")
     @Size(message = "El campo nombre no puede tener más de 50 caracteres", min = 1, max = 50)    
     private String nombre;
     
+    /**
+     * Variable privada: condición de habilitada de la zona
+     */
     private boolean habilitado;
     
     /**
-     * Campo que indica si la zona está o no seleccionada
+     * Variable privada: indica si la zona está o no seleccionada
      */
     @Transient
     private boolean selected;
     
     /**
-     * Listado de los subtipos correspondientes a la Zona
+     * Variable privada: Listado de los subtipos correspondientes a la Zona
      */
     @OneToMany (mappedBy="zona", orphanRemoval = true)
     @Basic(fetch = FetchType.LAZY)
     private List<SubZona> zonas;  
 
+    /**
+     * Constructor que instancia el listado de sub zonas relacionadas
+     */
     public ZonaIntervencion(){
         zonas = new ArrayList<>();
     }

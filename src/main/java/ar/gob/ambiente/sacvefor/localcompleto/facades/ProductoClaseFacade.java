@@ -14,15 +14,18 @@ import javax.persistence.Query;
 @Stateless
 public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
 
+    /**
+     * Constructor
+     */
     public ProductoClaseFacade() {
         super(ProductoClase.class);
     }
     
     /**
      * Método para validar la existencia de una Especie según su nombre y unidad de medida
-     * @param nombre : Nombre a validar junto con la unidad de medida
-     * @param unidad : Unidad de medida a validar junto con el nombre
-     * @return 
+     * @param nombre String Nombre a validar junto con la unidad de medida
+     * @param unidad ProductoUnidadMedida Unidad de medida a validar junto con el nombre
+     * @return ProductoClase clase de producto existente
      */
     public ProductoClase getExistente(String nombre, ProductoUnidadMedida unidad) {
         List<ProductoClase> lstClases;
@@ -42,7 +45,7 @@ public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
     
     /**
      * Método sobreescrito que lista las ProductoClase ordenadas por nombre
-     * @return 
+     * @return List<ProductoClase> listado de todas las clases ordenadas por nombre
      */
     @Override
     public List<ProductoClase> findAll(){
@@ -55,7 +58,7 @@ public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
     /**
      * Mátodo que solo devuelve las ProductoClase habilitadas.
      * Para poblar combos de selección.
-     * @return 
+     * @return List<ProductoClase> listado de todas las Clases habilitadas
      */
     public List<ProductoClase> getHabilitadas(){
         String queryString = "SELECT clase FROM ProductoClase clase "

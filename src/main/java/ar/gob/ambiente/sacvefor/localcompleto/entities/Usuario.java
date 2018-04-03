@@ -24,12 +24,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Usuario implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Guarda el rol al que pertenece el usuario
+     * Variable privada: Guarda el rol al que pertenece el usuario
      */
     @ManyToOne
     @JoinColumn(name="rol_id", nullable=false)
@@ -37,12 +41,12 @@ public class Usuario implements Serializable {
     private Parametrica rol;
     
     /**
-     * Será el DNI del usuario que oficiará como nombre de usuario
+     * Variable privada: Será el DNI del usuario que oficiará como nombre de usuario
      */
     private Long login;
     
     /**
-     * Nombre y apellido del usuario
+     * Variable privada: Nombre y apellido del usuario
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo nombreCompleto no puede ser nulo")
@@ -50,7 +54,7 @@ public class Usuario implements Serializable {
     private String nombreCompleto;
     
     /**
-     * Clave encriptada que generará el sistema automáticamente la primera vez y 
+     * Variable privada: Clave encriptada que generará el sistema automáticamente la primera vez y 
      * solicitará al usuario su cambio cuando realice la primera sesión.
      */
     @Column (length=100)
@@ -58,7 +62,7 @@ public class Usuario implements Serializable {
     private String clave;
     
     /**
-     * Correo electrónico válido del usuario al que se le remitrirán las credenciales de acceso
+     * Variable privada: Correo electrónico válido del usuario al que se le remitrirán las credenciales de acceso
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo email no puede ser nulo")
@@ -66,36 +70,40 @@ public class Usuario implements Serializable {
     private String email;
     
     /**
-     * Fecha de alta del usuario
+     * Variable privada: Fecha de alta del usuario
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaAlta;
     
     /**
-     * Fecha de la última modificación de los datos del usuario
+     * Variable privada: Fecha de la última modificación de los datos del usuario
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaModif;    
     
     /**
-     * Fecha de la última vez que el usuario registra una sesión en la aplicación
+     * Variable privada: Fecha de la última vez que el usuario registra una sesión en la aplicación
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaUltimoLogin;
     
     /**
-     * indica si el usuario solo se logueó una vez, en cuyo caso no cambió la contraseña
+     * Variable privada: indica si el usuario solo se logueó una vez, en cuyo caso no cambió la contraseña
      */
     private boolean primeraVez;    
     
     /**
-     * Estado de habilitado
+     * Variable privada: Estado de habilitado
      */
     private boolean habilitado;
     
+    /**
+     * Constructor
+     */
     public Usuario(){
     }
 
+    // métodos de acceso
     public boolean isPrimeraVez() {
         return primeraVez;
     }

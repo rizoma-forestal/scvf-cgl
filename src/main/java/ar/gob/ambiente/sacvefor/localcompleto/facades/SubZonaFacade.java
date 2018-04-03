@@ -14,15 +14,18 @@ import javax.persistence.Query;
 @Stateless
 public class SubZonaFacade extends AbstractFacade<SubZona> {
 
+    /**
+     * Constructor
+     */
     public SubZonaFacade() {
         super(SubZona.class);
     }
     
     /**
      * Método para validar la existencia de una SubZona en función de su nombre y Zona
-     * @param nombre : Nombre cuya existencia se quiere validar
-     * @param zona : ZonaIntervencion correspondiente a la SubZona a validar
-     * @return 
+     * @param nombre String Nombre cuya existencia se quiere validar
+     * @param zona ZonaIntervencion ZonaIntervencion correspondiente a la SubZona a validar
+     * @return SubZona sub zona existente
      */
     public SubZona getExistente(String nombre, ZonaIntervencion zona) {
         List<SubZona> lstSubZonas;
@@ -42,7 +45,7 @@ public class SubZonaFacade extends AbstractFacade<SubZona> {
     
     /**
      * Método sobreescrito que lista las SubZonas ordenadas por nombre
-     * @return 
+     * @return List<SubZona> listado de las sub zonas ordenadas
      */
     @Override
     public List<SubZona> findAll(){
@@ -55,8 +58,8 @@ public class SubZonaFacade extends AbstractFacade<SubZona> {
     /**
      * Mátodo que solo devuelve las SubZonas habilitadas, según el tipo.
      * Para poblar combos de selección.
-     * @param zona : Zona a la que pertenece la SubZona
-     * @return 
+     * @param zona ZonaIntervencion Zona a la que pertenece la SubZona
+     * @return List<SubZona> listado de las sub zonas correspondientes a la zona remitida
      */
     public List<SubZona> getHabilitadasByZona(ZonaIntervencion zona){
         String queryString = "SELECT sub FROM SubZona sub "

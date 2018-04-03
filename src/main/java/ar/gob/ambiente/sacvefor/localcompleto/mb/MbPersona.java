@@ -58,103 +58,345 @@ import org.primefaces.model.UploadedFile;
  * Productor
  * Destinatario
  * etc.
+ * Gestinoa las vistas aut/personas/ y guia/personas
  * @author rincostante
  */
 public class MbPersona implements Serializable {
-
-    // campos para gestionar
+    ///////////////////////////
+    // campos para gestionar //
+    ///////////////////////////
+    
+    /**
+     * Variable privada: objeto a gestionar
+     */
     private Persona persona;
+    
+    /**
+     * Variable privada: listado de los proponentes registrados
+     */
     private List<Persona> lstProp;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de proponentes
+     */
     private List<Persona> listPropFilter;
+    
+    /**
+     * Variable privada: listado de los técnicos registrados
+     */
     private List<Persona> lstTecnicos;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de técnicos
+     */
     private List<Persona> listTecFilter;
+    
+    /**
+     * Variable privada: listado de los apoderados registrados
+     */
     private List<Persona> lstApod;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de apoderados
+     */
     private List<Persona> listApodFilter;
+    
+    /**
+     * Variable privada: listado de los destinatarios registrados
+     */
     private List<Persona> lstDestinatarios;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de destinatarios
+     */
     private List<Persona> lstDestFilter;
-    private List<Persona> lstTranpostistas;
+    
+    /**
+     * Variable privada: listado de los Transportistas registrados
+     */
+    private List<Persona> lstTransportistas;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de Transportistas
+     */
     private List<Persona> lstTranspFilter;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando no está editable
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando es existente
+     */
     private boolean edit;
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */ 
     private static final Logger logger = Logger.getLogger(MbPersona.class.getName());
+    
+    /**
+     * Variable privada: listado de las revisiones de la Persona
+     */
     private List<Persona> lstRevisions; 
+    
+    /**
+     * Variable privada: cuit para buscar la persona en el RUE
+     */
     private Long cuitBusqRue;
+    
+    /**
+     * Variable privada: objeto persona del paquete paqRue.jar para gestionar las Personas del RUE
+     */
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona personaRue;
+    
+    /**
+     * Variable privada: flag que indica si se está subiendo una imagen de martillo
+     */
     private boolean subeMartillo;
+    
+    /**
+     * Variable privada: MbSesion para gestionar las variables de sesión del usuario
+     */  
     private MbSesion sesion;
+    
+    /**
+     * Variable privada: Usuario de sesión
+     */
     private Usuario usLogueado;
     
-    // inyección de recursos
+    ///////////////////////////
+    // inyección de recursos //
+    ///////////////////////////
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Persona
+     */  
     @EJB
     private PersonaFacade perFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica
+     */  
     @EJB
     private ParametricaFacade paramFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */  
     @EJB
     private TipoParamFacade tipoParamFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Autorizacion
+     */  
     @EJB
     private AutorizacionFacade autFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Guia
+     */  
     @EJB
     private GuiaFacade guiaFacade;
     
-    // Clientes REST para la gestión del API de Personas
-    private PersonaClient personaClient;  
-    private TipoEntidadClient tipoEntClient;
-    private TipoSociedadClient tipoSocClient;
-    private ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient usClientRue;
-    private Token tokenRue;
-    private String strTokenRue; 
-    // Clientes REST para la gestión del API Territorial
-    private ProvinciaClient provClient;    
-    private DepartamentoClient deptoClient;
-    private LocalidadClient locClient;
-    private UsuarioClient usuarioClient;
-    private Token token;
-    private String strToken;
+    //////////////////////////////////////////////////////
+    // Clientes REST para la gestión del API de Personas//
+    //////////////////////////////////////////////////////
     
     /**
-     * Campos para la gestión de las Entidades provenientes de la API
-     * RUE en los combos del formulario.
-     * Las Entidades de servicio se componen de un par {id | nombre}
-     */   
+     * Variable privada: Cliente para la API Rest de Presonas en el RUE
+     */
+    private PersonaClient personaClient;  
+    
+    /**
+     * Variable privada: Cliente para la API Rest de TipoEntidad en el RUE
+     */
+    private TipoEntidadClient tipoEntClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de TipoSociedad en el RUE
+     */
+    private TipoSociedadClient tipoSocClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Usuarios en el RUE
+     */
+    private ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient usClientRue;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API del RUE
+     */
+    private Token tokenRue;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API del RUE
+     */
+    private String strTokenRue; 
+    
+    ///////////////////////////////////////////////////////
+    // Clientes REST para la gestión del API Territorial //
+    ///////////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Provincias en Organización territorial
+     */
+    private ProvinciaClient provClient;    
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Departamentos en Organización territorial
+     */
+    private DepartamentoClient deptoClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Localidades en Organización territorial
+     */
+    private LocalidadClient locClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Usuarios en Organización territorial
+     */
+    private UsuarioClient usClientTerr;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API de Organización territorial
+     */
+    private Token tokenTerr;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API de Organización territorial
+     */
+    private String strTokenTerr;
+    
+    ////////////////////////////////////////////////////////////////////
+    // Campos para la gestión de las Entidades provenientes de la API //
+    // RUE en los combos del formulario. ///////////////////////////////
+    // Las Entidades de servicio se componen de un par {id | nombre} ///
+    //////////////////////////////////////////////////////////////////// 
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los TipoEntidad
+     */  
     private List<EntidadServicio> listTipoEntidad;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del TipoEntidad seleccionado del combo
+     */
     private EntidadServicio tipoEntidadSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los TipoSoc.
+     */  
     private List<EntidadServicio> listTipoSoc;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del TipoSoc seleccionado del combo
+     */
     private EntidadServicio tipoSocSelected;  
     
+    ////////////////////////////////////////////////////////////////////
+    // Campos para la gestión de las Entidades provenientes de la API //
+    // Territorial en los combos del formulario. ///////////////////////
+    ////////////////////////////////////////////////////////////////////
+    
     /**
-     * Campos para la gestión de las Entidades provenientes de la API
-     * Territorial en los combos del formulario.
-     */  
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Provincias
+     */    
     private List<EntidadServicio> listProvincias;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Provincia seleccionada del combo
+     */
     private EntidadServicio provSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los Departamentos
+     */ 
     private List<EntidadServicio> listDepartamentos;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Departamento seleccionada del combo
+     */
     private EntidadServicio deptoSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Localidades
+     */ 
     private List<EntidadServicio> listLocalidades;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Localidad seleccionada del combo
+     */
     private EntidadServicio localSelected;  
     
-    /**
-     * Campos para el seteo de Personas
-     */
+    //////////////////////////////////////
+    // Campos para el seteo de Personas //
+    //////////////////////////////////////
     // Persona
+    /**
+     * Variable privada: tipo de persona a asignar a una persona nueva o para editar una existente en el RUE
+     */
     private TipoPersona rueTipoPers;
-    private String rueNombreCompleto; 
-    private String rueRazonSocial;
-    private Long rueCuit;
-    private String rueCorreoElectronico;
-    // Domicilio
-    private String rueCalle;
-    private String rueNumero;
-    private String ruePiso;
-    private String rueDepto;
-    private boolean rueEditable;
     
     /**
-     * Listados por persona
+     * Variable privada: nombre completo de la persona en el RUE
      */
+    private String rueNombreCompleto; 
+    
+    /**
+     * Variable privada: razón social de la persona jurídica en el RUE
+     */
+    private String rueRazonSocial;
+    
+    /**
+     * Variable privada: cuit de la persona en el RUE
+     */
+    private Long rueCuit;
+    
+    /**
+     * Variable privada: correo electrónico de la persona en el RUE
+     */
+    private String rueCorreoElectronico;
+    
+    // Domicilio
+    /**
+     * Variable privada: calle del domicilio de la persona en el RUE
+     */
+    private String rueCalle;
+    
+    /**
+     * Variable privada: número de puerta del domicilio de la persona en el RUE
+     */
+    private String rueNumero;
+    
+    /**
+     * Variable privada: piso en el que se encuentra el domicilio de la persona en el RUE
+     */
+    private String ruePiso;
+    
+    /**
+     * Variable privada: departamento del domicilio de la persona en el RUE
+     */
+    private String rueDepto;
+    
+    /**
+     * Variable privada: flag que indica si la persona del RUE está estable
+     */
+    private boolean rueEditable;
+    
+    //////////////////////////
+    // Listados por persona //
+    //////////////////////////
+    
     // Autorizaciones
+    /**
+     * Variable privada: listado de autorizaciones vinculadas a la persona según su rol
+     */
     private List<Autorizacion> lstAut;
     
     // Guías
+    /**
+     * Variable privada: Listado de guías vinculadas a la persona según su rol
+     */
     private List<Guia> lstGuias;
     
     /**
@@ -163,9 +405,9 @@ public class MbPersona implements Serializable {
     public MbPersona() {
     }
     
-    /**********************
-     * Métodos de acceso **
-     **********************/      
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////    
     public List<Autorizacion> getLstAut() {
         return lstAut;
     }
@@ -182,6 +424,11 @@ public class MbPersona implements Serializable {
         this.lstGuias = lstGuias;
     }
 
+    /**
+     * Método para poblar el listado de destinatarios.
+     * Busca todas las personas con pasandole el rol como parámetro
+     * @return List<Persona> listado de todos los destinatarios
+     */
     public List<Persona> getLstDestinatarios() {
         try{
             lstDestinatarios = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Destinatario")));
@@ -203,17 +450,22 @@ public class MbPersona implements Serializable {
         this.lstDestFilter = lstDestFilter;
     }
 
-    public List<Persona> getLstTranpostistas() {
+    /**
+     * Método para poblar el listado de transportistas.
+     * Busca todas las personas con pasandole el rol como parámetro
+     * @return List<Persona> listado de todos los transportistas
+     */
+    public List<Persona> getLstTransportistas() {
         try{
-            lstTranpostistas = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Transportista")));
+            lstTransportistas = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Transportista")));
         }catch(Exception ex){
             JsfUtil.addErrorMessage("Hubo un error obteniendo los Transportistas registrados. " + ex.getMessage());
         }
-        return lstTranpostistas;
+        return lstTransportistas;
     }
 
-    public void setLstTranpostistas(List<Persona> lstTranpostistas) {
-        this.lstTranpostistas = lstTranpostistas;
+    public void setLstTransportistas(List<Persona> lstTransportistas) {
+        this.lstTransportistas = lstTransportistas;
     }
 
     public List<Persona> getLstTranspFilter() {
@@ -370,7 +622,12 @@ public class MbPersona implements Serializable {
     public void setLocalSelected(EntidadServicio localSelected) {
         this.localSelected = localSelected;
     }
-       
+      
+    /**
+     * Método para poblar el listado de técnicos.
+     * Busca todas las personas con pasandole el rol como parámetro
+     * @return List<Persona> listado de todos los técnicos
+     */
     public List<Persona> getLstTecnicos() {
         try{
             lstTecnicos = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Tecnico")));
@@ -392,6 +649,11 @@ public class MbPersona implements Serializable {
         this.listTecFilter = listTecFilter;
     }
 
+    /**
+     * Método para poblar el listado de apoderados.
+     * Busca todas las personas con pasandole el rol como parámetro
+     * @return List<Persona> listado de todos los apoderados
+     */  
     public List<Persona> getLstApod() {
         try{
             lstApod = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Apoderado")));
@@ -437,6 +699,11 @@ public class MbPersona implements Serializable {
         this.persona = persona;
     }
 
+    /**
+     * Método para poblar el listado de proponentes.
+     * Busca todas las personas con pasandole el rol como parámetro
+     * @return List<Persona> listado de todos los proponentes
+     */     
     public List<Persona> getLstProp() {
         try{
             lstProp = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Proponente")));
@@ -520,10 +787,14 @@ public class MbPersona implements Serializable {
             return TipoPersona.values();
     }       
     
-    /**********************
-     * Métodos de inicio **
-     * ********************/
+    ///////////////////////
+    // Métodos de inicio //
+    ///////////////////////
 
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar, 
+     * el bean de sesión y el usuario
+     */  
     @PostConstruct
     public void init(){
         persona = new Persona();
@@ -562,9 +833,9 @@ public class MbPersona implements Serializable {
         limpiarFormPerRue();
     }
     
-    /***********************
-     * Métodos operativos **
-     ***********************/   
+    ////////////////////////
+    // Métodos operativos //
+    //////////////////////// 
     
     /**
      * Método para habilitar la vista detalle del formulario
@@ -576,7 +847,7 @@ public class MbPersona implements Serializable {
     
     /**
      * Método para preparar el listado de Autorizaciones por Persona según su rol
-     * @param rol
+     * @param rol String nombre del rol de la persona
      */
     public void prepareViewAut(String rol){
         lstAut = new ArrayList<>();
@@ -584,6 +855,10 @@ public class MbPersona implements Serializable {
         lstAut = autFacade.getByPersona(persona, rolPersona);
     }
     
+    /**
+     * Método para preparar el listado de Guías por Persona según su rol
+     * @param rol String nombre del rol de la persona
+     */
     public void preparaViewGuias(String rol){
         lstGuias = new ArrayList<>();
         if(rol.equals(ResourceBundle.getBundle("/Config").getString("TegFuente"))){
@@ -626,7 +901,7 @@ public class MbPersona implements Serializable {
     
     /**
      * Método para setear los datos obtenidos del RUE en la Persona
-     * @param rol : Rol de la Persona a generar
+     * @param rol String nombre del Rol de la Persona a generar
      */
     public void setearPersonaByRue(String rol){
         if(personaRue != null){
@@ -652,7 +927,7 @@ public class MbPersona implements Serializable {
      * Método para subir la imagen del martillo en el subdirectorio temporal
      * El subdirectorio temporal se llama "TMP"
      * Se configuran en el archivo de propiedades configurable "Config.properties"
-     * @param event 
+     * @param event FileUploadEvent evento de subida de martillo
      */
     public void subirMartilloTmp(FileUploadEvent event){ 
         // subo el archivo al directorio temporal
@@ -920,7 +1195,7 @@ public class MbPersona implements Serializable {
     
     /**
      * Método para persistir una Persona en la API RUE, validando los datos, tanto para edición como insert
-     * @param rolPersona : Rol de la Persona que se va a persistir. Si bien no es necesario para el insert,
+     * @param rolPersona String nombre del Rol de la Persona que se va a persistir. Si bien no es necesario para el insert,
      * sí lo es para la actualización.
      */
     public void savePerRue(String rolPersona){
@@ -987,7 +1262,7 @@ public class MbPersona implements Serializable {
                 personaRue.setProvinciaGestion(ResourceBundle.getBundle("/Config").getString("Provincia"));
                 
                 
-                // utilizo el cliente rest secún corresponda, obtengo el token si no está seteado o está vencido
+                // utilizo el cliente rest secún corresponda, obtengo el tokenTerr si no está seteado o está vencido
                 if(tokenRue == null){
                     getTokenRue();
                 }else try {
@@ -1181,26 +1456,27 @@ public class MbPersona implements Serializable {
     
     /**
      * Método para obtener el rol de la persona según la cadena recibida
-     * @param sRol : rol de la persona a buscar
-     * @return 
+     * @param sRol String nombre del rol de la persona a buscar
+     * @return Parametrica paramétrica con los datos del rol obtenido
      */
     public Parametrica obtenerRol(String sRol) {
         TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
         return paramFacade.getExistente(sRol, tipoParam);
     }    
     
-    /*********************
-     * Métodos privados **
-     *********************/ 
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
     /**
-     * Método que obtiene una Persona del RUE mediante el uso de la API correspondiente
-     * @return 
+     * Método que obtiene una Persona del RUE mediante el uso de la API correspondiente.
+     * Utilizado en buscarPersonaRue()
+     * @return ar.gob.ambiente.sacvefor.servicios.rue.Persona persona obtenida del RUE
      */
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona obtenerPersonaRueByCuit(){
         List<ar.gob.ambiente.sacvefor.servicios.rue.Persona> listPersonas = new ArrayList<>();
         
         try{
-            // instancio el cliente para la obtención de la Persona, obtengo el token si no está seteado o está vencido
+            // instancio el cliente para la obtención de la Persona, obtengo el tokenTerr si no está seteado o está vencido
             if(tokenRue == null){
                 getTokenRue();
             }else try {
@@ -1232,11 +1508,12 @@ public class MbPersona implements Serializable {
     }    
 
     /**
-     * Método que obtine una Persona determinada del RUE según su id
+     * Método que obtine una Persona determinada del RUE según su id.
+     * Utilizado en prepareEdit() y verDatosRue()
      */
     private void cargarPersona() {
         try{
-            // instancio el cliente para la obtención de la Persona, obtengo el token si no está seteado o está vencido
+            // instancio el cliente para la obtención de la Persona, obtengo el tokenTerr si no está seteado o está vencido
             if(tokenRue == null){
                 getTokenRue();
             }else try {
@@ -1258,10 +1535,10 @@ public class MbPersona implements Serializable {
     }
     
     /**
-     * Método para nombrear un archivo subido, en este caso, el Martillo del Proponente
-     * @param file
-     * @param prefijo
-     * @return 
+     * Método para nombrear un archivo subido, en este caso, el Martillo del Proponente.
+     * Utilizado en subirMartilloTmp(FileUploadEvent event)
+     * @param file UploadedFile archivo a subir
+     * @return String nombre del archivo según la provincia, el cuit y la fecha
      */
     private String getNombreArchivoASubir(UploadedFile file){
         Date date = new Date();
@@ -1274,7 +1551,8 @@ public class MbPersona implements Serializable {
     /**
      * Método para guardar la imagen del martillo a un directorio definitivo.
      * Completado el renombrado y guardado, elimino el archivo del directorio temporal
-     * El directorio es "martillos" y está seteado en el Config.properties
+     * El directorio es "martillos" y está seteado en el Config.properties.
+     * Utilizado en saveProponente()
      */
     private boolean saveMartillo() {
         if(subeMartillo){
@@ -1302,14 +1580,15 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método para cargar el listado de Tipos de Entidad para su selección
+     * Método para cargar el listado de Tipos de Entidad para su selección.
+     * Utilizado en prepareNewInsertRue() y preparaEditRue()
      */
     private void cargarTiposEntidad() {
         EntidadServicio tipoEntidad;
         List<TipoEntidad> listSrv;
         
         try{
-            // instancio el cliente para la selección de los Tipos de Entidad, obtengo el token si no está seteado o está vencido
+            // instancio el cliente para la selección de los Tipos de Entidad, obtengo el tokenTerr si no está seteado o está vencido
             if(tokenRue == null){
                 getTokenRue();
             }else try {
@@ -1341,14 +1620,15 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método para cargar el listado de Tipos de Sociedad para su selección
+     * Método para cargar el listado de Tipos de Sociedad para su selección.
+     * Utilizado en prepareNewInsertRue() y preparaEditRue()
      */
     private void cargarTiposSociedad() {
         EntidadServicio tipoSociedad;
         List<TipoSociedad> listSrv;
         
         try{
-            // instancio el cliente para la selección de los Tipos de Sociedad, obtengo el token si no está seteado o está vencido
+            // instancio el cliente para la selección de los Tipos de Sociedad, obtengo el tokenTerr si no está seteado o está vencido
             if(tokenRue == null){
                 getTokenRue();
             }else try {
@@ -1380,18 +1660,19 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método para cargar el listado de Provincias para su selección
+     * Método para cargar el listado de Provincias para su selección.
+     * Utilizado en preparaEditRue() y prepareNewInsertRue()
      */
     private void cargarProvincias() {
         EntidadServicio provincia;
         List<Provincia> listSrv;
         
         try{
-            // obtengo el token si no está seteado o está vencido
-            if(token == null){
+            // obtengo el tokenTerr si no está seteado o está vencido
+            if(tokenTerr == null){
                 getTokenTerr();
             }else try {
-                if(!token.isVigente()){
+                if(!tokenTerr.isVigente()){
                     getTokenTerr();
                 }
             } catch (IOException ex) {
@@ -1401,7 +1682,7 @@ public class MbPersona implements Serializable {
             provClient = new ProvinciaClient();
             // obtengo el listado de provincias 
             GenericType<List<Provincia>> gType = new GenericType<List<Provincia>>() {};
-            Response response = provClient.findAll_JSON(Response.class, token.getStrToken());
+            Response response = provClient.findAll_JSON(Response.class, tokenTerr.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con las provincias como un objeto Entidad Servicio
             listProvincias = new ArrayList<>();
@@ -1422,19 +1703,20 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método que carga el listado de Departamentos según la Provincia seleccionada
-     * @param id 
+     * Método que carga el listado de Departamentos según la Provincia seleccionada.
+     * Utilizado en cargarEntidadesTerr(Long idLocalidad) y provinciaChangeListener()
+     * @param id Long identificador de la provincia en Organización Territorial
      */
     private void getDepartamentosSrv(Long idProv) {
         EntidadServicio depto;
         List<Departamento> listSrv;
         
         try{
-            // obtengo el token si no está seteado o está vencido
-            if(token == null){
+            // obtengo el tokenTerr si no está seteado o está vencido
+            if(tokenTerr == null){
                 getTokenTerr();
             }else try {
-                if(!token.isVigente()){
+                if(!tokenTerr.isVigente()){
                     getTokenTerr();
                 }
             } catch (IOException ex) {
@@ -1444,7 +1726,7 @@ public class MbPersona implements Serializable {
             provClient = new ProvinciaClient();
             // obtngo el listado
             GenericType<List<Departamento>> gType = new GenericType<List<Departamento>>() {};
-            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv), token.getStrToken());
+            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv), tokenTerr.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listDepartamentos = new ArrayList<>();
@@ -1464,18 +1746,19 @@ public class MbPersona implements Serializable {
 
     /**
      * Método que carga el listado de Localidades según el Departamento seleccionado
-     * @param id 
+     * Utilizados en deptoChangeListener() y cargarEntidadesTerr(Long idLocalidad)
+     * @param id Long identificación del departamento
      */    
     private void getLocalidadesSrv(Long idDepto) {
         EntidadServicio local;
         List<CentroPoblado> listSrv;
         
         try{
-            // obtengo el token si no está seteado o está vencido
-            if(token == null){
+            // obtengo el tokenTerr si no está seteado o está vencido
+            if(tokenTerr == null){
                 getTokenTerr();
             }else try {
-                if(!token.isVigente()){
+                if(!tokenTerr.isVigente()){
                     getTokenTerr();
                 }
             } catch (IOException ex) {
@@ -1485,7 +1768,7 @@ public class MbPersona implements Serializable {
             deptoClient = new DepartamentoClient();
             // obtngo el listado
             GenericType<List<CentroPoblado>> gType = new GenericType<List<CentroPoblado>>() {};
-            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto), token.getStrToken());
+            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto), tokenTerr.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listLocalidades = new ArrayList<>();
@@ -1504,17 +1787,18 @@ public class MbPersona implements Serializable {
     }
     
     /**
-     * Método para cargar entidades de servicio y los listados, para actualizar el Domicilio de la Persona
+     * Método para cargar entidades de servicio y los listados, para actualizar el Domicilio de la Persona.
+     * Utilizado en preparaEditRue()
      */
     private void cargarEntidadesTerr(Long idLocalidad){
         CentroPoblado cp;
         
         try{
-            // obtengo el token si no está seteado o está vencido
-            if(token == null){
+            // obtengo el tokenTerr si no está seteado o está vencido
+            if(tokenTerr == null){
                 getTokenTerr();
             }else try {
-                if(!token.isVigente()){
+                if(!tokenTerr.isVigente()){
                     getTokenTerr();
                 }
             } catch (IOException ex) {
@@ -1522,7 +1806,7 @@ public class MbPersona implements Serializable {
             }
             // instancio el cliente para la selección de las provincias
             locClient = new LocalidadClient();
-            cp = locClient.find_JSON(CentroPoblado.class, String.valueOf(idLocalidad), token.getStrToken());
+            cp = locClient.find_JSON(CentroPoblado.class, String.valueOf(idLocalidad), tokenTerr.getStrToken());
             // cierro el cliente
             locClient.close();
             // instancio las Entidades servicio
@@ -1545,8 +1829,9 @@ public class MbPersona implements Serializable {
     }     
 
     /**
-     * Método para validar el CUIT ingresado para persistir la Persona en el RUE
-     * @return 
+     * Método para validar el CUIT ingresado para persistir la Persona en el RUE.
+     * Utilizado en savePerRue(String rolPersona)
+     * @return String resultado de la validación
      */
     private String validarCuit() {
         String result = "";
@@ -1595,7 +1880,7 @@ public class MbPersona implements Serializable {
                 try{
                     // instancio el cliente para verificar la existencia de una Persona con el mismo CUIT
                     List<ar.gob.ambiente.sacvefor.servicios.rue.Persona> listPersonas = new ArrayList<>();
-                    // obtengo el token si no está seteado o está vencido
+                    // obtengo el tokenTerr si no está seteado o está vencido
                     if(tokenRue == null){
                         getTokenRue();
                     }else try {
@@ -1635,8 +1920,9 @@ public class MbPersona implements Serializable {
     /**
      * Método para validar el nombre completo o razón social de la Persona para ser persistida en el RUE, 
      * según sea una edición o una inserción.
-     * En cualquier caso, devuelve "" si validó o un mensaje si no validó
-     * @return 
+     * En cualquier caso, devuelve "" si validó o un mensaje si no validó.
+     * Utilizado en savePerRue(String rolPersona)
+     * @return String resultado de la validación
      */
     private String validarNombre() {
         String result = "", tipoPer, nomCom, razSoc;
@@ -1677,7 +1963,8 @@ public class MbPersona implements Serializable {
      * caso 2 => elimino el Domicilio de la Persona;
      * caso 3 => seteo el mensaje de error;
      * En cualquier caso, devuelve "" si validó o un mensaje si no validó.
-     * @return 
+     * Utilizado en savePerRue(String rolPersona)
+     * @return String resultado de la validación
      */
     private String validarDomicilio(String rolPersona) {
         String result = "", valid;
@@ -1748,12 +2035,13 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método para obtener el Tipo de Entidad seleccionado a partir de la EntidadServicio
-     * @return 
+     * Método para obtener el Tipo de Entidad seleccionado a partir de la EntidadServicio.
+     * Utilizada en savePerRue(String rolPersona)
+     * @return TipoEntidad tipo de entidad solicitada
      */
     private TipoEntidad obtenerTipoEntidad() {
         try{
-            // instancio el cliente para la selección de los Tipos de Entidad, obtengo el token si no está seteado o está vencido
+            // instancio el cliente para la selección de los Tipos de Entidad, obtengo el tokenTerr si no está seteado o está vencido
             if(tokenRue == null){
                 getTokenRue();
             }else try {
@@ -1777,12 +2065,13 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método para obteber el Tipo de Sociedad seleccionado a partir de la EntidadServicio
-     * @return 
+     * Método para obteber el Tipo de Sociedad seleccionado a partir de la EntidadServicio.
+     * Utilizado en savePerRue(String rolPersona)
+     * @return TipoSociedad tipo de sociedad solicitada
      */
     private TipoSociedad obtenerTipoSociedad() {
         try{
-            // instancio el cliente para la selección de los Tipos de Sociedad, obtengo el token si no está seteado o está vencido
+            // instancio el cliente para la selección de los Tipos de Sociedad, obtengo el tokenTerr si no está seteado o está vencido
             if(tokenRue == null){
                 getTokenRue();
             }else try {
@@ -1806,12 +2095,13 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método que obtiene una Persona desde la API RUE, según su id
-     * @return 
+     * Método que obtiene una Persona desde la API RUE, según su id.
+     * Utilizada en preparaEditRue()
+     * @return ar.gob.ambiente.sacvefor.servicios.rue.Persona obtenida del RUE
      */
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona buscarPersonaRueById() {
         try{
-            // instancio el cliente para la selección de la Persona RUE, obtengo el token si no está seteado o está vencido
+            // instancio el cliente para la selección de la Persona RUE, obtengo el tokenTerr si no está seteado o está vencido
             if(tokenRue == null){
                 getTokenRue();
             }else try {
@@ -1837,7 +2127,9 @@ public class MbPersona implements Serializable {
     /**
      * Método para setear el mensaje de error de validación de Domicilio durante la edición.
      * Valida que los datos obligatorios estén completos, en cuyo caso arma un mensaje específico.
-     * O devuelve una cadena vacía si el Domicilio está completo
+     * O devuelve una cadena vacía si el Domicilio está completo.
+     * Utilizado en validarDomicilio(String rolPersona)
+     * @return String mensaje correspondiente
      */
     private String setearErrorDomEdit() {
         String result = "Está ingresando un domicilio.";
@@ -1855,7 +2147,8 @@ public class MbPersona implements Serializable {
     }
 
     /**
-     * Método que setea el Domicilio para ser persistido en el RUE al editar la Persona
+     * Método que setea el Domicilio para ser persistido en el RUE al editar la Persona.
+     * Utilizado en validarDomicilio(String rolPersona)
      */
     private void setearDom() {
         // pongo la calle en mayúsculas
@@ -1870,7 +2163,9 @@ public class MbPersona implements Serializable {
     /**
      * Método para setear el mensaje de error de validación de Domicilio nuevo.
      * Valida que los datos obligatorios estén completos, en cuyo caso arma un mensaje específico.
-     * O devuelve una cadena vacía si el Domicilio está completo    
+     * O devuelve una cadena vacía si el Domicilio está completo.
+     * Utilizado en validarDomicilio(String rolPersona)
+     * @return String mensaje correspondiente
      */
     private String setearErrorDomNuevo() {
         String result = "Está ingresando un domicilio.";
@@ -1888,18 +2183,19 @@ public class MbPersona implements Serializable {
     }
     
     /**
-     * Método privado que obtiene y setea el token para autentificarse ante la API rest de Territorial
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     * Método privado que obtiene y setea el tokenTerr para autentificarse ante la API rest de Territorial
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en cargarEntidadesTerr(Long idLocalidad), getDepartamentosSrv(Long idProv) y cargarProvincias()
      */
     private void getTokenTerr(){
         try{
-            usuarioClient = new UsuarioClient();
-            Response responseUs = usuarioClient.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTerr"));
+            usClientTerr = new UsuarioClient();
+            Response responseUs = usClientTerr.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTerr"));
             MultivaluedMap<String, Object> headers = responseUs.getHeaders();
             List<Object> lstHeaders = headers.get("Authorization");
-            strToken = (String)lstHeaders.get(0); 
-            token = new Token(strToken, System.currentTimeMillis());
-            usuarioClient.close();
+            strTokenTerr = (String)lstHeaders.get(0); 
+            tokenTerr = new Token(strTokenTerr, System.currentTimeMillis());
+            usClientTerr.close();
         }catch(ClientErrorException ex){
             System.out.println("Hubo un error obteniendo el token para la API Territorial: " + ex.getMessage());
         }
@@ -1907,7 +2203,9 @@ public class MbPersona implements Serializable {
     
     /**
      * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en buscarPersonaRueById(), obtenerTipoSociedad(), obtenerTipoEntidad(), validarCuit(),
+     * cargarTiposSociedad(), cargarTiposEntidad(), cargarPersona(), obtenerPersonaRueByCuit(), savePerRue(String rolPersona)
      */
     private void getTokenRue(){
         try{

@@ -18,12 +18,16 @@ import javax.validation.constraints.NotNull;
 public class ProductoTasa implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Paramétrica cuyo tipo es "Tipos de Tasa"
+     * Variable privada: Paramétrica cuyo tipo es "Tipos de Tasa"
      */
     @ManyToOne
     @JoinColumn(name="tipoTasa_id", nullable=false)
@@ -31,7 +35,7 @@ public class ProductoTasa implements Serializable {
     private Parametrica tipo;
     
     /**
-     * Monto que deberá abonarse por la tasa
+     * Variable privada: Monto que deberá abonarse por la tasa
      * Los montos son por unidad
      */
     private float monto;

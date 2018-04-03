@@ -32,47 +32,133 @@ import javax.ws.rs.core.Response;
 
 /**
  * Bean de respaldo para la gestión de Inmuebles
+ * Gestiona la vista aut/inm/inmueble.xhtml
  * @author rincostante
  */
 public class MbInmueble {
 
+    /**
+     * Variable privada: objeto principal a gestionar
+     */
     private Inmueble inmueble;
+    
+    /**
+     * Variable privada: listado de los inmuebles existentes
+     */
     private List<Inmueble> listado;
+    
+    /**
+     * Variable privada: listado para filtrar la tabla de inmuebles existentes
+     */
     private List<Inmueble> listFilters;
+    
+    /**
+     * Variable privada: listado de los inmuebles existentes para poblar el combo de selección de inmueble de origen, si corresponde
+     */
     private List<Inmueble> lstInmOrigen;
+    
+    /**
+     * Variable privada: flag que indica que el inmueble que se está gestionando no está editable
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que el inmueble que se está gestionando es existente
+     */
     private boolean edit;
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */ 
     private static final Logger logger = Logger.getLogger(Inmueble.class.getName());    
     
-    // inyección de recursos
+    ///////////////////////////////////////////////////
+    // acceso a datos mediante inyección de recursos //
+    ///////////////////////////////////////////////////
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Inmueble
+     */ 
     @EJB
     private InmuebleFacade inmFacade;
     
-    // Clientes REST para la selección de datos territoriales
+    ////////////////////////////////////////////////////////////
+    // Clientes REST para la selección de datos territoriales //
+    ////////////////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Provincias de Organización territorial
+     */
     private ProvinciaClient provClient;    
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Departamentos de Organización territorial
+     */
     private DepartamentoClient deptoClient;
-    private LocalidadClient localidadClient;    
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Localidades de Organización territorial
+     */
+    private LocalidadClient localidadClient;   
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Validación de usuarios para el acceso a Organización territorial
+     */
     private UsuarioClient usuarioClient;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API de Organización territorial
+     */    
     private Token token;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API de Organización territorial
+     */ 
     private String strToken;    
 
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // Campos para la gestión de los elementos territoriales en los combos del formulario. //
+    // Las Entidades de servicio se componen de un par {id | nombre} ////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////
+    
     /**
-     * Campos para la gestión de los elementos territoriales en los combos del formulario.
-     * Las Entidades de servicio se componen de un par {id | nombre}
-     */ 
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Provincias
+     */
     private List<EntidadServicio> listProvincias;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Provincia seleccionada del combo
+     */
     private EntidadServicio provSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los Departamentos
+     */
     private List<EntidadServicio> listDepartamentos;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Departamento seleccionado del combo
+     */
     private EntidadServicio deptoSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Localidades
+     */
     private List<EntidadServicio> listLocalidades;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Localidad seleccionado del combo
+     */
     private EntidadServicio localSelected;       
     
+    /**
+     * Constructor
+     */
     public MbInmueble() {
     }
         
-    /**********************
-     * Métodos de acceso **
-     **********************/   
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////  
     public List<Inmueble> getLstInmOrigen() {
         lstInmOrigen = inmFacade.getHabilitados();
         return lstInmOrigen;
@@ -173,9 +259,14 @@ public class MbInmueble {
     }
 
     
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Mátodos operativos //
+    ////////////////////////
+    
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar, 
+     * el inmueble y las provincias a seleccionar
+     */  
     @PostConstruct
     public void init(){
         inmueble = new Inmueble();
@@ -311,13 +402,26 @@ public class MbInmueble {
     }    
     
     
-    /*********************
-     * Métodos privados **
-     *********************/      
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
+    
+    /**
+     * Método para obtener el inmueble según su clave identificatoria.
+     * Utilizado en el converter
+     * @param key Long identificación única del inmueble
+     * @return Object Inmueble obtenido
+     */
     private Object getInmueble(Long key) {
         return inmFacade.find(key);
     }
 
+    /**
+     * Método priviado para obtener las Provincias mediante el servicio REST de Organización territorial.
+     * Obtiene las provincias y por cada una crea una EntidadServicio con el id y nombre.
+     * Luego las incluye en el listado listProvincias.
+     * Utilizado por init()
+     */
     private void cargarProvincias() {
         EntidadServicio provincia;
         List<Provincia> listSrv;
@@ -358,7 +462,8 @@ public class MbInmueble {
     }
 
     /**
-     * Método para poblar el listado de Departamentos según la Provincia seleccionada del servicio REST de centros poblados
+     * Método para poblar el listado de Departamentos según la Provincia seleccionada del servicio REST de Organización territorial.
+     * Utilizado por cargarEntidadesSrv(Long idLocGt)
      */  
     private void getDepartamentosSrv(Long idProv) {
         EntidadServicio depto;
@@ -398,7 +503,8 @@ public class MbInmueble {
     }
 
     /**
-     * Método para poblar el listado de Localidades según el Departamento seleccionado del servicio REST de centros poblados
+     * Método para poblar el listado de Localidades según el Departamento seleccionado del servicio REST de Organización territorial
+     * Utilizado por deptoChangeListener()
      */    
     private void getLocalidadesSrv(Long idDepto) {
         EntidadServicio local;
@@ -438,7 +544,8 @@ public class MbInmueble {
     }
 
     /**
-     * Método para cargar entidades de servicio y los listados, para actualizar el Domicilio de la Persona
+     * Método para cargar entidades de servicio y los listados, para actualizar el Domicilio de la Persona.
+     * Utilizado por prepareEdit()
      */    
     private void cargarEntidadesSrv(Long idLocGt) {
         CentroPoblado cp;
@@ -480,7 +587,8 @@ public class MbInmueble {
     
     /**
      * Método privado que obtiene y setea el token para autentificarse ante la API rest de Territorial
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado por cargarProvincias(), getDepartamentosSrv(Long idProv), getLocalidadesSrv(Long idDepto) y cargarEntidadesSrv(Long idLocGt)
      */
     private void getTokenTerr(){
         try{
@@ -496,9 +604,9 @@ public class MbInmueble {
         }
     }        
     
-    /*****************************
-    ** Converter para Inmueble  **
-    ******************************/ 
+    /////////////////////////////
+    // Converter para Inmueble //
+    /////////////////////////////
     @FacesConverter(forClass = Inmueble.class)
     public static class InmuebleConverter implements Converter {
 

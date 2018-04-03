@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class TipoParamFacade extends AbstractFacade<TipoParam> {
 
+    /**
+     * Constructor
+     */
     public TipoParamFacade() {
         super(TipoParam.class);
     }
     
     /**
      * Método para validar la existencia de un TipoParam según su nombre
-     * @param nombre : Nombre del TipoParam a validar
-     * @return 
+     * @param nombre String Nombre del TipoParam a validar
+     * @return TipoParam tipo de paramétrica existente
      */
     public TipoParam getExistente(String nombre) {
         List<TipoParam> lstParam;
@@ -38,7 +41,7 @@ public class TipoParamFacade extends AbstractFacade<TipoParam> {
     
     /**
      * Método sobreescrito que lista los TipoParam ordenados por nombre
-     * @return 
+     * @return List<TipoParam> listado de los tipos de paramétrica ordenados por su nombre
      */
     @Override
     public List<TipoParam> findAll(){
@@ -50,7 +53,7 @@ public class TipoParamFacade extends AbstractFacade<TipoParam> {
     
     /**
      * Mátodo que solo devuelve los Tipos de Parametricas habilitados.
-     * @return 
+     * @return List<TipoParam> listado de los tipos de paramétricas habilitados
      */
     public List<TipoParam> getHabilitados(){
         String queryString = "SELECT tipoParam FROM TipoParam tipoParam "

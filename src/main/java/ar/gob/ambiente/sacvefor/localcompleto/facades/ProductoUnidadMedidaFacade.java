@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMedida> {
 
+    /**
+     * Constructor
+     */
     public ProductoUnidadMedidaFacade() {
         super(ProductoUnidadMedida.class);
     }
     
     /**
      * Método para validar la existencia de una Unidad según su nombre
-     * @param nombre : nombre a validar
-     * @return 
+     * @param nombre String nombre a validar
+     * @return ProductoUnidadMedida unidad de medida existente
      */
     public ProductoUnidadMedida getExistenteByNombre(String nombre) {
         List<ProductoUnidadMedida> lstUnidad;
@@ -38,8 +41,8 @@ public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMed
     
     /**
      * Método para validar la existencia de una Unidad según su aberviatura
-     * @param abrev : aberviatura a validar
-     * @return 
+     * @param abrev String aberviatura a validar
+     * @return ProductoUnidadMedida unidad de medida existente según la abreviatura remitida
      */
     public ProductoUnidadMedida getExistenteByAbrev(String abrev) {
         List<ProductoUnidadMedida> lstUnidad;
@@ -57,7 +60,7 @@ public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMed
     
     /**
      * Método sobreescrito que lista las ProductoUnidadMedida ordenadas por nombre
-     * @return 
+     * @return List<ProductoUnidadMedida> listado de las unidades de mediada ordenadas
      */
     @Override
     public List<ProductoUnidadMedida> findAll(){
@@ -68,9 +71,9 @@ public class ProductoUnidadMedidaFacade extends AbstractFacade<ProductoUnidadMed
     } 
     
     /**
-     * Mátodo que solo devuelve los ProductoUnidadMedida habilitados.
+     * Mátodo que solo devuelve los ProductoUnidadMedida habilitadas ordenadas por nombre.
      * Para poblar combos de selección.
-     * @return 
+     * @return List<ProductoUnidadMedida> listado de las unidades de medida habilitadas
      */
     public List<ProductoUnidadMedida> getHabilitados(){
         String queryString = "SELECT unidad FROM ProductoUnidadMedida unidad "

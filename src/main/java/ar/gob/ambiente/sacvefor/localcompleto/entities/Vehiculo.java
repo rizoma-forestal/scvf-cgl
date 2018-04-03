@@ -30,17 +30,21 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 public class Vehiculo implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Identificación de la Localidad en el servicio de registro único de entidades (RUE)
+     * Variable privada: Identificación de la Localidad en el servicio de registro único de entidades (RUE)
      */    
     private Long idRue;
     
     /**
-     * Matrícula del vehículo, obtenida del servicio de registro único de entidades (RUE)
+     * Variable privada: Matrícula del vehículo, obtenida del servicio de registro único de entidades (RUE)
      */
     @Column (nullable=false, length=20, unique=true)
     @NotNull(message = "El campo matricula no puede ser nulo")
@@ -48,7 +52,7 @@ public class Vehiculo implements Serializable {
     private String matricula;
     
     /**
-     * Marca del Vehículo, obtenida del servicio de registro único de entidades (RUE)
+     * Variable privada: Marca del Vehículo, obtenida del servicio de registro único de entidades (RUE)
      */
     @Column (nullable=false, length=20)
     @NotNull(message = "El campo marca no puede ser nulo")
@@ -56,7 +60,7 @@ public class Vehiculo implements Serializable {
     private String marca;
     
     /**
-     * Modelo del Vehículo, obtenida del servicio de registro único de entidades (RUE)
+     * Variable privada: Modelo del Vehículo, obtenida del servicio de registro único de entidades (RUE)
      */
     @Column (nullable=false, length=20)
     @NotNull(message = "El campo modelo no puede ser nulo")
@@ -64,25 +68,25 @@ public class Vehiculo implements Serializable {
     private String modelo;
     
     /**
-     * Año del modelo del Vehículo, obtenida del servicio de registro único de entidades (RUE)
+     * Variable privada: Año del modelo del Vehículo, obtenida del servicio de registro único de entidades (RUE)
      */
     private int anio;
     
     /**
-     * Persona física o jurídica que hace las veces de titular del Vehículo
+     * Variable privada: Persona física o jurídica que hace las veces de titular del Vehículo
      */
     @ManyToOne
     @JoinColumn(name="titular_id")
     private Persona titular;    
     
     /**
-     * Fecha de registro del Vehículo
+     * Variable privada: Fecha de registro del Vehículo
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaAlta;    
     
     /**
-     * Usuario que gestiona la inserciones o ediciones
+     * Variable privada: Usuario que gestiona la inserciones o ediciones
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -90,15 +94,18 @@ public class Vehiculo implements Serializable {
     @NotNull(message = "Debe existir un Usuario")   
     private Usuario usuario; 
     
+    /**
+     * Variable privada: condición de habilitado
+     */
     private boolean habilitado;
     
     /**
-     * Campo que mostrará la fecha de las revisiones
-     * No se persiste
+     * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
     private Date fechaRevision;     
 
+    // métodos de acceso
     public Persona getTitular() {
         return titular;
     }
@@ -147,6 +154,11 @@ public class Vehiculo implements Serializable {
         this.anio = anio;
     }
 
+    /**
+     * Método que retorna la fecha de alta del usuario 
+     * no incluido en la entidad de para la API Rest
+     * @return Date fecha de alta
+     */
     @XmlTransient
     public Date getFechaAlta() {
         return fechaAlta;
@@ -156,6 +168,11 @@ public class Vehiculo implements Serializable {
         this.fechaAlta = fechaAlta;
     }
 
+    /**
+     * Método que retorna el usuario que registró o editó el vehículo
+     * no incluido en la entidad de para la API Rest
+     * @return Usuario usuario correspondiente
+     */
     @XmlTransient
     public Usuario getUsuario() {
         return usuario;
@@ -165,6 +182,11 @@ public class Vehiculo implements Serializable {
         this.usuario = usuario;
     }
 
+    /**
+     * Método que retorna la condición de habilitado del vehículo
+     * no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según corresponda
+     */    
     @XmlTransient
     public boolean isHabilitado() {
         return habilitado;
@@ -174,6 +196,11 @@ public class Vehiculo implements Serializable {
         this.habilitado = habilitado;
     }
     
+    /**
+     * Método que retorna la fecha de revisión del vehículo para su auditoría
+     * no incluido en la entidad de para la API Rest
+     * @return Date fecha de revisión del vehículo
+     */    
     @XmlTransient
     public Date getFechaRevision() {
         return fechaRevision;

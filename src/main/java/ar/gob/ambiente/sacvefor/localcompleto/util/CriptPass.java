@@ -26,7 +26,7 @@ public class CriptPass {
     
     /**
      * Método para crear las contraseñas de manera aleatoria al crear un usuario por primera vez
-     * @return 
+     * @return String contraseña generada
      */
     public static String generar(){
         int longitud = base.length();
@@ -41,8 +41,8 @@ public class CriptPass {
 
     /**
      * Método para encriptar las contraseñas
-     * @param texto
-     * @return 
+     * @param texto Contraseña a encriptar
+     * @return String contraseña encriptada
      */
     public static String encriptar(String texto) {
  
@@ -72,9 +72,9 @@ public class CriptPass {
     
     /**
      * Método para desencriptar una contraseña encriptada
-     * @param textoEncriptado
-     * @return
-     * @throws Exception 
+     * @param textoEncriptado texto encriptado
+     * @return String contraseña desencriptada
+     * @throws Exception Excepción a ejecutar
      */
     public static String desencriptar(String textoEncriptado) throws Exception {
  

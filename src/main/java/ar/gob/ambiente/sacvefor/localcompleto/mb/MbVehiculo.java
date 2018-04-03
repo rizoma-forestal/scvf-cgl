@@ -42,90 +42,294 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
- *
+ * Método para gestionar los vehículos. Gestiona la vista guia/transporte/vehiculo.xhtml
  * @author rincostante
  */
 public class MbVehiculo {
-
-    // campos para gestionar local
+    /////////////////////////////////
+    // campos para gestionar local //
+    /////////////////////////////////
+    
+    /**
+     * Variable privada: vehículo gestionado
+     */
     private Vehiculo vehiculo;
+    
+    /**
+     * Variable privada: listado de los vehículos registrados
+     */
     private List<Vehiculo> lstVehiculos;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de los vehículos registrados
+     */
     private List<Vehiculo> lstVehiculosFilter;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de vista detalle
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de edición
+     */
     private boolean edit;
-    // campos para gestionar rue
+    
+    ///////////////////////////////
+    // campos para gestionar rue //
+    ///////////////////////////////
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */  
     private static final Logger logger = Logger.getLogger(Vehiculo.class.getName());
+    
+    /**
+     * Variable privada: listado de las revisiones de la Persona
+     */
     private List<Vehiculo> lstRevisions; 
+    
+    /**
+     * Variable privada: matrícula del vehículo a biuscar para su vista o edición
+     */
     private String matBusqRue; 
+    
+    /**
+     * Variable privada: entidad Vehículo del RUE para su gestión mediante la API Rest RUE
+     */
     private ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo vehiculoRue;
-    // campos para gestionar Marcas en el rue
+    
+    ////////////////////////////////////////////
+    // campos para gestionar Marcas en el rue //
+    ////////////////////////////////////////////
+    
+    /**
+     * Variable privada: entidad marca del vehículo en el RUE
+     */
     private Marca marcaRue;
+    
+    /**
+     * Variable privada: nombre de la marca del vehículo en el RUE
+     */
     private String nombreMarcaRue;
+    
+    /**
+     * Variable privada: listado de las marcas registradas en el RUE
+     */
     private List<Marca> lstMarcas;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de las marcas
+     */
     private List<Marca> lstMarcasFilters;
+    
+    /**
+     * Variable privada: modelo del vehículo en el RUE
+     */
     private Modelo modeloRue;
+    
+    /**
+     * Variable privada: nombre del modelo del vehículo en el RUE
+     */
     private String nombreModeloRue;
+    
+    /**
+     * Variable privada: listado de los modelos registrados en el RUE
+     */
     private List<Modelo> lstModelos;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de los modelos
+     */
     private List<Modelo> lstModelosFilters;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de vista detalle de la marca
+     */
     private boolean viewMarca;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de edición de la marca
+     */
     private boolean editMarca;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de vista detalle del modelo
+     */
     private boolean viewModelo;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de edición del modelo
+     */
     private boolean editModelo;
+    
+    /**
+     * Variable privada: listado de las marcas existentes en el RUE
+     */
     private List<EntidadServicio> listMarcasRue;
+    
+    /**
+     * Variable privada: marca seleccionada del combo para asignar el vehículo
+     */
     private EntidadServicio marcaRueSelected;
+    
+    /**
+     * Variable privada: MbSesion para gestionar las variables de sesión del usuario
+     */  
     private MbSesion sesion;
+    
+    /**
+     * Variable privada: Usuario de sesión
+     */
     private Usuario usLogueado;    
     
+    //////////////////////////////////////////////////
+    // inyección de recursos para el acceso a datos //
+    //////////////////////////////////////////////////
     
-    // inyección de recursos
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Vehiculo
+     */      
     @EJB
     private VehiculoFacade vehiculoFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Persona
+     */     
     @EJB
     private PersonaFacade perFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Paramétrica
+     */     
     @EJB
     private ParametricaFacade paramFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */     
     @EJB
     private TipoParamFacade tipoParamFacade;    
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Guia
+     */     
     @EJB
     private GuiaFacade guiaFacade;  
     
-    // Clientes REST para la gestión del API de Vehículos, Marcas y Modelos
-    private VehiculoClient vehiculoClient;  
-    private ModeloClient modeloClient;
-    private MarcaClient marcaClient;
-    private UsuarioClient usClientRue;
-    private Token token;
-    private String strToken; 
+    //////////////////////////////////////////////////////////////////////////
+    // Clientes REST para la gestión del API de Vehículos, Marcas y Modelos //
+    //////////////////////////////////////////////////////////////////////////
     
     /**
-     * Campos para la gestión de las Entidades provenientes de la API
-     * RUE en los combos del formulario.
-     * Las Entidades de servicio se componen de un par {id | nombre}
+     * Variable privada: Cliente para la API Rest de Vehiculo en el RUE
+     */
+    private VehiculoClient vehiculoClient;  
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Modelo en el RUE
+     */
+    private ModeloClient modeloClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Marca en el RUE
+     */
+    private MarcaClient marcaClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de validación de usuarios en el RUE
+     */
+    private UsuarioClient usClientRue;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API del RUE
+     */
+    private Token token;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API del RUE
+     */
+    private String strToken; 
+
+    ////////////////////////////////////////////////////////////////////
+    // Campos para la gestión de las Entidades provenientes de la API //
+    // RUE en los combos del formulario. ///////////////////////////////
+    // Las Entidades de servicio se componen de un par {id | nombre} ///
+    ////////////////////////////////////////////////////////////////////   
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los Modelos
      */   
     private List<EntidadServicio> listModelos;
-    private EntidadServicio modeloSelected;    
-    private List<EntidadServicio> listMarcas;
-    private EntidadServicio marcaSelected;
-    // agrego otra para el titularSelected del Vehículo
-    private List<EntidadServicio> listTitulares;
-    private EntidadServicio titularSelected;
     
     /**
-     * Campos para el seteo de las Entidades RUE
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Modelo seleccionado del combo
      */    
+    private EntidadServicio modeloSelected;
+
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Marcas
+     */   
+    private List<EntidadServicio> listMarcas;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Marca seleccionada del combo
+     */    
+    private EntidadServicio marcaSelected;
+    
+    //////////////////////////////////////////////////////
+    // agrego otra para el titularSelected del Vehículo //
+    //////////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Personas en el RUE
+     * que tendrán el rol de titular del vehículo
+     */ 
+    private List<EntidadServicio> listTitulares;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Titular seleccionado del combo
+     */ 
+    private EntidadServicio titularSelected;
+    
+    ///////////////////////////////////////////////
+    // Campos para el seteo de las Entidades RUE //
+    ///////////////////////////////////////////////
+    
+    /**
+     * Variable privada: matrícula del vehículo para buscarlo en el RUE
+     */
     private String rueVehiculoMatricula;
+    
+    /**
+     * Variable privada: año del modelo del vehículo para buscarlo en el RUE
+     */
     private int rueVehiculoAnio;
+    
+    /**
+     * Variable privada: flag que indica si el vehículo en el RUE está editable.
+     * Solo serán editables las entidades que hayan sido registradas por el presente componente local
+     */
     private boolean rueEditable;
     
-    // listado de Guías vinculadas
+    /////////////////////////////////
+    // listado de Guías vinculadas //
+    /////////////////////////////////
+    
+    /**
+     * Variable privada: List<Guia> listado de las Guías que tienen al vehículo asignado como transporte
+     */
     private List<Guia> lstGuias;
     
+    /**
+     * Constructor
+     */
     public MbVehiculo() {
     }
        
-    /**********************
-     * Métodos de acceso **
-     **********************/          
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////        
     public List<Guia> getLstGuias() {
         return lstGuias;
     }
@@ -158,6 +362,10 @@ public class MbVehiculo {
         this.modeloRue = modeloRue;
     }
    
+    /**
+     * Método que obtiene los modelos de los vehículos registrados en el RUE, mediante el acceso a la API respectiva
+     * @return List<Modelo> listado de los modelos registrados en el RUE
+     */
     public List<Modelo> getLstModelos() {
         // seteo el listado
         try{
@@ -227,6 +435,10 @@ public class MbVehiculo {
         this.marcaRue = marcaRue;
     }
 
+    /**
+     * Método que obtiene las Marcas de los vehículos registrados en el RUE, mediante el acceso a la API respectiva
+     * @return List<Marca> listado de las marcas registrados en el RUE
+     */    
     public List<Marca> getLstMarcas() {
         // seteo el listado
         try{
@@ -446,10 +658,14 @@ public class MbVehiculo {
     }
     
     
-    /**********************
-     * Métodos de inicio **
-     * ********************/
+    ///////////////////////
+    // Métodos de inicio //
+    ///////////////////////
 
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar
+     * y el bean de sesión y el usuario
+     */  
     @PostConstruct
     public void init(){
         vehiculo = new Vehiculo();
@@ -684,9 +900,9 @@ public class MbVehiculo {
     }    
     
     
-    /***********************
-     * Métodos operativos **
-     ***********************/
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
     /**
      * Método para deshabilitar un Vehículo. Modificará su condición de habilitado a false.
      * Los Vehículos deshabilitados no estarán disponibles para su selección.
@@ -874,12 +1090,6 @@ public class MbVehiculo {
                     vehiculoFacade.edit(vehiculo);
                     JsfUtil.addSuccessMessage("El Vehículo fue guardado con exito");
                 }else{
-//                    // si tiene titular lo seteo
-//                    if(titularSelected != null){    
-//                        // obtengo el titular
-//                        Persona per = perFacade.find(titularSelected.getId());
-//                        vehiculo.setTitular(per);
-//                    }
                     // seteo la fecha de alta y habilitado
                     Date fechaAlta = new Date(System.currentTimeMillis());
                     vehiculo.setFechaAlta(fechaAlta);
@@ -1040,12 +1250,13 @@ public class MbVehiculo {
     }    
     
     
-    /*********************
-     * Métodos privados **
-     *********************/ 
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
     /**
-     * Método que carga el listado de Modelos según la Marca seleccionada
-     * @param id : de la Marca a obtener los modelos
+     * Método que carga el listado de Modelos según la Marca seleccionada.
+     * Utilizado en preparaEditRue() y marcaChangeListener()
+     * @param id Long de la Marca a obtener los modelos
      */    
     private void getModelosSrv(Long idMarca) {
         EntidadServicio modelo;
@@ -1084,8 +1295,9 @@ public class MbVehiculo {
     }
 
     /**
-     * Método que obtiene un Vehículo del RUE mediante el uso de la API correspondiente
-     * @return 
+     * Método que obtiene un Vehículo del RUE mediante el uso de la API correspondiente.
+     * Utilizado en buscarVehiculoRue()
+     * @return ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo vehículo registrado en el RUE
      */
     private ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo obtenerVehiculoRueByMat() {
         List<ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo> listVehiculos = new ArrayList<>();
@@ -1124,8 +1336,9 @@ public class MbVehiculo {
 
     /**
      * Método para validar la Matrícula del Vehículo
-     * Que no esté registrado ya en el RUE
-     * @return 
+     * Que no esté registrado ya en el RUE.
+     * Utilizado en saveVehiculoRue()
+     * @return String mensaje correspondiente a la validación
      */
     private String validarMatricula() {
         String result = "";
@@ -1168,7 +1381,8 @@ public class MbVehiculo {
     }
 
     /**
-     * Método para cargar el listado de Transportistas
+     * Método para cargar el listado de Transportistas.
+     * Utilizado en preparaEditRue() y prepareNewInsertRue()
      */
     private void cargarTitulares() {
         EntidadServicio titular;
@@ -1192,9 +1406,10 @@ public class MbVehiculo {
     } 
     
     /**
-     * Método para obtener el rol de la persona según la cadena recibida
-     * @param sRol : rol de la persona a buscar
-     * @return 
+     * Método para obtener el rol de la persona según la cadena recibida.
+     * Utilizada en cargarTitulares()
+     * @param sRol String nombre del rol de la persona a buscar
+     * @return Parametrica paramétrica euivalente al rol
      */
     public Parametrica obtenerRol(String sRol) {
         TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
@@ -1202,7 +1417,9 @@ public class MbVehiculo {
     }        
 
     /**
-     * Método para cargar el listado de Marcas para su selección
+     * Método para cargar el listado de Marcas para su selección.
+     * Utilizado en preparaEditRue(), getLstModelos() y prepareNewInsertRue()
+     * @return List<EntidadServicio> listado de las marcas solicitadas
      */    
     private List<EntidadServicio> cargarMarcas(List<EntidadServicio> lMarcas) {
         EntidadServicio marca;
@@ -1246,8 +1463,9 @@ public class MbVehiculo {
     }
 
     /**
-     * Método que obtiene una Vehículo desde la API RUE, según su id
-     * @return 
+     * Método que obtiene una Vehículo desde la API RUE, según su id.
+     * Utilizado en preparaEditRue()
+     * @return ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo vehículo obtenido del RUE
      */    
     private ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo buscarVehiculoRueById() {
         try{
@@ -1275,7 +1493,8 @@ public class MbVehiculo {
     }
 
     /**
-     * Método que obtine un Vehículo del RUE según su id
+     * Método que obtine un Vehículo del RUE según su id.
+     * Utilizado en prepareEdit() y verDatosRue()
      */
     private void cargarVehiculo() {
         try{
@@ -1303,8 +1522,8 @@ public class MbVehiculo {
     /**
      * Obtiene el vehículo a partir de la id
      * método para el converter
-     * @param key
-     * @return 
+     * @param key Long identificador del Vehiculo
+     * @return Object vehículo correspondiente s su id
      */
     private Object getVehiculo(Long key) {
         return vehiculoFacade.find(key);
@@ -1312,7 +1531,7 @@ public class MbVehiculo {
 
     /**
      * Método que valida la selección del modelo del vehículo a registrar
-     * @return 
+     * @return String resultado de la validación
      */
     private String validarModelo() {
         String result = "";
@@ -1322,6 +1541,11 @@ public class MbVehiculo {
         return result;
     }
 
+    /**
+     * Método para validar el año del modelo del vehículo.
+     * Debe ser mayor o igual a 1950
+     * @return String mensaje de la validación
+     */
     private String validarAnio() {
         String result = "";
         if(rueVehiculoAnio <= 1950){
@@ -1332,7 +1556,10 @@ public class MbVehiculo {
 
     /**
      * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en cargarVehiculo(), buscarVehiculoRueById(), cargarMarcas(List<EntidadServicio> lMarcas),
+     * validarMatricula(), obtenerVehiculoRueByMat(), getModelosSrv(), saveModeloRue(),
+     * saveMarcaRue(), saveVehiculoRue(), getLstMarcas() y getLstModelos()
      */
     private void getTokenRue(){
         try{
@@ -1348,9 +1575,9 @@ public class MbVehiculo {
         }
     }      
     
-    /*****************************
-    ** Converter para Inmueble  **
-    ******************************/ 
+    /////////////////////////////
+    // Converter para Vehículo //
+    ///////////////////////////// 
     @FacesConverter(forClass = Vehiculo.class)
     public static class VehiculoConverter implements Converter {
 
