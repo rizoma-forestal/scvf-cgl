@@ -60,7 +60,7 @@ public class ModeloClient {
      * @return List<Vehiculo> vehículos vinculados al modelo remitido 
      * @throws ClientErrorException Excepcion a ejecutar
      */
-    public <T> T findModelosByMarca_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
+    public <T> T findVehiculosByModelo_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/vehiculos", new Object[]{id}));
         return resource
@@ -80,7 +80,7 @@ public class ModeloClient {
      * @return List<Vehiculo> vehículos vinculados al modelo remitido 
      * @throws ClientErrorException Excepcion a ejecutar
      */
-    public <T> T findModelosByMarca_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
+    public <T> T findVehiculosByModelo_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/vehiculos", new Object[]{id}));
         return resource
