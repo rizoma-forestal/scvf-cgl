@@ -102,16 +102,6 @@ public class Persona implements Serializable {
     private String tipo;
     
     /**
-     * Variable privada: Para los Proponentes, ruta del martillo
-     */
-    private String rutaArchivo;
-    
-    /**
-     * Variable privada: Para los Proponentes, nombre del archivo
-     */
-    private String nombreArchivo;
-    
-    /**
      * Variable privada: Fecha de alta de la Persona
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -137,49 +127,13 @@ public class Persona implements Serializable {
     @Transient
     private Date fechaRevision;    
     
-    /**
-     * Variable privada no persistida: Campo que indica si la ruta a la imagen del martillo es temporal o definitiva
-     * no incluido en la entidad de para la API Rest
-     */
-    @Transient
-    private boolean rutaTemporal;
-    
     // métodos de acceso
-
-    /**
-     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
-     * no incluido en la entidad de para la API Rest
-     * @return boolean verdadero o falso según el caso
-     */
-    @XmlTransient
-    public boolean isRutaTemporal() {
-        return rutaTemporal;
-    }
-
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public void setRutaTemporal(boolean rutaTemporal) {
-        this.rutaTemporal = rutaTemporal;
-    }
-
-    /**
-     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
-     * no incluido en la entidad de para la API Rest
-     * @return String nombre del archivo
-     */    
-    @XmlTransient
-    public String getNombreArchivo() {
-        return nombreArchivo;
-    }
-
-    public void setNombreArchivo(String nombreArchivo) {
-        this.nombreArchivo = nombreArchivo;
     }
 
     public Long getIdRue() {
@@ -254,20 +208,6 @@ public class Persona implements Serializable {
 
     public void setTipo(String tipo) {
         this.tipo = tipo;
-    }
-
-    /**
-     * Método que retorna la ruta del archivo de la imagen del martillo del productor
-     * no incluido en la entidad de para la API Rest
-     * @return String ruta del archivo
-     */      
-    @XmlTransient
-    public String getRutaArchivo() {
-        return rutaArchivo;
-    }
-
-    public void setRutaArchivo(String rutaArchivo) {
-        this.rutaArchivo = rutaArchivo;
     }
 
     /**

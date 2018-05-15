@@ -13,8 +13,10 @@ import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import ar.gob.ambiente.sacvefor.servicios.territorial.CentroPoblado;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Departamento;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Provincia;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -29,6 +31,8 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
 
 /**
  * Bean de respaldo para la gestión de Inmuebles
@@ -70,7 +74,12 @@ public class MbInmueble {
     /**
      * Variable privada: Logger para escribir en el log del server
      */ 
-    private static final Logger logger = Logger.getLogger(Inmueble.class.getName());    
+    private static final Logger logger = Logger.getLogger(Inmueble.class.getName());  
+    
+    /**
+     * Variable privada: flag que indica si se está subiendo una imagen de martillo
+     */
+    private boolean subeMartillo;    
     
     ///////////////////////////////////////////////////
     // acceso a datos mediante inyección de recursos //
@@ -155,10 +164,18 @@ public class MbInmueble {
      */
     public MbInmueble() {
     }
-        
+
     ///////////////////////
     // Métodos de acceso //
     ///////////////////////  
+    public boolean isSubeMartillo() {        
+        return subeMartillo;
+    }    
+    
+    public void setSubeMartillo(boolean subeMartillo) {
+        this.subeMartillo = subeMartillo;
+    }
+
     public List<Inmueble> getLstInmOrigen() {
         lstInmOrigen = inmFacade.getHabilitados();
         return lstInmOrigen;
@@ -290,6 +307,7 @@ public class MbInmueble {
     
     /**
      * Método para guardar el Inmueble, sea inserción o edición.
+     * Con la condición de haber guardado previamente el archivo de la imagen del martillo
      * Previa validación
      */      
     public void save(){
@@ -308,24 +326,27 @@ public class MbInmueble {
                 }
             }
             if(valida){
-                inmueble.setIdCatastral(inmueble.getIdCatastral().toUpperCase());
-                String tempNombre = inmueble.getNombre();
-                inmueble.setNombre(tempNombre.toUpperCase());
-                String tempDomicilio = inmueble.getDomicilio();
-                inmueble.setDomicilio(tempDomicilio.toUpperCase());
-                // seteo los datos territoriales
-                inmueble.setIdLocGt(localSelected.getId());
-                inmueble.setLocalidad(localSelected.getNombre());
-                inmueble.setDepartamento(deptoSelected.getNombre());
-                inmueble.setProvincia(provSelected.getNombre());
-                if(inmueble.getId() != null){
-                    inmFacade.edit(inmueble);
-                    JsfUtil.addSuccessMessage("El Inmueble fue guardado con exito");
-                }else{
-                    inmueble.setHabilitado(true);
-                    inmFacade.create(inmueble);
-                    JsfUtil.addSuccessMessage("El Inmueble fue registrado con exito");
-                }  
+                // procedo al guardado definitivo de la imagen del martillo
+                if(saveMartillo()){
+                    inmueble.setIdCatastral(inmueble.getIdCatastral().toUpperCase());
+                    String tempNombre = inmueble.getNombre();
+                    inmueble.setNombre(tempNombre.toUpperCase());
+                    String tempDomicilio = inmueble.getDomicilio();
+                    inmueble.setDomicilio(tempDomicilio.toUpperCase());
+                    // seteo los datos territoriales
+                    inmueble.setIdLocGt(localSelected.getId());
+                    inmueble.setLocalidad(localSelected.getNombre());
+                    inmueble.setDepartamento(deptoSelected.getNombre());
+                    inmueble.setProvincia(provSelected.getNombre());
+                    if(inmueble.getId() != null){
+                        inmFacade.edit(inmueble);
+                        JsfUtil.addSuccessMessage("El Inmueble fue guardado con exito");
+                    }else{
+                        inmueble.setHabilitado(true);
+                        inmFacade.create(inmueble);
+                        JsfUtil.addSuccessMessage("El Inmueble fue registrado con exito");
+                    }  
+                }
             }else{
                 JsfUtil.addErrorMessage("El Inmueble que está tratando de persisitir ya existe, por favor verifique los datos ingresados.");
             }
@@ -381,7 +402,7 @@ public class MbInmueble {
      */
     public void habilitar(){
         try{
-            inmueble.setHabilitado(false);
+            inmueble.setHabilitado(true);
             inmFacade.edit(inmueble);
             limpiarForm();
         }catch(Exception ex){
@@ -393,6 +414,12 @@ public class MbInmueble {
      * Limpia el formulario de inserción/edición
      */
     public void limpiarForm() {
+        // si ya subió un martillo, si estoy creando un inmueble nuevo, lo elimino
+        if(inmueble.getNombreArchivo() != null && inmueble.getId() == null){
+            File martillo = new File(inmueble.getRutaArchivo() + inmueble.getNombreArchivo());
+            martillo.delete();
+            JsfUtil.addSuccessMessage("El martillo cargado ha sido eliminado.");
+        }        
         inmueble = new Inmueble();
         provSelected = new EntidadServicio();
         deptoSelected = new EntidadServicio();
@@ -401,10 +428,90 @@ public class MbInmueble {
         listLocalidades = new ArrayList<>();
     }    
     
+    ////////////////////////////////////////
+    // Métodos para gestionar el martillo //
+    ////////////////////////////////////////
+    /**
+     * Método para subir la imagen del martillo en el subdirectorio temporal
+     * El subdirectorio temporal se llama "TMP"
+     * Se configuran en el archivo de propiedades configurable "Config.properties"
+     * @param event FileUploadEvent evento de subida de martillo
+     */
+    public void subirMartilloTmp(FileUploadEvent event){ 
+        // subo el archivo al directorio temporal
+        try{
+            UploadedFile fileMartillo = event.getFile();
+            String destino = ResourceBundle.getBundle("/Config").getString("SubdirTemp");
+            // obtengo el nombre del archivo
+            String nombreArchivo = getNombreArchivoASubir(fileMartillo);
+            // si todo salió bien, procedo
+            if(nombreArchivo != null){
+                // si logré subir el archivo, guardo la ruta
+                if(JsfUtil.copyFile(nombreArchivo, fileMartillo.getInputstream(), destino)){
+                    JsfUtil.addSuccessMessage("El archivo " + fileMartillo.getFileName() + " se ha subido al servidor con el nombre " + nombreArchivo);
+                    inmueble.setRutaArchivo(destino);
+                    inmueble.setNombreArchivo(nombreArchivo);
+                    inmueble.setRutaTemporal(true);
+                }
+                // actualizo el flag
+                subeMartillo = true;
+            }else{
+                JsfUtil.addErrorMessage("No se pudo obtener el destino de la imagen del Martillo.");
+            }
+        }catch(IOException e){
+            JsfUtil.addErrorMessage("Hubo un error subiendo la imagen del Martillo" + e.getLocalizedMessage());
+        }
+    }      
     
     //////////////////////
     // Métodos privados //
     //////////////////////
+    
+    /**
+     * Método para guardar la imagen del martillo a un directorio definitivo.
+     * Completado el renombrado y guardado, elimino el archivo del directorio temporal
+     * El directorio es "martillos" y está seteado en el Config.properties.
+     * Utilizado en save()
+     */
+    private boolean saveMartillo() {
+        if(subeMartillo){
+            // obtengo la imagen del martillo del directorio temporal
+            File martARenombrar = new File(ResourceBundle.getBundle("/Config").getString("SubdirTemp") + inmueble.getNombreArchivo());
+            // instancio un nuevo File para el renombrado con el path al directorio definitivo
+            File martDefinitivo = new File(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
+                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos") + inmueble.getNombreArchivo());
+            // si existe, lo elimino
+            martDefinitivo.delete();
+            // renombro y devuelvo el resultado: true si fue existoso, false, si no lo fue.
+            if(martARenombrar.renameTo(martDefinitivo)){
+                // si todo fue bien, actualizo la ruta en la persona y la condición de temporal de la ruta
+                inmueble.setRutaArchivo(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
+                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos"));
+                inmueble.setRutaTemporal(false);
+                subeMartillo = false;
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return true;
+        }
+    }    
+    
+    /**
+     * Método para nombrear un archivo subido, en este caso, el Martillo del Proponente.
+     * Utilizado en subirMartilloTmp(FileUploadEvent event)
+     * @param file UploadedFile archivo a subir
+     * @return String nombre del archivo según la provincia, el cuit y la fecha
+     */
+    private String getNombreArchivoASubir(UploadedFile file){
+        Date date = new Date();
+        String extension = file.getFileName().substring(file.getFileName().lastIndexOf(".") + 1);
+        String sufijo = JsfUtil.getDateInString(date);
+        String nombreArchivo = ResourceBundle.getBundle("/Config").getString("IdProvinciaGt") + ""
+                + "_" + inmueble.getIdCatastral() + "_" + inmueble.getNombre() + "_" + sufijo + "." + extension;
+        return nombreArchivo;
+    }       
     
     /**
      * Método para obtener el inmueble según su clave identificatoria.

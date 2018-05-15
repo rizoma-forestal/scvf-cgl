@@ -12,8 +12,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Encapsula los datos correspondientes a los inmuebles que solicitan 
@@ -118,13 +120,72 @@ public class Inmueble implements Serializable {
     private List<Inmueble> inmHijos;
     
     /**
+     * Variable privada: Para los Proponentes, ruta del martillo
+     */
+    private String rutaArchivo;
+    
+    /**
+     * Variable privada: Para los Proponentes, nombre del archivo
+     */
+    private String nombreArchivo;    
+    
+    /**
+     * Variable privada no persistida: Campo que indica si la ruta a la imagen del martillo es temporal o definitiva
+     * no incluido en la entidad de para la API Rest
+     */
+    @Transient
+    private boolean rutaTemporal;    
+    
+    /**
      * Constructor, instancia el listado de subdivisiones que el inmueble pudiera tener
      */
     public Inmueble(){
         inmHijos = new ArrayList<>();
     }
+    
+    // métodos de acceso    
+    /**
+     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
+     * no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */
+    @XmlTransient    
+    public boolean isRutaTemporal() {
+        return rutaTemporal;
+    }
 
-    // métodos de acceso
+    public void setRutaTemporal(boolean rutaTemporal) {
+        this.rutaTemporal = rutaTemporal;
+    }
+
+    /**
+     * Método que retorna la ruta del archivo de la imagen del martillo del productor
+     * no incluido en la entidad de para la API Rest
+     * @return String ruta del archivo
+     */      
+    @XmlTransient    
+    public String getRutaArchivo() {
+        return rutaArchivo;
+    }
+
+    public void setRutaArchivo(String rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
+    }
+
+    /**
+     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
+     * no incluido en la entidad de para la API Rest
+     * @return String nombre del archivo
+     */    
+    @XmlTransient    
+    public String getNombreArchivo() {
+        return nombreArchivo;
+    }
+
+    public void setNombreArchivo(String nombreArchivo) {
+        this.nombreArchivo = nombreArchivo;
+    }
+
     public String getNombre() {
         return nombre;
     }

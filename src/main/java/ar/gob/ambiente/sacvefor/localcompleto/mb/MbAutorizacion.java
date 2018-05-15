@@ -152,6 +152,20 @@ public class MbAutorizacion {
      */
     private List<SubZona> lstSubZonasVerde;
     
+    ////////////////////////////////
+    // Búsqueda de Autorizaciones //
+    ////////////////////////////////
+    
+    /**
+     * Variable privada: cuit del proponente para buscar sus autorizaciones
+     */
+    private Long cuitPropBus;
+    
+    /**
+     * Variable privada: cadena conteniendo todo o parte del nombre del proponente para buscar sus autorizaciones
+     */
+    private String nombrePropBus;    
+    
     ///////////////////////////////////
     // Gestión de objetos a agregar ///
     ///////////////////////////////////
@@ -327,10 +341,26 @@ public class MbAutorizacion {
      */
     public MbAutorizacion() {
     }
-
+    
     ///////////////////////
     // Métodos de acceso //
-    ///////////////////////    
+    ///////////////////////       
+    public Long getCuitPropBus() {
+        return cuitPropBus;
+    }
+
+    public void setCuitPropBus(Long cuitPropBus) {
+        this.cuitPropBus = cuitPropBus;
+    }
+
+    public String getNombrePropBus() {
+        return nombrePropBus;
+    }
+ 
+    public void setNombrePropBus(String nombrePropBus) {
+        this.nombrePropBus = nombrePropBus;
+    }
+
     public EstadoAutorizacion getEstadoSelected() {
         return estadoSelected;
     }
@@ -388,11 +418,15 @@ public class MbAutorizacion {
     }
 
     /**
-     * Método para completar el listado con las Autorizaciones existentes
+     * Método para completar el listado con las Autorizaciones existentes.
+     * Como puede haber una búsqueda, se verifica que no esté buscando, en cuyo caso
+     * se respeta el listado correspondiente a la búsqueda realizada.
      * @return List<Autorizacion> listado de las Autorizaciones
      */
     public List<Autorizacion> getListado() {
-        listado = autFacade.findAll();
+        if(cuitPropBus == null && ("".equals(nombrePropBus) || nombrePropBus == null)){
+            listado = autFacade.findAll();
+        }
         return listado;
     }
 
@@ -684,6 +718,87 @@ public class MbAutorizacion {
     }  
     
     /**
+     * Método para buscar las autorizaciones relacionadas con uno o más proponentes
+     * Se validan los campos de búsqueda, si trae un CUIT, se prioriza este y se ignora la cadena a buscar.
+     * Al recibir cuit se busca la persona y luego todas las autorizaciones que la tengan como Proponente.
+     * Si se recibe solo el nombre, se buscan todo los Proponentes que contengan la cadena recibida en el nombre completo
+     * y por cada uno, las autorizaciones vinculadas, verificando que no se encuentren incluidas en el listado previamente.
+     */
+    public void buscarXProponente(){
+        // valido los datos de búsqueda
+        if(cuitPropBus == null && "".equals(nombrePropBus)){
+            // campos nulos
+            JsfUtil.addErrorMessage("Debe ingresar al menos un CUIT a buscar.");
+        }else if("".equals(nombrePropBus) && cuitPropBus.toString().length() < 11){
+            // cuit corto
+            JsfUtil.addErrorMessage("El CUIT ingresado debe tener 11 dígitos.");  
+        }else if(cuitPropBus != null){ // si tengo cuit, busco por el proponente correspondiente al cuit
+            // obtengo el proponente
+            TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
+            Parametrica rolProp = paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Proponente"), tipoParam); 
+            Persona prop = perFacade.findVigenteByCuitRol(cuitPropBus, rolProp);
+            // solo sigo si hay un proponente con el cuit ingresado
+            if(prop != null){
+                // obtengo las autorizaciones del proponente
+                List<Autorizacion> lstAutTemp = autFacade.getByPersona(prop, rolProp);
+                // sigo si hay alguna autorización vinculada al proponente
+                if(lstAutTemp != null){
+                    listado = new ArrayList<>();
+                    listado.addAll(lstAutTemp);
+                }else{
+                    JsfUtil.addErrorMessage("No se encontró ninguna Autorización vinculada al Proponente con el CUIT ingresado.");  
+                }
+            }else{
+                JsfUtil.addErrorMessage("No se encontró un Proponente registrado con el CUIT ingresado.");  
+            }
+
+        }else{ // si no tengo cuit, busco por nombre
+            // paso la cadena a mayúsculas
+            nombrePropBus = nombrePropBus.toUpperCase();
+            // busco todas las personas que contengan en su nombre completo la cadena a buscar
+            TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
+            Parametrica rolProp = paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Proponente"), tipoParam); 
+            List<Persona> lstProp = perFacade.findAllByNombreYRol(nombrePropBus, rolProp);
+            // si hay resultados, recorro el listado de proponentes y voy obteniendo sus autorizaciones. 
+            if(lstProp.size() > 0){
+                List<Autorizacion> lstAutTemp = new ArrayList<>();
+                for (Persona prop : lstProp){
+                    List<Autorizacion> lstAutXProp = autFacade.getByPersona(prop, rolProp);
+                    // sigo si hay autorizaciones para el proponente
+                    if(lstAutXProp !=  null){
+                        for (Autorizacion aut : lstAutXProp){
+                            if(!lstAutTemp.contains(aut)){
+                                // si no está en el listado, la agrego
+                                lstAutTemp.add(aut);
+                            }
+                        }
+                    }
+
+                }
+                // sigo si hay alguna autorización vinculada al proponente
+                if(lstAutTemp.size() > 0){
+                    listado = new ArrayList<>();
+                    listado.addAll(lstAutTemp);
+                }else{
+                    JsfUtil.addErrorMessage("No se encontró ninguna Autorización vinculada a los Proponentes correspondientes al nombre ingresado.");  
+                }
+            }else{
+                JsfUtil.addErrorMessage("No se encontró un Proponente registrado cuyo nombre completo contenga el nombre ingresado.");  
+            }
+        }
+    }
+    
+    /**
+     * Método para resetear los cámpos de búsqueda y el lisado de autorizaciones.
+     * Llama al método getListado() y limpia los campos
+     */
+    public void resetList(){
+        cuitPropBus = null;
+        nombrePropBus = "";
+        getListado();
+    }
+    
+    /**
      * Método que busca una Autorización según el número ingresado en el formulario de búsqueda.
      * autNumero será el parámetro.
      */
@@ -956,13 +1071,20 @@ public class MbAutorizacion {
     // Métodos para personas //
     ///////////////////////////
     /**
-     * Método para buscar una persona registrada localmente según un rol determinado
+     * Método para buscar una persona registrada localmente según un rol determinado.
+     * Si se trata de un Técnico o un Apoderado, valido la vigencia.
+     * En cualquier caso, todos deben estar habilitados.
      * @param rolPersona String Rol de la persona a buscar.
      */
     public void buscarPersona(String rolPersona){
         TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
         Parametrica rolProp = paramFacade.getExistente(rolPersona, tipoParam);
-        persona = perFacade.getExistente(cuitBuscar, rolProp);
+        // si estoy buscando Técnico o Apoderado, valido la vigencia
+        if(rolProp.getNombre().equals(ResourceBundle.getBundle("/Config").getString("Tecnico")) || rolProp.getNombre().equals(ResourceBundle.getBundle("/Config").getString("Apoderado"))){
+            persona = perFacade.findVigenteByCuitRol(cuitBuscar, rolProp);
+        }else{
+            persona = perFacade.findByCuitRol(cuitBuscar, rolProp);
+        }
         if(persona == null){
             JsfUtil.addErrorMessage("No se registra un " + rolPersona + " con el CUIT ingresado.");
         }        
@@ -1069,13 +1191,24 @@ public class MbAutorizacion {
     public void addInmueble(){
         boolean valida = true;
 
-        // valido que la persona no esté vinculada ya con el mismo rol
+        // valido que no esté agregando el mismo inmueble
         for(Inmueble inm : autorizacion.getInmuebles()){
             if(Objects.equals(inm.getIdCatastral(), inmueble.getIdCatastral())){
                 valida = false;
                 JsfUtil.addErrorMessage("El " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " que está tratando de asociar, ya está vinculado a la Autorización con el mismo rol.");
             }
         }
+        
+        // Si ya hay un inmueble agregado,valido que el nuevo pertenezca al mismo departamento
+        if(!autorizacion.getInmuebles().isEmpty()){
+            // si ya hay un inmueble, obtengo el nombre del departamento del primero
+            if(!autorizacion.getInmuebles().get(0).getDepartamento().equals(inmueble.getDepartamento())){
+                // si no coinciden lanzo el error
+                valida = false;
+                JsfUtil.addErrorMessage("El " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " a ingresar debe pertenecer al mismo Departamento de los ya vinculados a la Autorización.");
+            }
+        }
+        
         try{
             if(valida){
                 autorizacion.getInmuebles().add(inmueble);

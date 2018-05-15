@@ -92,4 +92,20 @@
         <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbSesion</managed-bean-class>
         <managed-bean-scope>session</managed-bean-scope>
     </managed-bean>
+    <managed-bean>
+        <description>Bean de gestión de la vista infoGral.xhtml para la edición del texto de información general a ver en la portada</description>
+        <managed-bean-name>mbInfoGral</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbInfoGral</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>mbReporte</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbReporte</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>mbDelegacion</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbDelegacion</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+    </managed-bean>
 </faces-config>

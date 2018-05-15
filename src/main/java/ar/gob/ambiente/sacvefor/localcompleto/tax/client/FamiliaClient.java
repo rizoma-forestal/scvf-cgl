@@ -45,7 +45,7 @@ public class FamiliaClient {
      */
     public FamiliaClient() {
         client = javax.ws.rs.client.ClientBuilder.newClient();
-        webTarget = client.target(BASE_URI).path("");
+        webTarget = client.target(BASE_URI).path("svf_familias");
     }
 
     public String countREST() throws ClientErrorException {

@@ -69,7 +69,22 @@
                             <p:inputNumber id="lat" value="#{mbInmueble.inmueble.latitud}" decimalPlaces="13" decimalSeparator="," thousandSeparator="."  />
                             <p:outputLabel value="Longitud" for="long" />   
                             <p:inputNumber id="long" value="#{mbInmueble.inmueble.longitud}" decimalPlaces="13" decimalSeparator="," thousandSeparator="."  />
+                            <p:outputLabel value="Agregar/Modificar Martillo" for="martillo" rendered="#{mbInmueble.inmueble.id ne null}"/> 
+                            <p:fileUpload uploadLabel="Subir" cancelLabel="Cancelar" id="martillo" rendered="#{mbInmueble.inmueble.id ne null}" 
+                                          fileUploadListener="#{mbInmueble.subirMartilloTmp}" mode="advanced" dragDropSupport="false"
+                                          update="messages,pnFrmNew,pngMartilloDef,pngMartilloTemp,pnFrmView" 
+                                          sizeLimit="500000" fileLimit="3" allowTypes="/(\.|\/)(gif|jpe?g|png)$/" />
                         </h:panelGrid>
+
+                        <h:panelGrid id="pngMartilloDef" columns="2" rendered="#{mbInmueble.inmueble.rutaArchivo ne null 
+                                                                                 and not mbInmueble.inmueble.rutaTemporal}" >
+                            <img src="#{config.UrlMartillos}#{mbInmueble.inmueble.nombreArchivo}" width="150" />
+                        </h:panelGrid>
+                        <h:panelGrid id="pngMartilloTemp" columns="2" rendered="#{mbInmueble.inmueble.rutaArchivo ne null 
+                                                                                  and mbInmueble.inmueble.rutaTemporal}" >
+                            <img src="/TMP/#{mbInmueble.inmueble.nombreArchivo}" width="150" />
+                        </h:panelGrid>
+                        
                         <h:panelGrid columns="2">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbInmueble.save()}" update="frInmuebles"/>
                             <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbInmueble.limpiarForm()}" update="pnFrmNew"/>
@@ -107,12 +122,14 @@
                             <p:outputLabel id="v_long" value="#{mbInmueble.inmueble.longitud}" style="text-align: right !important;" >
                                 <f:convertNumber type="currency" minFractionDigits="13" currencySymbol=""/>
                             </p:outputLabel>
+                            <p:outputLabel value="Martillo: " />
+                            <img src="#{config.UrlMartillos}#{mbInmueble.inmueble.nombreArchivo}" width="150" />
                         </h:panelGrid>
-                        <p:separator rendered="#{mbInmueble.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbInmueble.view}" >
                             <p:outputLabel value="Habilitado: " for="v_habilitado"/>
                             <p:outputLabel id="v_habilitado" value="#{mbInmueble.inmueble.habilitado}" />
                         </h:panelGrid>
+                        <p:separator rendered="#{mbInmueble.view}" />
                         <h:panelGrid columns="2" >
                             <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbInmueble.prepareEdit()}" />
                         </h:panelGrid>

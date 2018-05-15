@@ -10,6 +10,7 @@
             <p:outputLabel styleClass="titPanel" value="Emisión de la Guía" />
         </h:panelGrid>
         <h:form prependId="false" id="frEmision">
+            <!-- Panel que recoge los datos del recibo de pago de tasas -->
             <p:panel id="pnCodigoRecibo" header="Recibo de pago de tasas" rendered="#{mbGuia.guia.tipo.abonaTasa and mbGuia.guia.codRecibo eq null}" >
                 <p:outputLabel value="Ingrese el código del recibo de pagos de las Tasas liquidadas para la Guía, como paso previo para su emisión." 
                                style="font-style: italic; font-size: small" />
@@ -21,7 +22,26 @@
                                      action="#{mbGuia.registrarCodRecibo()}" update="frEmision,pMenuIndex,frame,messages"/>
                 </h:panelGrid>
             </p:panel>
-            <p:panel id="pnGeneralGuia" header="Emisión de Guía" rendered="#{not mbGuia.guia.tipo.abonaTasa or mbGuia.guia.codRecibo ne null}" >
+            
+            <!-- Panel que muestra los datos de la guía ya emitida -->
+            <p:panel id="pnGuiaEmitida" header="Guía emitida" rendered="#{mbGuia.guia.estado.habilitaFuenteProductos}" >
+                <h:panelGrid id="pgTexto" columns="2" >
+                    <p:outputLabel value="Guía emitida con fecha: " style="font-size: 20px !important; color: #8A0829" 
+                                   rendered="#{mbGuia.msgErrorEmision eq null and mbGuia.msgExitoEmision eq null}" />
+                    <p:outputLabel value="#{mbGuia.guia.fechaEmisionGuia}" 
+                                   style="font-size: 20px !important; color: #8A0829" 
+                                   rendered="#{mbGuia.msgErrorEmision eq null and mbGuia.msgExitoEmision eq null}" >
+                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{mbGuia.msgErrorEmision}" style="font-size: 16px !important; font-weight: bold; color: red" 
+                                   rendered="#{mbGuia.msgErrorEmision ne null}" />
+                    <p:outputLabel value="#{mbGuia.msgExitoEmision}" style="font-size: 16px !important; color: #0F8164" 
+                                   rendered="#{mbGuia.msgExitoEmision ne null}" />
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Panel que muestra los datos generales de la guía que se va a emitir -->
+            <p:panel id="pnGeneralGuia" header="Emisión de Guía" rendered="#{not mbGuia.guia.estado.habilitaFuenteProductos and (not mbGuia.guia.tipo.abonaTasa or mbGuia.guia.codRecibo ne null)}" >
                 <h:panelGrid id="pgDatosGrales" columns="2" >
                     <p:outputLabel value="Tipo de Guía: " for="tipo"/>
                     <p:outputLabel id="tipo" value="#{mbGuia.guia.tipo.nombre}" 
@@ -48,7 +68,7 @@
                     <p:outputLabel id="destDestino" value="#{mbGuia.guia.destino.localidad} - #{mbGuia.guia.destino.provincia}" 
                                    style=" font-weight: bold" rendered="#{mbGuia.guia.tipo.habilitaTransp}"/>
                     <p:outputLabel value="Productos: " />
-                    <p:dataTable id="dtSubZonas" value="#{mbGuia.guia.items}" var="item" styleClass="table" style="width: 500px" >
+                    <p:dataTable id="dtSubZonas" value="#{mbGuia.guia.itemsAgrupados}" var="item" styleClass="table" style="width: 500px" >
                         <p:column headerText="Especie" >
                             <p:outputLabel value="#{item.nombreVulgar}"/>
                         </p:column>
@@ -65,23 +85,58 @@
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
+                <!-- Formularios provisorios -->
+                <p:fieldset toggleable="true" legend="Formularios provisorios" style="margin-bottom:20px">
+                    <!-- formulario -->
+                    <p:outputLabel value="Si la Guía que va a emitir está respaldada por uno o más formularios provisorios, podrá vincularlos completando el listado que está debajo. Podrá seleccionar la guía a partir de la cual se emitió el formulario, especificar su n° y asignarlo a la guía. La asinganción de formularios provisorios no es obligatoria. Si lo hace, tanto la selección de la guía emisora como el n° de orden del formulario son obligatorios." style="font-style: italic; font-size: small" />
+                    <p:separator />
+                    <h:panelGrid id="pgFormProv" columns="2" rendered="#{config.ImprimeFormularios eq 'si'}">
+                        <p:outputLabel value="Guía emisora: " for="cmbGuia"/>   
+                        <p:selectOneMenu id="cmbGuia" value="#{mbGuia.guiaEmisoraSelected}" converter="omnifaces.SelectItemsConverter" >
+                            <f:selectItem itemLabel="Seleccione la Guía emisora" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{mbGuia.lstGuiasEmisorasFormProv}" 
+                                           var="g" itemLabel="#{g.nombre}" itemValue="#{g}"/>
+                        </p:selectOneMenu> 
+                        <p:outputLabel value="N° de formulario: " for="numForm" />   
+                        <p:inputNumber id="numForm" value="#{mbGuia.formProv.numFormuario}" decimalPlaces="0" minValue="0" />
+                    </h:panelGrid>
+                    <!-- botones para guardar y limpiar -->
+                    <h:panelGrid id="pgBotForm" columns="2" rendered="#{config.ImprimeFormularios eq 'si'}" >
+                        <p:commandButton title="Asignar el formulario provisorio a la guía" value="Asignar" icon="fa fa-fw fa-save" 
+                                         action="#{mbGuia.asignarFormProv()}" update="frEmision,messages"/>
+                        <p:commandButton title="Limpiar los datos para el formulario provisorio" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                         resetValues="true" action="#{mbGuia.limpiarFormEmision()}" update="frEmision"/>
+                    </h:panelGrid>
+                    <!-- listado de formularios asignados -->
+                    <h:panelGrid id="pgFormAsig" columns="1" rendered="#{config.ImprimeFormularios eq 'si'}" >
+                        <p:dataTable id="dtFormProv" value="#{mbGuia.guia.formProvisorios}" var="form" styleClass="table" style="width: 300px" >
+                            <p:column headerText="Guía emisora" >
+                                <p:outputLabel value="#{form.codGuia}"/>
+                            </p:column>
+                            <p:column headerText="N° de formulario" >
+                                <p:outputLabel value="#{form.numFormuario}"/>
+                            </p:column>
+                            <p:column style="width: 35px" >
+                                <p:commandButton icon="fa fa-sign-out" title="Quitar" action="#{mbGuia.desasignarFormProv()}" 
+                                                 process="@this" update="@form" >
+                                    <f:setPropertyActionListener value="#{form}" target="#{mbGuia.formProv}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea quitar el formulario provisorio de la guía: #{form.codGuia}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                </p:fieldset>
+
+                <!-- botón de emisión -->
                 <h:panelGrid id="pgBoton" columns="1" >
                     <p:commandButton title="Emitir un archivo pdf con con los datos registrados de la Guía" value="Emitir Guía" icon="fa fa-fw fa-file-pdf-o" 
                                      action="#{mbGuia.emitir()}" ajax="false" update="frEmision,pMenuIndex,frame,messages" 
-                                     rendered="#{not mbGuia.guia.estado.habilitaFuenteProductos}"/>
-                </h:panelGrid>
-                <h:panelGrid id="pgTexto" columns="2" >
-                    <p:outputLabel value="Guía emitida con fecha: " style="font-size: 20px !important; color: #8A0829" 
-                                   rendered="#{mbGuia.guia.estado.habilitaFuenteProductos and mbGuia.msgErrorEmision eq null and mbGuia.msgExitoEmision eq null}" />
-                    <p:outputLabel value="#{mbGuia.guia.fechaEmisionGuia}" 
-                                   style="font-size: 20px !important; color: #8A0829" 
-                                   rendered="#{mbGuia.guia.estado.habilitaFuenteProductos and mbGuia.msgErrorEmision eq null and mbGuia.msgExitoEmision eq null}" >
-                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
-                    </p:outputLabel>
-                    <p:outputLabel value="#{mbGuia.msgErrorEmision}" style="font-size: 16px !important; font-weight: bold; color: red" 
-                                   rendered="#{mbGuia.msgErrorEmision ne null}" />
-                    <p:outputLabel value="#{mbGuia.msgExitoEmision}" style="font-size: 16px !important; font-weight: bold; color: #0F8164" 
-                                   rendered="#{mbGuia.msgExitoEmision ne null}" />
+                                     rendered="#{not mbGuia.guia.estado.habilitaFuenteProductos 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                 </h:panelGrid>
             </p:panel>
         </h:form>

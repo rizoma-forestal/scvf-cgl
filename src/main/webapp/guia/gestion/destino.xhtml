@@ -5,9 +5,10 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body >
-        <h:panelGrid columns="2" cellpadding="10">
+        <h:panelGrid columns="3" cellpadding="10">
             <img src="#{request.contextPath}/resources/img/users-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
             <p:outputLabel styleClass="titPanel" value="#{config.Destino}" />
+            <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
         <h:form prependId="false" id="frDestino">
             <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar destinatario" rendered="#{mbGuia.entDestino eq null}" >
@@ -40,11 +41,25 @@
                     <p:outputLabel value="#{mbGuia.entDestino.departamento}" style="font-weight: bold"  />
                     <p:outputLabel value="Localidad: " />
                     <p:outputLabel value="#{mbGuia.entDestino.localidad}" style="font-weight: bold"  />
+                    
+                    <p:outputLabel value="Nuevo vencimiento: " rendered="#{mbGuia.guia.fechaVencimiento ne null and mbGuia.editCuit}" />
+                    <p:calendar value="#{mbGuia.guia.fechaVencimiento}" pattern="dd/MM/yyyy HH:mm:ss"
+                                rendered="#{mbGuia.guia.fechaVencimiento ne null and mbGuia.editCuit}"
+                                required="true" requiredMessage="Debe indicar el inicio del período a consultar" />
+                </h:panelGrid>
+                <h:panelGrid columns="2" cellpadding="5" rendered="#{mbGuia.guia.fechaVencimiento ne null and mbGuia.editCuit}">
+                    <p:outputLabel value="Motivos: " for="obs"/>
+                    <p:inputTextarea  id="obs" rows="5" cols="50" counter="display" maxlength="250" 
+                                      value="#{mbGuia.guia.obs}" counterTemplate="Restan {0} caracteres." 
+                                      autoResize="false" />
+                    <h:outputText value="" />
+                    <h:outputText id="display" style="font-size: 12px" />
                 </h:panelGrid>
 
                 <h:panelGrid id="pgBotones" columns="3" cellpadding="2">
                     <p:commandButton title="Guardar destino para la Guía" value="Guardar" icon="fa fa-fw fa-save" 
-                                     rendered="#{mbGuia.guia.destino eq null or mbGuia.cuitProcesado}" 
+                                     rendered="#{(mbGuia.guia.destino eq null or mbGuia.cuitProcesado) 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      action="#{mbGuia.saveDestino()}" update="frDestino,pMenuIndex,frame,messages"/>
                     <p:commandButton title="Limpiar el Destinto configurado" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                      rendered="#{mbGuia.guia.destino eq null}"  
@@ -54,7 +69,12 @@
                                      action="#{mbGuia.restaurarDestino()}" update="frDestino"/>
                     <p:commandButton title="Seleccionar un nuevo Destinatario" styleClass="save" icon="fa fa-fw fa-plus" 
                                      value="Cambiar destinatario" action="#{mbGuia.prepareNuevoDestinatario()}" update="frDestino,pnSeleccionado" 
-                                     rendered="#{mbGuia.guia.destino ne null and not mbGuia.editCuit and mbGuia.guia.estado.habilitaEdicionComp}" />
+                                     rendered="#{(mbGuia.guia.destino ne null and not mbGuia.editCuit 
+                                                 and mbGuia.guia.estado.habilitaEdicionComp 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta) 
+                                                 or (not mbGuia.guiaVencida and not mbGuia.editCuit 
+                                                 and not mbGuia.guia.estado.habilitaEdicionComp 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta)}" />
                 </h:panelGrid>
             </p:panel>
         </h:form>

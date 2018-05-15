@@ -403,20 +403,10 @@
                             <p:outputLabel value="#{mbPersona.persona.tipo}" style="color: #0F4C20; font-weight: bold"/>
                             <p:outputLabel value="E-mail" />   
                             <p:outputLabel value="#{mbPersona.persona.email}" style="color: #0F4C20; font-weight: bold"/>
-                            <p:outputLabel value="Agregar/Modificar Martillo" for="martillo"/> 
-                            <p:fileUpload uploadLabel="Subir" cancelLabel="Cancelar" id="martillo" 
-                                          fileUploadListener="#{mbPersona.subirMartilloTmp}" mode="advanced" dragDropSupport="false"
-                                          update="messagesLocal,frProponentes,pngMartilloDef,pngMartilloTemp,pnFrmView" sizeLimit="500000" fileLimit="3" allowTypes="/(\.|\/)(gif|jpe?g|png)$/" />
-                        </h:panelGrid>
-                        <h:panelGrid id="pngMartilloDef" columns="2" rendered="#{mbPersona.persona.rutaArchivo ne null and not mbPersona.persona.rutaTemporal}" >
-                            <img src="#{config.UrlMartillos}#{mbPersona.persona.nombreArchivo}" width="150" />
-                        </h:panelGrid>
-                        <h:panelGrid id="pngMartilloTemp" columns="2" rendered="#{mbPersona.persona.rutaArchivo ne null and mbPersona.persona.rutaTemporal}" >
-                            <img src="/TMP/#{mbPersona.persona.nombreArchivo}" width="150" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveProponente()}" 
-                                             update="frProponentes,pngMartilloDef,pngMartilloTemp,pnFrmView"/>
+                                             update="frProponentes,pnFrmView"/>
                             <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar"  >
                                 <p:ajax listener="#{mbPersona.limpiarFormProp()}" update="pnFrmNew,messagesLocal" resetValues="true" />
                             </p:commandButton>
@@ -436,8 +426,6 @@
                             <p:outputLabel id="v_tipo" value="#{mbPersona.persona.tipo}"/>
                             <p:outputLabel value="E-mail: " for="v_email"/>
                             <p:outputLabel id="v_email" value="#{mbPersona.persona.email}"/>
-                            <p:outputLabel value="Martillo: " />
-                            <img src="#{config.UrlMartillos}#{mbPersona.persona.nombreArchivo}" width="150" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgBtn" columns="3" rendered="#{mbPersona.view}" >
