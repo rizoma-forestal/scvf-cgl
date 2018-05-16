@@ -1670,7 +1670,7 @@ public class MbAutorizacion {
      */
     private String crearCodigoProducto() {
         String codigo;
-        codigo = String.valueOf(itemAutorizado.getId()) + "|"
+        codigo = String.valueOf(itemAutorizado.getIdProd()) + "|"
                 + itemAutorizado.getNombreCientifico() + "|"
                 + itemAutorizado.getNombreVulgar() + "|"
                 + itemAutorizado.getClase() + "|"
