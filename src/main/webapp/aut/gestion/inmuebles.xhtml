@@ -12,7 +12,9 @@
         <h:form prependId="false" id="frInmuebles">
             <!-- Formulario de búsqueda -->
             <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
-                     rendered="#{mbAutorizacion.inmueble eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                     rendered="#{mbAutorizacion.inmueble eq null 
+                                 and mbAutorizacion.autorizacion.estado.habilitaEdicion 
+                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" >
                 <h:panelGrid columns="5">
                     <p:outputLabel value="Id Catastral" for="catastroBuscar"/>
                     <p:inputMask placeholder="#{config.maskCatastro}" id="catastroBuscar" value="#{mbAutorizacion.catastroBuscar}" 
@@ -62,12 +64,15 @@
                     </p:commandButton>
                     <p:commandButton title="Guardar #{config.Inmueble}" styleClass="save" icon="fa fa-fw fa-save" 
                                      value="Guardar" action="#{mbAutorizacion.limpiarViewInmueble()}" 
-                                     rendered="#{mbAutorizacion.viewInmueble or not mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     rendered="#{(mbAutorizacion.viewInmueble or not mbAutorizacion.autorizacion.estado.habilitaEdicion) 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form" >
                     </p:commandButton>
                     <p:commandButton title="Desasociar #{config.Inmueble}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
                                      value="Quitar" action="#{mbAutorizacion.deleteInmueble()}" 
-                                     rendered="#{mbAutorizacion.viewInmueble and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     rendered="#{mbAutorizacion.viewInmueble 
+                                                 and mbAutorizacion.autorizacion.estado.habilitaEdicion 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form,messages" >
                     </p:commandButton>
                 </h:panelGrid>

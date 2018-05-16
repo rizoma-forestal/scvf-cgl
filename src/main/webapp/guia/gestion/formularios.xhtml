@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/file-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Impresión de formularios provisorios" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frImpFormularios">
+            <p:panel id="pnGuiaVencida" styleClass="centro" header="Guía vencida" 
+                     rendered="#{mbGuia.msgImpFormVencida ne null}">
+                <h:panelGrid id="pgTextoVenc1" columns="2" >
+                    <p:outputLabel value="Guía vencida con fecha: " style="font-size: 20px !important; color: #8A0829" />
+                    <p:outputLabel value="#{mbGuia.guia.fechaVencimiento}" 
+                                   style="font-size: 20px !important; color: #8A0829" >
+                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                    </p:outputLabel> 
+                </h:panelGrid>
+                <h:panelGrid id="pgTextoVenc2" columns="2" >
+                    <p:outputLabel value="#{mbGuia.msgImpFormVencida}" style="font-size: 15px !important; color: #8A0829" />
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnGuiaVigente" styleClass="centro" header="Guía vigente" 
+                     rendered="#{mbGuia.msgImpFormVigente ne null}">
+                <h:panelGrid id="pgTextoVigente" columns="2" >
+                    <p:outputLabel value="#{mbGuia.msgImpFormVigente}" 
+                                   style="font-style: italic; font-size: small" />
+                </h:panelGrid>
+                <p:separator />
+                <h:panelGrid columns="2" >
+                    <p:outputLabel value="Formularios emitidos: " for="formEmitidos" />  
+                    <p:outputLabel id="formEmitidos" value="#{mbGuia.guia.formEmitidos}" />
+                </h:panelGrid>
+                <h:panelGrid id="pgDatosForm" columns="2" >
+                    <p:outputLabel value="Destino: " for="cmbDest"/>   
+                    <p:selectOneMenu id="cmbDest" value="#{mbGuia.delegSelected}" converter="omnifaces.SelectItemsConverter" 
+                                     required="true" requiredMessage="Debe seleccionar la Delegación forestal destinataria de los formularios a imprimir." >
+                        <f:selectItem itemLabel="Seleccione la Delegación forestal" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{mbGuia.lstDelegaciones}" 
+                                       var="deleg" itemLabel="#{deleg.nombre}" itemValue="#{deleg}"/>
+                    </p:selectOneMenu> 
+                    <p:outputLabel value="Horas de vigencia: " for="horasVigencia" />   
+                        <p:inputNumber id="horasVigencia" value="#{mbGuia.form.horasVigencia}" decimalPlaces="0" minValue="1" 
+                                       required="true" requiredMessage="Debe ingresar la cantidad de horas de vigencia del formulario" />
+                    <p:outputLabel value="Cantidad a imprimir: " for="cant" />     
+                        <p:inputNumber id="cant" value="#{mbGuia.form.cantidad}" decimalPlaces="0" minValue="1" 
+                                       required="true" requiredMessage="Debe ingresar la cantidad de copias a imprimir" />
+                </h:panelGrid>
+                <h:panelGrid id="pgBotones" columns="2" >
+                    <p:commandButton title="Emitir formularios provisorios para la guía" value="Emitir" icon="fa fa-file-pdf-o" 
+                                     action="#{mbGuia.imprimirFormularios()}" ajax="false" update="frImpFormularios,pMenuIndex,messages"/>
+                    <p:commandButton title="Actualizar los datos para los formularios provisorios" value="Actualizar" icon="fa fa-fw fa-refresh" 
+                                     resetValues="true" action="#{mbGuia.limpiarFormImpForm()}" update="frImpFormularios"/>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html> 

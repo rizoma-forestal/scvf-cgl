@@ -5,9 +5,10 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body >
-        <h:panelGrid columns="2" cellpadding="10">
+        <h:panelGrid columns="3" cellpadding="10">
             <img src="#{request.contextPath}/resources/img/resume.png" width="50" height="50" style="float: left; margin-left: 15px" />
             <p:outputLabel styleClass="titPanel" value="#{config.Origen}" />
+            <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
         <h:form prependId="false" id="frInstrumento">
             <p:panel id="pnView" header="Detalle de los datos administrativos" style="margin-bottom:10px;" >
@@ -63,7 +64,7 @@
                     </p:fieldset>
                 </h:panelGrid>
                 
-                <h:panelGrid columns="2" rendered="#{mbGuia.guia.tipo.habilitaTransp}">
+                <h:panelGrid columns="4" rendered="#{mbGuia.guia.tipo.habilitaTransp}">
                     <p:fieldset toggleable="true" legend="Destino" style="margin-bottom:20px" rendered="#{mbGuia.guia.destino ne null}">
                         <h:panelGrid columns="2" cellpadding="1">
                             <p:outputLabel value="Nombre completo: " />
@@ -100,6 +101,67 @@
                             <p:outputLabel value="#{mbGuia.guia.transporte.condDni}" style=" font-weight: bold" />
                         </h:panelGrid>
                     </p:fieldset>
+                    <!-- Formularios provisorios si están configurados y si tiene -->
+                    <p:fieldset toggleable="true" legend="Formularios provisorios" style="margin-bottom:20px" 
+                                rendered="#{not empty mbGuia.guia.formProvisorios and config.ImprimeFormularios eq 'si'}">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:dataTable id="dtFormProv" value="#{mbGuia.guia.formProvisorios}" var="form" styleClass="table" style="width: 300px" >
+                                <p:column headerText="Guía emisora" >
+                                    <p:outputLabel value="#{form.codGuia}"/>
+                                </p:column>
+                                <p:column headerText="N° de formulario" >
+                                    <p:outputLabel value="#{form.numFormuario}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                    </p:fieldset>
+                </h:panelGrid>
+                
+                <h:panelGrid id="pgObs" columns="1" cellpadding="1" 
+                             rendered="#{mbGuia.guia.obs ne null}" >
+                    <p:fieldset toggleable="true" legend="Observaciones" style="margin-bottom:20px">
+                        <h:panelGrid columns="1" cellpadding="1">
+                            <p:outputLabel value="#{mbGuia.guia.obs}" />
+                        </h:panelGrid>
+                    </p:fieldset>
+                </h:panelGrid>
+                
+                <p:separator />
+                
+                <h:panelGrid id="pgGuiaProductos" columns="1" >
+                    <p:outputLabel value="Productos disponibles para el descuento" style="font-weight: bold" />
+                        <p:dataTable styleClass="table" value="#{mbGuia.lstItemsAutorizados}"
+                                     var="itemAut"
+                                     id="dtGuiaItemsAutorizados" >
+                            <p:column headerText="Guía" rendered="#{!mbGuia.guia.tipo.descuentaAutoriz}" >
+                                <p:outputLabel value="#{itemAut.guia.codigo}"/>
+                            </p:column>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{itemAut.id}"/>
+                            </p:column>
+                            <p:column headerText="Especie local" >
+                                <p:outputLabel value="#{itemAut.nombreVulgar}"/>
+                            </p:column>
+                            <p:column headerText="Nombre científico" >
+                                <p:outputLabel value="#{itemAut.nombreCientifico}"/>
+                            </p:column>
+                            <p:column headerText="Clase" >
+                                <p:outputLabel value="#{itemAut.clase}"/>
+                            </p:column>
+                            <p:column headerText="Unidad" >
+                                <p:outputLabel value="#{itemAut.unidad}"/>
+                            </p:column>
+                            <p:column headerText="Total" style="text-align: right !important;" >
+                                <p:outputLabel value="#{itemAut.total}" >
+                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Saldo disp." style="text-align: right !important;" >
+                                <p:outputLabel value="#{itemAut.saldo}" >
+                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
                 </h:panelGrid>
                 
                 <p:separator />
@@ -122,7 +184,9 @@
                             <p:outputLabel value="#{inm.localidad}"/>
                         </p:column>
                         <p:column headerText="Superficie (Has.)" >
-                            <p:outputLabel value="#{inm.superficie}"/>
+                            <p:outputLabel value="#{inm.superficie}" >
+                                <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
@@ -132,7 +196,8 @@
                 <h:panelGrid columns="2">
                     <p:commandButton title="Editar el contenido de los datos generales de la Guía" styleClass="save" icon="fa fa-fw fa-pencil" 
                                      value="Editar" action="#{mbGuia.prepareEdit()}" update="pMenuIndex,frame" 
-                                     rendered="#{mbGuia.guia.estado.habilitaEdicionFuente}" >
+                                     rendered="#{mbGuia.guia.estado.habilitaEdicionFuente 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" >
                     </p:commandButton>
                 </h:panelGrid>
             </p:panel>

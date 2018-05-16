@@ -27,8 +27,20 @@
                                             actionListener="#{mbGuia.cargarFrame('tasas.xhtml')}" rendered="#{mbGuia.guia.tipo.abonaTasa}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Emision}"
                                             actionListener="#{mbGuia.cargarFrame('emision.xhtml')}" rendered="#{mbGuia.guia.estado.habilitaEmision}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Cancelar"
+                                            actionListener="#{mbGuia.cargarFrame('cancelar.xhtml')}" 
+                                            rendered="#{mbGuia.guia.estado.habilitaFuenteProductos 
+                                                        and not mbGuia.guia.tipo.descuentaAutoriz 
+                                                        and mbSesion.usuario.rol.nombre ne config.Consulta}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" 
+                                            update="frame" ajax="true" value="Imprimir formularios" 
+                                            actionListener="#{mbGuia.cargarFrame('formularios.xhtml')}" 
+                                            rendered="#{mbGuia.guia.estado.habilitaFuenteProductos 
+                                                        and mbGuia.guia.tipo.descuentaAutoriz 
+                                                        and config.ImprimeFormularios eq 'si' 
+                                                        and mbSesion.usuario.rol.nombre ne config.Consulta}" />
                             </p:submenu>
-                            <p:submenu styleClass="hMenu" label="Auditorías" >
+                            <p:submenu styleClass="hMenu" label="Auditorías" rendered="false" >
 
                             </p:submenu>
                         </p:panelMenu>

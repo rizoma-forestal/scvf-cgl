@@ -3,8 +3,10 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.ProdConsulta;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.Query;
@@ -128,8 +130,7 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }      
     
     /**
-     * Método que devuelve las Guías vinculadas a un número de fuente determinado.
-     * Sea este de una Autorización o de una Guía
+     * Método que devuelve las Guías vinculadas a un número de fuente (Autorización) determinado.
      * @param numFuente String número de la fuente a buscar
      * @return List<Guia> listado de las guías vinculadas a la fuente cuyo número se remite
      */
@@ -142,16 +143,38 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }
     
     /**
-     * Metodo que devuelve las Guías en condiciones de ser fuentes de productos para el Productor cuyo CUIT se recibe
+     * Método para obtener un listado de las Guías que tomaron productos de la guía
+     * recibida como parámetro.
+     * @param gDesc Guía de la cual se buscan sus hijas
+     * @return List<Guia> listado de las guías vinculadas a la madre recibida como parámetro
+     */
+    public List<Guia> findHijas (Guia gDesc){
+        String queryString = "SELECT gHija FROM Guia gHija "
+                + "INNER JOIN gHija.guiasfuentes gDesc "
+                + "WHERE gDesc = :gDesc";
+        Query q = em.createQuery(queryString)
+                .setParameter("gDesc", gDesc);
+        return q.getResultList();
+    }
+    
+    /**
+     * Metodo que devuelve las Guías disponibles para el descuento de productos para otras guías 
+     * según el Productor cuyo CUIT se recibe y la Fuente (Autorización)
      * @param cuit Long cuit del Productor cuyas Guías se busca
+     * @param fuente String número de la Autorización que oficia de fuente de productos para las guías a descontar
      * @return List<Guia> listado de las guías correspondientes
      */
-    public List<Guia> getFuenteByTitular(Long cuit){
+    public List<Guia> getDispByTitularYFuente(Long cuit, String fuente){
+        Date hoy = new Date(System.currentTimeMillis());
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.origen.cuit = :cuit "
                 + "AND guia.tipo.habilitaDesc = true "
-                + "AND guia.estado.habilitaFuenteProductos = true";
+                + "AND guia.estado.habilitaFuenteProductos = true "
+                + "AND guia.numFuente = :fuente "
+                + "AND guia.fechaVencimiento >= :hoy";
         Query q = em.createQuery(queryString)
+                .setParameter("hoy", hoy)
+                .setParameter("fuente", fuente)
                 .setParameter("cuit", cuit);
         return q.getResultList();
     }
@@ -182,6 +205,119 @@ public class GuiaFacade extends AbstractFacade<Guia> {
         Query q = em.createQuery(queryString)
                 .setParameter("matricula", matricula);
         return q.getResultList();
+    }
+    
+    /**
+     * Método que obtiene las Guías en estado de EMITIDA o CERRADA que se hayan emitido entre
+     * las fechas de inicio y fin recibidas como parámetro, para toda la provincia
+     * @param inicio Date fecha límite de inicio del período dentro del cual se emitieron las guías consultadas
+     * @param fin Date fecha límite de fin del período dentro del cual se emitieron las guías consultadas
+     * @return List<Guia> listado de las guías emitidas durante el período correspondiente.
+     */
+    public List<Guia> getByFechaEmision(Date inicio, Date fin){
+        String queryString = "SELECT guia FROM Guia guia "
+                + "WHERE guia.fechaEmisionGuia >= :inicio "
+                + "AND guia.fechaEmisionGuia <= :fin "
+                + "AND guia.tipo.habilitaTransp = true "
+                + "AND (guia.estado.nombre = 'EMITIDA' "
+                + "OR guia.estado.nombre = 'CERRADA')";
+        Query q = em.createQuery(queryString)
+                .setParameter("inicio", inicio)
+                .setParameter("fin", fin);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método que obtiene las Guías en estado de EMITIDA o CERRADA que se hayan emitido entre
+     * las fechas de inicio y fin recibidas como parámetro, para un departamento determinado
+     * @param inicio Date fecha límite de inicio del período dentro del cual se emitieron las guías consultadas
+     * @param fin Date fecha límite de fin del período dentro del cual se emitieron las guías consultadas
+     * @param depto String nombre del departamento de origen de los productos de la guía
+     * @return List<Guia> listado de las guías emitidas durante el período correspondiente.
+     */
+    public List<Guia> getByFechaEmisionDepto(Date inicio, Date fin, String depto){
+        String queryString = "SELECT guia FROM Guia guia "
+                + "INNER JOIN guia.origen origen "
+                + "WHERE guia.fechaEmisionGuia >= :inicio "
+                + "AND guia.fechaEmisionGuia <= :fin "
+                + "AND guia.tipo.habilitaTransp = true "
+                + "AND origen.departamento =:depto "
+                + "AND (guia.estado.nombre = 'EMITIDA' "
+                + "OR guia.estado.nombre = 'CERRADA')";
+        Query q = em.createQuery(queryString)
+                .setParameter("depto", depto)
+                .setParameter("inicio", inicio)
+                .setParameter("fin", fin);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener los datos de un producto movido durante un período para toda la provincia
+     * @param inicio Date fecha límite de inicio del período dentro del cual se emitieron las guías de los productos consultados
+     * @param fin Date fecha límite del fin del período dentro del cual se emitieron las guías de los productos consultados
+     * @param idProd Long identificador único del producto a buscar
+     * @return ProdConsulta ProdConsulta que encapsula los datos del producto consultado.
+     */
+    public ProdConsulta getProdQuery(Date inicio, Date fin, Long idProd){
+        String queryString = "SELECT i.idprod, i.nombrevulgar, i.clase, i.unidad, SUM(i.total) AS total "
+                + "FROM itemproductivo i "
+                + "INNER JOIN guia g ON g.id = i.guia_id "
+                + "INNER JOIN entidadguia ent ON ent.id = g.origen_id "
+                + "INNER JOIN tipoguia tipo ON tipo.id = g.tipo_id "
+                + "INNER JOIN estadoguia est ON est.id = g.estado_id "
+                + "WHERE g.fechaemisionguia >= ?1 "
+                + "AND g.fechaemisionguia <= ?2 "
+                + "AND tipo.habilitatransp = TRUE "
+                + "AND i.idprod = ?3 "
+                + "AND (est.nombre = 'EMITIDA' OR est.nombre = 'CERRADA') "
+                + "GROUP BY i.idprod, i.nombrevulgar, i.clase, i.unidad"; 
+        Query q = em.createNativeQuery(queryString, ProdConsulta.class)
+                .setParameter(1, inicio)
+                .setParameter(2, fin)
+                .setParameter(3, idProd);
+        return (ProdConsulta)q.getSingleResult();
+    }    
+    
+    /**
+     * Método para obtener los datos de un producto movido durante un período para un departamento
+     * @param inicio Date fecha límite de inicio del período dentro del cual se emitieron las guías de los productos consultados
+     * @param fin Date fecha límite del fin del período dentro del cual se emitieron las guías de los productos consultados
+     * @param depto String nombre del departamento de origen de los productos movidos
+     * @param idProd Long identificador único del producto a buscar
+     * @return ProdConsulta ProdConsulta que encapsula los datos del producto consultado.
+     */
+    public ProdConsulta getProdDeptoQuery(Date inicio, Date fin, String depto, Long idProd){
+        String queryString = "SELECT i.idprod, i.nombrevulgar, i.clase, i.unidad, SUM(i.total) AS total "
+                + "FROM itemproductivo i "
+                + "INNER JOIN guia g ON g.id = i.guia_id "
+                + "INNER JOIN entidadguia ent ON ent.id = g.origen_id "
+                + "INNER JOIN tipoguia tipo ON tipo.id = g.tipo_id "
+                + "INNER JOIN estadoguia est ON est.id = g.estado_id "
+                + "WHERE g.fechaemisionguia >= ?1 "
+                + "AND g.fechaemisionguia <= ?2 "
+                + "AND tipo.habilitatransp = TRUE "
+                + "AND ent.departamento = ?3 "
+                + "AND i.idprod = ?4 "
+                + "AND (est.nombre = 'EMITIDA' OR est.nombre = 'CERRADA') "
+                + "GROUP BY i.idprod, i.nombrevulgar, i.clase, i.unidad"; 
+        Query q = em.createNativeQuery(queryString, ProdConsulta.class)
+                .setParameter(1, inicio)
+                .setParameter(2, fin)
+                .setParameter(3, depto)
+                .setParameter(4, idProd);
+        return (ProdConsulta)q.getSingleResult();
+    }
+    
+    /**
+     * Método para obtener la cantidad de formularios emitidos por una guía madre
+     * @param id Long identificador de la guía a consultar
+     * @return Integer cantidad de formularios emitidos por la guía
+     */
+    public Integer getCantFormProv(Long id){
+        String queryString = "SELECT formemitidos FROM guia WHERE id = ?1";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(1, id);
+        return (Integer)q.getSingleResult();
     }
     
     /**

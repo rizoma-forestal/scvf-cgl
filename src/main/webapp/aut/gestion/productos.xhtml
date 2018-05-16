@@ -12,7 +12,9 @@
         <h:form prependId="false" id="frProductos">
             <!-- Formulario de búsqueda -->
             <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
-                     rendered="#{mbAutorizacion.itemAutorizado eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                     rendered="#{mbAutorizacion.itemAutorizado eq null 
+                                 and mbAutorizacion.autorizacion.estado.habilitaEdicion 
+                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" >
                 <h:panelGrid columns="6">
                     <p:outputLabel value="Especie local" for="cmbEspeciesBuscar"/>
                     <p:selectOneMenu id="cmbEspeciesBuscar" value="#{mbAutorizacion.especieSelected}" required="true" 
@@ -58,7 +60,7 @@
                     <p:outputLabel value="#{mbAutorizacion.itemAutorizado.saldo}" rendered="#{not mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
                         <f:convertNumber type="currency"  currencySymbol=""/>
                     </p:outputLabel>
-                    <p:inputNumber value="#{mbAutorizacion.itemAutorizado.total}" decimalPlaces="4" minValue="1"  
+                    <p:inputNumber value="#{mbAutorizacion.itemAutorizado.total}" decimalPlaces="4" minValue="0"  
                                  required="true" requiredMessage="Debe ingresar la cantidad autorizada." decimalSeparator="," thousandSeparator="."
                                  rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion}" />
                     <p:outputLabel value="Observaciones" />
@@ -80,12 +82,15 @@
                     </p:commandButton>
                     <p:commandButton title="Guardar #{config.Producto}" styleClass="save" icon="fa fa-fw fa-save" 
                                      value="Guardar" action="#{mbAutorizacion.editProducto()}" 
-                                     rendered="#{mbAutorizacion.viewProducto and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     rendered="#{(mbAutorizacion.viewProducto and mbAutorizacion.autorizacion.estado.habilitaEdicion) 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="frProductos" >
                     </p:commandButton>
                     <p:commandButton title="Desasociar #{config.Producto}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
                                      value="Quitar" action="#{mbAutorizacion.deleteProducto()}" 
-                                     rendered="#{mbAutorizacion.viewProducto and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     rendered="#{mbAutorizacion.viewProducto 
+                                                 and mbAutorizacion.autorizacion.estado.habilitaEdicion 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form,messages" >
                     </p:commandButton>
                     <p:commandButton title="Cerrar la vista" styleClass="save" icon="fa fa-fw fa-close" 

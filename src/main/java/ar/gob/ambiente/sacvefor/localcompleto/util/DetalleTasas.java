@@ -97,7 +97,7 @@ public class DetalleTasas implements Serializable{
     }
     
     /**
-     * Clase estática para cada tasa
+     * Clase estática para cada tasa que deberá pagar el producto, guarda el nombre y el subtotal correspondiente.
      */
     static public class TasaModel implements Serializable {
  

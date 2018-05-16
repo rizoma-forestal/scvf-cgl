@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +20,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -34,7 +37,7 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 /**
  * Entidad que encapsula los datos correspondientes a una Guía.
  * Según el tipo (Acopio, Acopio y transporte, Transporte) tendrá campos obligatorios 
- * u opcionales.
+ * y opcionales.
  * @author rincostante
  */
 @Entity
@@ -85,12 +88,23 @@ public class Guia implements Serializable {
     
     /**
      * Variable privada: Cadena que constituye el número identificatorio de la fuente de Productos,
-     * sea una Autorización o un Guía.
+     * en el caso que sea una autorización
      */
-    @Column (nullable=false, length=30)
-    @NotNull(message = "El campo numFuente no puede ser nulo")
-    @Size(message = "El campo numFuente no puede tener más de 30 caracteres", min = 1, max = 30)  
+    @Column (nullable=true, length=30)
+    @Size(message = "El campo numFuente no puede tener más de 30 caracteres", max = 30)  
     private String numFuente;
+    
+    /**
+     * Variable privada: Guarda las guías que sean fuentes de productos
+     * de la presente guía
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "guiasFuenteXGuias",
+            joinColumns = @JoinColumn(name = "guia_fk"),
+            inverseJoinColumns = @JoinColumn(name = "guiafuente_fk")
+    )
+    private List<Guia> guiasfuentes;     
     
     /**
      * Variable privada: Listado de los items que constituyen el detalle de la Guía
@@ -214,13 +228,151 @@ public class Guia implements Serializable {
      * Variable privada no persistida: flujo para obtener el archivo de propiedades
      */
     @Transient
-    InputStream inputStream;    
+    InputStream inputStream;  
+    
+    /**
+     * Variable privada no persistida: flag temporal que indica si la guía fue 
+     * seleccionada para descontar productos para otra guía, durante su registro
+     */
+    @Transient
+    private boolean asignadaDesc;
+    
+    /**
+     * Variable privada: Observaciones que pudieran corresponder
+     */
+    @Column (length=250)
+    @Size(message = "El campo obs no puede tener más de 500 caracteres", max = 250)     
+    private String obs;  
+    
+    /**
+     * Variable privada: para las guías remito generadas a partir de formularios provisorios
+     * guarda un listado con el o los formularios provisorios que de los que se proveyó, en 
+     * el caso en que asé esté dispuesto en la configuración.
+     * No se publicará en la API
+     */
+    @Audited(targetAuditMode = NOT_AUDITED)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
+    @JoinColumn(name = "guia_id", referencedColumnName = "id")
+    private List<FormProv> formProvisorios;
+    
+    /**
+     * Variable privada: para las guías madre que hayan emitido formularios provisorios,
+     * indica la cantidad de formularios emitidos. Actualizable cuando se emiten más formularios (suma)
+     * y cuando se toman formularios para emitir guías remitos (resta). Puede ser nulo
+     * No se publicará en la API
+     */
+    @Column (nullable=true)
+    private int formEmitidos;
 
     /**
-     * Constructor, inicializa los ítems
+     * Constructor, inicializa los ítems y las guías fuentes si corresponde
      */
     public Guia(){
         items = new ArrayList<>();
+        guiasfuentes = new ArrayList<>();
+        formProvisorios = new ArrayList<>();
+    }
+
+    @XmlTransient
+    public List<FormProv> getFormProvisorios() {
+        return formProvisorios;
+    }
+
+
+    public void setFormProvisorios(List<FormProv> formProvisorios) {
+        this.formProvisorios = formProvisorios;
+    }
+    
+    /**
+     * El método que devuelve las observaciones, por ahora no está disponible para la API
+     * @return String observaciones que la guía pudiera tener
+     */
+    @XmlTransient
+    public String getObs() {
+        return obs;
+    }
+
+    @XmlTransient
+    public int getFormEmitidos() {
+        return formEmitidos;
+    }
+
+    public void setFormEmitidos(int formEmitidos) {
+        this.formEmitidos = formEmitidos;
+    }
+
+    public void setObs(String obs) {
+        this.obs = obs;
+    }
+
+    /**
+     * Método que devuelve el flag para uso interno, no está disponible para la API
+     * @return flag correspondiente
+     */
+    @XmlTransient
+    public boolean isAsignadaDesc() {
+        return asignadaDesc;
+    }
+
+    public void setAsignadaDesc(boolean asignadaDesc) {
+        this.asignadaDesc = asignadaDesc;
+    }
+    
+    @XmlTransient
+    public void setGuiasfuentes(List<Guia> guiasfuentes) {    
+        this.guiasfuentes = guiasfuentes;
+    }
+
+    public List<Guia> getGuiasfuentes() {
+        return guiasfuentes;
+    }     
+    
+    /**
+     * Método que agrupa los items de una guía en el caso que se repitan los productos
+     * descontado de guías madre diferentes. En ese caso, suma los totales pero mantiene un solo ítem.
+     * De lo contrario, retorna los items
+     * @return List<ItemProductivo> listado de los items agrupados por producto.
+     */
+    @XmlTransient
+    public List<ItemProductivo> getItemsAgrupados(){
+        // instancio el listado de agrupados
+        List<ItemProductivo> itemsAgrupados = new ArrayList<>();
+        // recorro los ítems vinculados a la guía para poblar el listado de agrupados (sin repetir productos)
+        for (ItemProductivo item : items){
+            boolean existe = false;
+            // recorro el listado de agrupados
+            for (ItemProductivo itemAgr : itemsAgrupados){
+                if(Objects.equals(itemAgr.getIdProd(), item.getIdProd())){
+                    existe = true;
+                }
+            }
+            if(!existe){
+                itemsAgrupados.add(item);
+            }
+        }
+        if(itemsAgrupados.size() != items.size()){
+            // si hay diferencia vuelvo a recorrer el listado original para hacer la agrupación
+            for (ItemProductivo item : items){
+                // por cada item verifico si ya está registrado entre los agrupados
+                for (ItemProductivo itemAgr : itemsAgrupados){
+                    // si ya está registrado el producto entre los agrupados sumo los totales (total, totalKg)
+                    if(Objects.equals(itemAgr.getIdProd(), item.getIdProd()) && !Objects.equals(itemAgr.getId(), item.getId())){
+                        float total = itemAgr.getTotal();
+                        float totalKg = itemAgr.getTotalKg();
+                        // actualizo total
+                        itemAgr.setTotal(total + item.getTotal());
+                        // actualizo el totalKg
+                        itemAgr.setTotalKg(totalKg + item.getTotalKg());
+                    }
+                }
+            } 
+            return itemsAgrupados;
+        }else{
+            // si no es necesario agrupar retorno los ítems
+            return items;
+        }
+
+        
     }
 
     /**

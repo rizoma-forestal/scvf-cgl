@@ -12,7 +12,8 @@
         <h:form prependId="false" id="frTecnicos">
             <!-- Formulario de búsqueda -->
             <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
-                     rendered="#{mbAutorizacion.persona eq null}" >
+                     rendered="#{mbAutorizacion.persona eq null 
+                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" >
                 <h:panelGrid columns="5">
                     <p:outputLabel value="CUIT" for="cuitBuscar"/>
                     <p:inputText id="cuitBuscar" value="#{mbAutorizacion.cuitBuscar}" 
@@ -54,12 +55,14 @@
                     </p:commandButton>
                     <p:commandButton title="Guardar #{config.Tecnico}" styleClass="save" icon="fa fa-fw fa-save" 
                                      value="Guardar" action="#{mbAutorizacion.limpiarViewPersona()}" 
-                                     rendered="#{mbAutorizacion.viewPersona}" 
+                                     rendered="#{mbAutorizacion.viewPersona 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form" >
                     </p:commandButton>
                     <p:commandButton title="Desasociar #{config.Tecnico}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
                                      value="Quitar" action="#{mbAutorizacion.deletePersona(config.Tecnico)}" 
-                                     rendered="#{mbAutorizacion.viewPersona}" 
+                                     rendered="#{mbAutorizacion.viewPersona 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form,messages" >
                     </p:commandButton>
                 </h:panelGrid>

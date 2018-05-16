@@ -357,7 +357,8 @@
                             <p:outputLabel value="E-mail" />   
                             <p:outputLabel value="#{mbPersona.persona.email}" style="color: #0F4C20; font-weight: bold"/>
                             <p:outputLabel value="Inicio de vigencia" for="dtInicio" />
-                            <p:calendar id="dtInicio" value="#{mbPersona.persona.inicioVigencia}" />
+                            <p:calendar id="dtInicio" value="#{mbPersona.persona.inicioVigencia}" 
+                                        required="true" requiredMessage="La fecha de inicio de vigencia es obligatoria" />
                             <p:outputLabel value="Fin de vigencia" for="dtFin" />
                             <p:calendar id="dtFin" value="#{mbPersona.persona.finVigencia}" />
                         </h:panelGrid>

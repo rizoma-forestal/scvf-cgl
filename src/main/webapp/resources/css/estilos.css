@@ -221,6 +221,11 @@
     font-size: xx-large !important;
 }
 
+.topUs{
+    color: #F9F4F2;
+    font-size:medium !important;
+}
+
 /* Pie */
 .botton .ui-layout-unit-content{
    background: #07220E;

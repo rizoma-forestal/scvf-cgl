@@ -19,7 +19,7 @@
                 <h:form prependId="false" id="frListGuias">
                     <!-- Vista detalle -->
                     <p:panel id="pnFrmView" header="Detalle" rendered="#{mbGuia.view}" >
-                        <h:panelGrid id="pgDatosGrales" columns="5" styleClass="panelColumns" >
+                        <h:panelGrid id="pgDatosGrales" columns="4" styleClass="panelColumns" >
                             <p:fieldset toggleable="true" legend="Identificación" style="margin-bottom:20px">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Tipo: " />
@@ -30,6 +30,8 @@
                                     <p:outputLabel id="fechaEmisionVolante" value="#{mbGuia.guia.fechaEmisionVolante}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
                                     </p:outputLabel>
+                                    <p:outputLabel value="Formularios emitidos: " rendered="#{config.ImprimeFormularios eq 'si'}" />
+                                    <p:outputLabel value="#{mbGuia.guia.formEmitidos}" style=" font-weight: bold" rendered="#{config.ImprimeFormularios eq 'si'}" />
                                 </h:panelGrid>
                             </p:fieldset>
                             <p:fieldset toggleable="true" legend="Vigencia" style="margin-bottom:20px">
@@ -70,8 +72,19 @@
                                 </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>  
-                        
-                        <h:panelGrid columns="2" rendered="#{mbGuia.guia.tipo.habilitaTransp}">
+                        <h:panelGrid id="pgObs" columns="1" cellpadding="1" 
+                                     rendered="#{not mbGuia.guia.estado.completaCiclo and not mbGuia.guia.estado.habilitaEdicionComp
+                                                 and not mbGuia.guia.estado.habilitaEdicionFuente and not mbGuia.guia.estado.habilitaEmision
+                                                 and not mbGuia.guia.estado.habilitaFuenteProductos and not mbGuia.guia.estado.habilitaLiquidacion
+                                                 and not mbGuia.guia.estado.habilitaTransito}">
+                            <p:fieldset toggleable="true" legend="Observaciones" style="margin-bottom:20px">
+                                <h:panelGrid columns="1" cellpadding="1">
+                                    <p:outputLabel value="#{mbGuia.guia.obs}" />
+                                </h:panelGrid>
+                            </p:fieldset>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="4" rendered="#{mbGuia.guia.tipo.habilitaTransp}">
                             <p:fieldset toggleable="true" legend="Destino" style="margin-bottom:20px">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Nombre completo: " />
@@ -106,6 +119,20 @@
                                     <p:outputLabel value="#{mbGuia.guia.transporte.condNombre}" style=" font-weight: bold" />
                                     <p:outputLabel value="DNI: " />
                                     <p:outputLabel value="#{mbGuia.guia.transporte.condDni}" style=" font-weight: bold" />
+                                </h:panelGrid>
+                            </p:fieldset>
+                            <!-- Formularios provisorios si están configurados y si tiene -->
+                            <p:fieldset toggleable="true" legend="Formularios provisorios" style="margin-bottom:20px" 
+                                        rendered="#{not empty mbGuia.guia.formProvisorios and config.ImprimeFormularios eq 'si'}">
+                                <h:panelGrid columns="2" cellpadding="1">
+                                    <p:dataTable id="dtFormProv" value="#{mbGuia.guia.formProvisorios}" var="form" styleClass="table" style="width: 300px" >
+                                        <p:column headerText="Guía emisora" >
+                                            <p:outputLabel value="#{form.codGuia}"/>
+                                        </p:column>
+                                        <p:column headerText="N° de formulario" >
+                                            <p:outputLabel value="#{form.numFormuario}"/>
+                                        </p:column>
+                                    </p:dataTable>
                                 </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>

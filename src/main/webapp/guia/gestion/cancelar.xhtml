@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/file-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Cancelación de la Guía" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frCancelacion">
+            <p:panel id="pnGuiaVencida" styleClass="centro" header="Guía vencida" 
+                     rendered="#{mbGuia.msgCancelVencida ne null and mbGuia.guia.estado.nombre ne config.GuiaCancelada}">
+                <h:panelGrid id="pgTextoVenc1" columns="2" >
+                    <p:outputLabel value="Guía vencida con fecha: " style="font-size: 20px !important; color: #8A0829" />
+                    <p:outputLabel value="#{mbGuia.guia.fechaVencimiento}" 
+                                   style="font-size: 20px !important; color: #8A0829" >
+                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                    </p:outputLabel> 
+                </h:panelGrid>
+                <h:panelGrid id="pgTextoVenc2" columns="2" >
+                    <p:outputLabel value="#{mbGuia.msgCancelVencida}" style="font-size: 15px !important; color: #8A0829" />
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnGuiaVigente" styleClass="centro" header="Guía vigente" 
+                     rendered="#{mbGuia.msgCancelVigente ne null and mbGuia.guia.estado.nombre ne config.GuiaCancelada}">
+                <h:panelGrid id="pgTextoVigente" columns="2" >
+                    <p:outputLabel value="#{mbGuia.msgCancelVigente}" 
+                                   style="font-style: italic; font-size: small" />
+                </h:panelGrid>
+                <h:panelGrid columns="2" cellpadding="5">
+                    <p:outputLabel value="Motivos: " for="obs"/>
+                    <p:inputTextarea  id="obs" rows="5" cols="50" counter="display" maxlength="250" 
+                                      value="#{mbGuia.guia.obs}" counterTemplate="Restan {0} caracteres." 
+                                      autoResize="false" />
+                    <h:outputText value="" />
+                    <h:outputText id="display" style="font-size: 12px" />
+                </h:panelGrid>
+                <h:panelGrid id="pgBotones" columns="2" >
+                    <p:commandButton title="Registrar la cancelación de la Guía" value="Aceptar" icon="fa fa-fw fa-save" 
+                                     action="#{mbGuia.cancelarGuia()}" update="frCancelacion,pMenuIndex,messages"/>
+                    <p:commandButton title="Limpiar los motivos de la cancelación" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                     action="#{mbGuia.limpiarFormCancel()}" update="frCancelacion"/>
+                </h:panelGrid>
+            </p:panel>
+            <p:panel id="pnGuiaCancelada" styleClass="centro" header="Guía cancelada" 
+                     rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}">
+                <h:panelGrid columns="" cellpadding="5">
+                    <p:outputLabel style="font-size: 25px !important; color: #0F8164" 
+                                   value="La guía fue cancelada exitosamente." 
+                                   rendered="#{mbGuia.msgErrorCancelGuia.length() eq 0}" />
+                    <p:outputLabel style="font-size: 25px !important; color: #8A0829" 
+                                   value="Hubo un error cancelando la guía: #{mbGuia.msgErrorCancelGuia}"  
+                                   rendered="#{mbGuia.msgErrorCancelGuia.length() ne 0}" />
+                </h:panelGrid>
+            </p:panel>            
+        </h:form>
+    </h:body>
+</html>        

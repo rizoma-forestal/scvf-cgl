@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="Delegaciones forestales" />
+                </h:panelGrid>
+                <h:form prependId="false" id="frDeleg">
+                    <p:growl id="messages" showDetail="false" />
+                    <!-- Formulario new y edit -->
+                    <p:panel id="pnFrmNew" header="Crear/Editar" rendered="#{not mbDelegacion.view}" collapsed="#{not mbDelegacion.edit}" toggleable="true" >
+                        <h:panelGrid columns="2">
+                            <p:outputLabel value="Provincia " for="cmbProv"/>   
+                            <p:selectOneMenu id="cmbProv" value="#{mbDelegacion.provSelected}" converter="omnifaces.SelectItemsConverter" 
+                                             required="true" requiredMessage="Debe seleccionar la Provincia" >
+                                <f:selectItem itemLabel="Seleccione la Provincia" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbDelegacion.listProvincias}" 
+                                               var="prov" itemLabel="#{prov.nombre}" itemValue="#{prov}"/>
+                                <p:ajax listener="#{mbDelegacion.provinciaChangeListener()}" update="cmbDepto,cmbLocalidades" />
+                            </p:selectOneMenu> 
+                            <p:outputLabel value="Departamento" for="cmbDepto"/>   
+                            <p:selectOneMenu id="cmbDepto" value="#{mbDelegacion.deptoSelected}" converter="omnifaces.SelectItemsConverter" 
+                                             required="true" requiredMessage="Debe seleccionar la Provincia" >
+                                <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbDelegacion.listDepartamentos}" 
+                                               var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
+                                <p:ajax listener="#{mbDelegacion.deptoChangeListener()}" update="cmbLocalidades" />
+                            </p:selectOneMenu>  
+                            <p:outputLabel value="Localidad" for="cmbLocalidades"/>   
+                            <p:selectOneMenu id="cmbLocalidades" value="#{mbDelegacion.localSelected}" converter="omnifaces.SelectItemsConverter" 
+                                             required="true" requiredMessage="Debe seleccionar la Localiad" >
+                                <f:selectItem itemLabel="Seleccione la Localidad" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbDelegacion.listLocalidades}" 
+                                               var="loc" itemLabel="#{loc.nombre}" itemValue="#{loc}"/>
+                            </p:selectOneMenu>  
+                            <p:outputLabel value="Nombre" for="nombre"/>
+                            <p:inputText id="nombre" value="#{mbDelegacion.delegacion.nombre}" style="text-transform: uppercase;"
+                                     requiredMessage="Debe ingresar el Nombre" required="true"/>
+                            <p:outputLabel value="Domicilio" for="domicilio"/>
+                            <p:inputText id="domicilio" value="#{mbDelegacion.delegacion.domicilio}" style="text-transform: uppercase; width: 300px" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbDelegacion.save()}" update="frDeleg"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbDelegacion.limpiarForm()}" update="pnFrmNew"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <!-- Formulario view -->
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbDelegacion.view}" >
+                        <h:panelGrid id="pgDatosGrales" columns="2" >
+                            <p:outputLabel value="Id: " for="v_id"/>
+                            <p:outputLabel id="v_id" value="#{mbDelegacion.delegacion.id}"/>
+                            <p:outputLabel value="Localidad: " for="v_localidad"/>
+                            <p:outputLabel id="v_localidad" value="#{mbDelegacion.delegacion.localidad}"/>
+                            <p:outputLabel value="Nombre: " for="v_nombre"/>
+                            <p:outputLabel id="v_nombre" value="#{mbDelegacion.delegacion.nombre}"/>
+                            <p:outputLabel value="Domicilio: " for="v_domicilio"/>
+                            <p:outputLabel id="v_domicilio" value="#{mbDelegacion.delegacion.domicilio}"/>
+                            <p:outputLabel value="Habilitada: " for="v_habilitada"/>
+                            <p:outputLabel id="v_habilitada" value="#{mbDelegacion.delegacion.habilitada}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbDelegacion.prepareNew()}" />
+                        </h:panelGrid>
+                    </p:panel>
+                    <!-- Listado -->
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                        <p:dataTable styleClass="table" value="#{mbDelegacion.listado}"
+                                     filteredValue="#{mbDelegacion.listFilter}"
+                             var="delg"
+                             id="dtDeleg" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="delegTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('delegTable').clearFilters()" update="dtDeleg"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{delg.id}"/>
+                            </p:column>
+                            <p:column headerText="Localidad" 
+                                filterMatchMode="contains"
+                                sortBy="#{delg.localidad}" 
+                                filterBy="#{delg.localidad}" >
+                                <p:outputLabel value="#{delg.localidad}"/>
+                            </p:column>
+                            <p:column headerText="Nombre" 
+                                filterMatchMode="contains"
+                                sortBy="#{delg.nombre}" 
+                                filterBy="#{delg.nombre}" >
+                                <p:outputLabel value="#{delg.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Domicilio" 
+                                filterMatchMode="contains"
+                                sortBy="#{delg.domicilio}" 
+                                filterBy="#{delg.domicilio}" >
+                                <p:outputLabel value="#{delg.domicilio}"/>
+                            </p:column>
+                            <p:column filterBy="#{delg.habilitada}" headerText="Estado" filterMatchMode="equals" >
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('delegTable').filter()" >
+                                        <f:converter converterId="javax.faces.Boolean" />
+                                        <f:selectItem itemLabel="Todos" itemValue="" />
+                                        <f:selectItem itemLabel="Habilitadas" itemValue="true" />
+                                        <f:selectItem itemLabel="Deshabilitadas" itemValue="false" />
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <p:outputLabel value="#{delg.habilitada ? 'Habilitada': 'Deshabilitada'}" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width:110px">
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                                 update="@form" action="#{mbDelegacion.prepareView()}" >
+                                    <f:setPropertyActionListener value="#{delg}" target="#{mbDelegacion.delegacion}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
+                                                 update="@form" action="#{mbDelegacion.prepareEdit()}" >
+                                    <f:setPropertyActionListener value="#{delg}" target="#{mbDelegacion.delegacion}" /> 
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbDelegacion.deshabilitar()}" 
+                                                 process="@this" update="@form" rendered="#{delg.habilitada}" >
+                                    <f:setPropertyActionListener value="#{delg}" target="#{mbDelegacion.delegacion}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar la Delegación seleccionada: #{delg.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbDelegacion.habilitar()}" 
+                                                 process="@this" update="@form" rendered="#{not delg.habilitada}" >
+                                    <f:setPropertyActionListener value="#{delg}" target="#{mbDelegacion.delegacion}" /> 
+                                    <p:confirm header="Confirmar" message="¿Desea habilitar la Delegación seleccionada: #{delg.nombre}?" icon="ui-icon-alert" />
+                                </p:commandButton>
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog> 
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>    
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>

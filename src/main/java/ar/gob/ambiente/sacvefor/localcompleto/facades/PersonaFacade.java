@@ -4,6 +4,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.Query;
@@ -94,9 +95,9 @@ public class PersonaFacade extends AbstractFacade<Persona> {
     }
     
     /**
-     * Método para obtener un listado de Personas cuyo nombre completo 
+     * Método para obtener un listado de las Personas habilitadas cuyo nombre completo 
      * (o Razón social) contenga la cadena recibida como parámetro
-     * @param param String Cadena que deberá contener el nombr completo o razón social de la Persona
+     * @param param String Cadena que deberá contener el nombre completo o razón social de la Persona
      * @return List<Persona> listado de las personas cuyo nombre completo contiene la cadena remitida
      */
     public List<Persona> findByNombreCompeto(String param){
@@ -107,8 +108,27 @@ public class PersonaFacade extends AbstractFacade<Persona> {
         Query q = em.createQuery(queryString)
                 .setParameter("param", "%" + param + "%".toLowerCase());
         return q.getResultList();
-    }    
+    }  
     
+    /**
+     * Método para obtener un listado de todas las Personas de con un rol determinado 
+     * (habilitadas o no) cuyo nombre completo 
+     * (o Razón social) contenga la cadena recibida como parámetro
+     * @param param String Cadena que deberá contener el nombre completo o razón social de la Persona
+     * @param rol Parametrica Rol de la persona a buscar
+     * @return List<Persona> listado de las personas cuyo nombre completo contiene la cadena remitida
+     */
+    public List<Persona> findAllByNombreYRol(String param, Parametrica rol){
+        String queryString = "SELECT per FROM Persona per "
+                + "WHERE per.nombreCompleto LIKE :param "
+                + "AND per.rolPersona = :rol "
+                + "ORDER BY per.nombreCompleto";
+        Query q = em.createQuery(queryString)
+                .setParameter("rol", rol)
+                .setParameter("param", "%" + param + "%".toLowerCase());
+        return q.getResultList(); 
+    }
+     
     /**
      * Método para buscar una Persona habilitada según su CUIT y su Rol
      * @param cuit Long Cuit a buscar
@@ -130,7 +150,34 @@ public class PersonaFacade extends AbstractFacade<Persona> {
         }else{
             return lstPersonas.get(0);
         }
-    }    
+    }  
+    
+    /**
+     * Método para buscar una persona habilitada según su CUIT y su Rol,
+     * validando que esté vigente. Utilizada para Técnicos y Apoderados.
+     * @param cuit Long Cuit a buscar
+     * @param rol Parametrica Rol de la persona a buscar
+     * @return Persona persona correspondiente a los parámetros
+     */
+    public Persona findVigenteByCuitRol(Long cuit, Parametrica rol){
+        Date hoy = new Date(System.currentTimeMillis());
+        List<Persona> lstPersonas;
+        String queryString = "SELECT per FROM Persona per "
+                + "WHERE per.cuit = :cuit "
+                + "AND per.rolPersona = :rol "
+                + "AND per.habilitado = true "
+                + "AND (per.finVigencia >= :hoy OR per.finVigencia IS NULL)";
+        Query q = em.createQuery(queryString)
+                .setParameter("cuit", cuit)
+                .setParameter("hoy", hoy)
+                .setParameter("rol", rol);
+        lstPersonas = q.getResultList();
+        if(lstPersonas.isEmpty()){
+            return null;
+        }else{
+            return lstPersonas.get(0);
+        }
+    }
     
     /**
      * Método para obtener las Personas según el rol recibido

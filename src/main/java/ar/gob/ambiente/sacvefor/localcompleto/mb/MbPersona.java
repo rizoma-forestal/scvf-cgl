@@ -152,11 +152,6 @@ public class MbPersona implements Serializable {
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona personaRue;
     
     /**
-     * Variable privada: flag que indica si se está subiendo una imagen de martillo
-     */
-    private boolean subeMartillo;
-    
-    /**
      * Variable privada: MbSesion para gestionar las variables de sesión del usuario
      */  
     private MbSesion sesion;
@@ -484,14 +479,6 @@ public class MbPersona implements Serializable {
         this.locClient = locClient;
     }
 
-    public boolean isSubeMartillo() {
-        return subeMartillo;
-    }
-  
-    public void setSubeMartillo(boolean subeMartillo) {
-        this.subeMartillo = subeMartillo;
-    }
-
     public boolean isRueEditable() {
         return rueEditable;
     }
@@ -816,7 +803,6 @@ public class MbPersona implements Serializable {
             deptoSelected = new EntidadServicio();
             provSelected = new EntidadServicio();
         }
-        
     }    
     
     /**
@@ -922,38 +908,6 @@ public class MbPersona implements Serializable {
             JsfUtil.addErrorMessage("Debe seleccionar una Persona del Registro Unico.");
         }
     }
-    
-    /**
-     * Método para subir la imagen del martillo en el subdirectorio temporal
-     * El subdirectorio temporal se llama "TMP"
-     * Se configuran en el archivo de propiedades configurable "Config.properties"
-     * @param event FileUploadEvent evento de subida de martillo
-     */
-    public void subirMartilloTmp(FileUploadEvent event){ 
-        // subo el archivo al directorio temporal
-        try{
-            UploadedFile fileMartillo = event.getFile();
-            String destino = ResourceBundle.getBundle("/Config").getString("SubdirTemp");
-            // obtengo el nombre del archivo
-            String nombreArchivo = getNombreArchivoASubir(fileMartillo);
-            // si todo salió bien, procedo
-            if(nombreArchivo != null){
-                // si logré subir el archivo, guardo la ruta
-                if(JsfUtil.copyFile(nombreArchivo, fileMartillo.getInputstream(), destino)){
-                    JsfUtil.addSuccessMessage("El archivo " + fileMartillo.getFileName() + " se ha subido al servidor con el nombre " + nombreArchivo);
-                    persona.setRutaArchivo(destino);
-                    persona.setNombreArchivo(nombreArchivo);
-                    persona.setRutaTemporal(true);
-                }
-                // actualizo el flag
-                subeMartillo = true;
-            }else{
-                JsfUtil.addErrorMessage("No se pudo obtener el destino de la imagen del Martillo.");
-            }
-        }catch(IOException e){
-            JsfUtil.addErrorMessage("Hubo un error subiendo la imagen del Martillo" + e.getLocalizedMessage());
-        }
-    }   
 
     /**
      * Método para guardar la Persona con el rol de Proponente, sea inserción o edición.
@@ -980,20 +934,17 @@ public class MbPersona implements Serializable {
             // si validó, continúo
             if(valida){
                 persona.setUsuario(usLogueado);
-                // procedo al guardado definitivo de la imagen del martillo
-                if(saveMartillo()){
-                    // si no hubo errores en el guardado definitivo del martillo, persisto la persona
-                    if(persona.getId() != null){
-                        perFacade.edit(persona);
-                        JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Proponente") + " fue guardado con exito");
-                    }else{
-                        // seteo la fecha de alta, habilitado y Rols
-                        Date fechaAlta = new Date(System.currentTimeMillis());
-                        persona.setFechaAlta(fechaAlta);
-                        persona.setHabilitado(true);
-                        perFacade.create(persona);
-                        JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Proponente") + " fue registrado con exito");
-                    }
+                // si no hubo errores en el guardado definitivo del martillo, persisto la persona
+                if(persona.getId() != null){
+                    perFacade.edit(persona);
+                    JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Proponente") + " fue guardado con exito");
+                }else{
+                    // seteo la fecha de alta, habilitado y Rols
+                    Date fechaAlta = new Date(System.currentTimeMillis());
+                    persona.setFechaAlta(fechaAlta);
+                    persona.setHabilitado(true);
+                    perFacade.create(persona);
+                    JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Proponente") + " fue registrado con exito");
                 }
                 persona = new Persona();
                 edit = false;
@@ -1362,12 +1313,6 @@ public class MbPersona implements Serializable {
      * Método para limpiar el formulario de Proponentes
      */
     public void limpiarFormProp() {
-        // si ya subió un martillo, si estoy creando una persona nueva, lo elimino
-        if(persona.getNombreArchivo() != null && persona.getId() == null){
-            File martillo = new File(persona.getRutaArchivo() + persona.getNombreArchivo());
-            martillo.delete();
-            JsfUtil.addSuccessMessage("El martillo cargado ha sido eliminado.");
-        }
         persona = new Persona();
         provSelected = new EntidadServicio();
         deptoSelected = new EntidadServicio();
@@ -1532,52 +1477,7 @@ public class MbPersona implements Serializable {
             logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la Persona por id desde el "
                     + "servicio REST de RUE", ex.getMessage()});
         }
-    }
-    
-    /**
-     * Método para nombrear un archivo subido, en este caso, el Martillo del Proponente.
-     * Utilizado en subirMartilloTmp(FileUploadEvent event)
-     * @param file UploadedFile archivo a subir
-     * @return String nombre del archivo según la provincia, el cuit y la fecha
-     */
-    private String getNombreArchivoASubir(UploadedFile file){
-        Date date = new Date();
-        String extension = file.getFileName().substring(file.getFileName().lastIndexOf(".") + 1);
-        String sufijo = JsfUtil.getDateInString(date);
-        String nombreArchivo = ResourceBundle.getBundle("/Config").getString("IdProvinciaGt") + "_" + persona.getCuit() + "_" + sufijo + "." + extension;
-        return nombreArchivo;
-    }    
-
-    /**
-     * Método para guardar la imagen del martillo a un directorio definitivo.
-     * Completado el renombrado y guardado, elimino el archivo del directorio temporal
-     * El directorio es "martillos" y está seteado en el Config.properties.
-     * Utilizado en saveProponente()
-     */
-    private boolean saveMartillo() {
-        if(subeMartillo){
-            // obtengo la imagen del martillo del directorio temporal
-            File martARenombrar = new File(ResourceBundle.getBundle("/Config").getString("SubdirTemp") + persona.getNombreArchivo());
-            // instancio un nuevo File para el renombrado con el path al directorio definitivo
-            File martDefinitivo = new File(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
-                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos") + persona.getNombreArchivo());
-            // si existe, lo elimino
-            martDefinitivo.delete();
-            // renombro y devuelvo el resultado: true si fue existoso, false, si no lo fue.
-            if(martARenombrar.renameTo(martDefinitivo)){
-                // si todo fue bien, actualizo la ruta en la persona y la condición de temporal de la ruta
-                persona.setRutaArchivo(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
-                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos"));
-                persona.setRutaTemporal(false);
-                subeMartillo = false;
-                return true;
-            }else{
-                return false;
-            }
-        }else{
-            return true;
-        }
-    }
+    } 
 
     /**
      * Método para cargar el listado de Tipos de Entidad para su selección.
