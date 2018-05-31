@@ -51,7 +51,7 @@
                                        requiredMessage="Debe haber un CUIT para buscar" required="true" />
                         <p:commandButton title="Buscar Fuentes de Productos" value="Buscar" icon="fa fa-fw fa-search" 
                                          rendered="#{mbGuia.autSelected eq null and mbGuia.guiaSelected eq null}" 
-                                         action="#{mbGuia.buscarFuentesProductos()}" update="pnForm,fsAutFuentes,messages"/>
+                                         action="#{mbGuia.buscarFuentesProductos()}" update="pnForm,fsAutFuentes,fsGuiaAut,fsProductos,fsCompletar,messages"/>
                         <p:commandButton title="Limpiar el CUIT a buscar" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                          action="#{mbGuia.limpiarCuit()}" update="pnForm" rendered="#{mbGuia.guia.id eq null}"/>
                     </h:panelGrid>
@@ -65,11 +65,12 @@
                 </p:fieldset>
                 <!-- Listado de fuentes de productos para seleccionar la que corresponda -->
                 <p:fieldset id="fsAutFuentes" toggleable="true" legend="Fuentes de Productos" style="margin-bottom:20px" rendered="#{mbGuia.lstAutorizaciones ne null}">
-                    <p:outputLabel value="Seleccione una de las Fuentes de productos listadas haciendo clic en el botón de la columna 'Ver'." 
+                    <p:outputLabel value="Seleccione una de las Fuentes de productos listadas haciendo clic en el botón azul de la columna de la derecha. 
+                                   Si está editando una guía existente, podrá desvincular la fuente seleccionada mediante el botón amarillo de la columna de la derecha." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.autSelected eq null and mbGuia.lstAutorizaciones.size() ne 0}" />
                     <p:outputLabel value="Para registrar la Fuente seleccionada, haga clic en el botón 'Guardar', o en 'Ver otra' para ver el detalle de otra fuente disponible." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.autSelected ne null}" />
-                    <p:outputLabel value="  Los Datos Generales fueron completados, puede guardar la Guía mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Cancelar'." 
+                    <p:outputLabel value="  Los Datos Generales fueron completados, puede guardar la Guía mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Limpiar'." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null and mbGuia.guia.tipo.descuentaAutoriz}" />
                     <p:outputLabel value=" El siguiente paso es la selección de la/s guía/s para descontar productos. Podrá seleccionarla/s mediante el botón 'Ver guías disponibles'" 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null and not mbGuia.guia.tipo.descuentaAutoriz}" />
@@ -129,9 +130,15 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy" />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Ver" style="width:30px">
+                            <p:column style="width:30px">
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver Detalle" process="@this" 
-                                                 update="@form" action="#{mbGuia.verDetalleFuente()}" >
+                                                 update="@form" action="#{mbGuia.verDetalleFuente()}"
+                                                 rendered="#{(not aut.asignadaDesc and mbGuia.guia.id ne null) or mbGuia.guia.id eq null}" >
+                                    <f:setPropertyActionListener value="#{aut}" target="#{mbGuia.autSelected}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Quitar esta Autorización como fuente de productos" process="@this" 
+                                                 update="@form,fsAutFuentes,fsGuiaAut,fsProductos,fsCompletar,messages" action="#{mbGuia.deleteFuenteGuardada()}" 
+                                                 rendered="#{aut.asignadaDesc and mbGuia.guia.id ne null}" >
                                     <f:setPropertyActionListener value="#{aut}" target="#{mbGuia.autSelected}" /> 
                                 </p:commandButton>
                             </p:column>
@@ -226,7 +233,7 @@
                                              action="#{mbGuia.cancelarFuenteSelected()}" />
                             <p:outputLabel value="FUENTE SELECCIONADA" style="color: #3B8980; font-weight: bold" rendered="#{mbGuia.guia.numFuente ne null}"/>
                             <p:commandButton icon="fa fa-fw fa-close" title="Cancelar la Fuente seleccionada" 
-                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form" 
+                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form,fsGuiaAut" 
                                              action="#{mbGuia.deleteFuenteGuardada()}" />
                             <p:commandButton icon="fa fa-fw fa-search" title="Ver Guías disponibles para descontar productos" 
                                              rendered="#{mbGuia.guia.numFuente ne null and not mbGuia.guia.tipo.descuentaAutoriz and mbGuia.lstGuiasMadre eq null}" value="Ver Guías disponibles" update="@form" 
@@ -239,11 +246,12 @@
                 <!-- Listado de Guías disponibles para descontar productos -->                
                 <p:fieldset id="fsGuiaAut" toggleable="true" legend="Guías disponibles para descuento" style="margin-bottom:20px" 
                             rendered="#{mbGuia.lstGuiasMadre ne null and not mbGuia.guia.tipo.descuentaAutoriz}">
-                    <p:outputLabel value="Seleccione una de las Guías disponibles para el descuento listadas haciendo clic en el botón de la columna 'Ver'." 
+                    <p:outputLabel value="Seleccione una de las Guías disponibles para el descuento listadas haciendo clic en el botón azul de la columna de la derecha. 
+                                   Si está editando una guía existente podrá desvincular la guía de descuento elegida previamente mediante el botón amarillo de la comlumna derecha." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.guiaSelected eq null and mbGuia.lstGuiasMadre.size() ne 0}" />
                     <p:outputLabel value="Para registrar la Guía seleccionada, haga clic en el botón 'Guardar', o en 'Ver otra' para ver el detalle de otra fuente disponible." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.guiaSelected ne null}" />
-                    <p:outputLabel value="Los Datos Generales fueron completados, puede guardar la Guía que está gestionando mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Cancelar'." 
+                    <p:outputLabel value="Los Datos Generales fueron completados, puede guardar la Guía que está gestionando mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Limpiar'." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.lstGuiasMadre.size() ne 0 and mbGuia.guia.numFuente ne null}" />
                     <p:outputLabel value="El Productor seleccionado no posée Guías disponibles para el descuento de productos." 
                                    style="font-size: 30px !important; color: #610B21" rendered="#{mbGuia.lstGuiasMadre.size() eq 0}" />
@@ -466,9 +474,10 @@
                     <!-- para las que descuentan de autorización -->
                     <h:panelGrid columns="3" rendered="#{mbGuia.guia.numFuente ne null and mbGuia.guia.tipo.descuentaAutoriz}" >
                         <p:commandButton icon="fa fa-fw fa-save" title="Guardar los datos generales de la Guía para continuar el registro" 
-                                             value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" />
+                                         value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" 
+                                         rendered="#{mbGuia.guia.numFuente ne null}" />
                         <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
-                                         rendered="#{mbGuia.guia.id eq null}" >
+                                         rendered="#{mbGuia.guia.id eq null}" > 
                             <p:ajax listener="#{mbGuia.limpiarCuit()}" update="pnForm" resetValues="true" />
                         </p:commandButton>
                         <p:commandButton title="Recuperar los datos de Tipo de Guía y CUIT modificados" icon="fa fa-fw fa-refresh" value="Limpiar" 
@@ -476,13 +485,13 @@
                             <p:ajax update="pnForm" resetValues="true" />
                         </p:commandButton>
                         <p:commandButton title="Volver a la vista de los datos generales" styleClass="save" icon="fa fa-fw fa-close" value="Cerrar" 
-                                         rendered="#{mbGuia.guia.id ne null}"
-                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" />
+                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" rendered="#{mbGuia.guia.id ne null}" />
                     </h:panelGrid>
                     <!-- para las que descuentan de guías -->
                     <h:panelGrid columns="3" rendered="#{mbGuia.guiaAsignada ne null and not mbGuia.guia.tipo.descuentaAutoriz}" >
                         <p:commandButton icon="fa fa-fw fa-save" title="Guardar los datos generales de la Guía para continuar el registro" 
-                                             value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" />
+                                         value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" 
+                                         rendered="#{mbGuia.guia.numFuente ne null and mbGuia.guiaAsignada ne null}" />
                         <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
                                          rendered="#{mbGuia.guia.id eq null}" >
                             <p:ajax listener="#{mbGuia.limpiarCuit()}" update="pnForm" resetValues="true" />
@@ -492,8 +501,7 @@
                             <p:ajax update="pnForm" resetValues="true" />
                         </p:commandButton>
                         <p:commandButton title="Volver a la vista de los datos generales" styleClass="save" icon="fa fa-fw fa-close" value="Cerrar" 
-                                         rendered="#{mbGuia.guia.id ne null}"
-                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" />
+                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" rendered="#{mbGuia.guia.id ne null}" />
                     </h:panelGrid>
                 </p:fieldset>
             </p:panel>

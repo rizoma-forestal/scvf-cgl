@@ -30,6 +30,8 @@
                                     <p:outputLabel id="fechaEmisionVolante" value="#{mbGuia.guia.fechaEmisionVolante}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
                                     </p:outputLabel>
+                                    <p:outputLabel value="Tipo: " />
+                                    <p:outputLabel value="#{mbGuia.guia.codQr}" style=" font-weight: bold" />
                                     <p:outputLabel value="Formularios emitidos: " rendered="#{config.ImprimeFormularios eq 'si'}" />
                                     <p:outputLabel value="#{mbGuia.guia.formEmitidos}" style=" font-weight: bold" rendered="#{config.ImprimeFormularios eq 'si'}" />
                                 </h:panelGrid>
@@ -66,26 +68,15 @@
                             <p:fieldset toggleable="true" legend="Fuente" style="margin-bottom:20px">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Tipo: " />
-                                    <p:outputLabel value="#{mbGuia.guia.tipoFuente.nombre}" style=" font-weight: bold" />
+                                    <p:outputLabel value="AUTORIZACION" style=" font-weight: bold" />
                                     <p:outputLabel value="Número: " />
                                     <p:outputLabel value="#{mbGuia.guia.numFuente}" style=" font-weight: bold" />
                                 </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>  
-                        <h:panelGrid id="pgObs" columns="1" cellpadding="1" 
-                                     rendered="#{not mbGuia.guia.estado.completaCiclo and not mbGuia.guia.estado.habilitaEdicionComp
-                                                 and not mbGuia.guia.estado.habilitaEdicionFuente and not mbGuia.guia.estado.habilitaEmision
-                                                 and not mbGuia.guia.estado.habilitaFuenteProductos and not mbGuia.guia.estado.habilitaLiquidacion
-                                                 and not mbGuia.guia.estado.habilitaTransito}">
-                            <p:fieldset toggleable="true" legend="Observaciones" style="margin-bottom:20px">
-                                <h:panelGrid columns="1" cellpadding="1">
-                                    <p:outputLabel value="#{mbGuia.guia.obs}" />
-                                </h:panelGrid>
-                            </p:fieldset>
-                        </h:panelGrid>
 
-                        <h:panelGrid columns="4" rendered="#{mbGuia.guia.tipo.habilitaTransp}">
-                            <p:fieldset toggleable="true" legend="Destino" style="margin-bottom:20px">
+                        <h:panelGrid columns="4" rendered="#{mbGuia.guia.tipo.habilitaTransp}" styleClass="panelColumns">
+                            <p:fieldset toggleable="true" legend="Destino" >
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Nombre completo: " />
                                     <p:outputLabel value="#{mbGuia.guia.destino.nombreCompleto}" style=" font-weight: bold" />
@@ -102,8 +93,8 @@
                                     <p:outputLabel value="Localidad: " />
                                     <p:outputLabel value="#{mbGuia.guia.destino.localidad}" style=" font-weight: bold" />
                                 </h:panelGrid>
-                            </p:fieldset>
-                            <p:fieldset toggleable="true" legend="Transporte" style="margin-bottom:20px" rendered="#{!mbGuia.guia.tipo.movInterno}">
+                            </p:fieldset >
+                            <p:fieldset toggleable="true" legend="Transporte" rendered="#{!mbGuia.guia.tipo.movInterno}">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Matrícula: " />
                                     <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.matricula}" style=" font-weight: bold" />
@@ -121,10 +112,9 @@
                                     <p:outputLabel value="#{mbGuia.guia.transporte.condDni}" style=" font-weight: bold" />
                                 </h:panelGrid>
                             </p:fieldset>
-                            <!-- Formularios provisorios si están configurados y si tiene -->
-                            <p:fieldset toggleable="true" legend="Formularios provisorios" style="margin-bottom:20px" 
+                            <p:fieldset toggleable="true" legend="Formularios provisorios" 
                                         rendered="#{not empty mbGuia.guia.formProvisorios and config.ImprimeFormularios eq 'si'}">
-                                <h:panelGrid columns="2" cellpadding="1">
+                                <h:panelGrid columns="1" cellpadding="1">
                                     <p:dataTable id="dtFormProv" value="#{mbGuia.guia.formProvisorios}" var="form" styleClass="table" style="width: 300px" >
                                         <p:column headerText="Guía emisora" >
                                             <p:outputLabel value="#{form.codGuia}"/>
@@ -135,7 +125,30 @@
                                     </p:dataTable>
                                 </h:panelGrid>
                             </p:fieldset>
+                            <p:fieldset toggleable="true" legend="Productos descontados de:" 
+                                        rendered="#{not mbGuia.guia.tipo.descuentaAutoriz}">
+                                <h:panelGrid columns="1" cellpadding="1">
+                                    <p:dataTable id="dtGuiasFuentes" value="#{mbGuia.guia.guiasfuentes}" var="g" styleClass="table" style="width: 150px" >
+                                        <p:column headerText="Guía" >
+                                            <p:outputLabel value="#{g.codigo}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:panelGrid>
+                            </p:fieldset>
                         </h:panelGrid>
+                        
+                        <h:panelGrid id="pgObs" columns="1" cellpadding="1" 
+                                     rendered="#{not mbGuia.guia.estado.completaCiclo and not mbGuia.guia.estado.habilitaEdicionComp
+                                                 and not mbGuia.guia.estado.habilitaEdicionFuente and not mbGuia.guia.estado.habilitaEmision
+                                                 and not mbGuia.guia.estado.habilitaFuenteProductos and not mbGuia.guia.estado.habilitaLiquidacion
+                                                 and not mbGuia.guia.estado.habilitaTransito}">
+                            <p:fieldset toggleable="true" legend="Observaciones" style="margin-bottom:20px">
+                                <h:panelGrid columns="1" cellpadding="1">
+                                    <p:outputLabel value="#{mbGuia.guia.obs}" />
+                                </h:panelGrid>
+                            </p:fieldset>
+                        </h:panelGrid>
+                        
                         <p:separator rendered="#{mbGuia.view}" />
                         
                         <h:panelGrid id="pgGuiaInmuebles" columns="1" >
@@ -197,9 +210,10 @@
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view and mbGuia.lstGuiasHijas.size() ne 0}" />
-                        <h:panelGrid columns="1" rendered="#{mbGuia.lstGuiasHijas.size() ne 0}" >
+                        <p:separator rendered="#{mbGuia.view and mbGuia.lstGuiasHijas ne null}" />
+                        <h:panelGrid columns="1" rendered="#{mbGuia.lstGuiasHijas ne null}" >
                             <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" 
+                                             title="Ver las guías que descontaron productos de esta guía." 
                                              update="pnViewGuias" oncomplete="PF('dlgVerGuias').show();"/>
                         </h:panelGrid>
                         <p:separator rendered="#{mbGuia.view}" />

@@ -6,6 +6,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.ParamCtrlClient;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.CopiaGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Delegacion;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EntidadGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.FormProv;
@@ -37,13 +38,17 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.VehiculoFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.PersonaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.TipoParamClient;
 import ar.gob.ambiente.sacvefor.localcompleto.trazabilidad.client.UsuarioClient;
+import ar.gob.ambiente.sacvefor.localcompleto.util.CriptPass;
 import ar.gob.ambiente.sacvefor.localcompleto.util.DetalleTasas;
 import ar.gob.ambiente.sacvefor.localcompleto.util.DetalleTasas.TasaModel;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.Formulario;
+import ar.gob.ambiente.sacvefor.localcompleto.util.GuiaSinPago;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
 import ar.gob.ambiente.sacvefor.localcompleto.util.LiqTotalTasas;
 import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -90,7 +95,7 @@ public class MbGuia {
     
     /**
      * Variable privada: guarda las claves y nombres para la gestión de los mensajes de vigencia de las guías.
-     * Se setea en el método inti() para el caso de la vista formulario.xhtml
+     * Se setea en el método init() para el caso de la vista formulario.xhtml
      */
     private static final Map<Integer, String> VIGENCIAS = iniciateMap();
 
@@ -224,6 +229,12 @@ public class MbGuia {
      * Variable privada: Persona a seleccionada para conformar la Entidad Guía destino
      */
     private Persona destinatario;
+    
+    /**
+     * Variable privada: Objeto para setear el domDestino seleccionado del destinatario
+     * para setear la EntidadGuia destino.
+     */    
+    private Domicilio domDestino;
     
     /**
      * Variable privada: Entidad Guía que hará las veces de destinatario de la Guía
@@ -386,6 +397,11 @@ public class MbGuia {
      */
     private static final String RUTA_VOLANTE = "/resources/reportes/";
     
+    /**
+     * Variable privada: falg que indica si la guía se esta emitiendo sin acreditar el pago de tasas
+     */
+    private boolean emiteSinPago;
+    
     /////////////////
     // Cancelación //
     /////////////////
@@ -404,6 +420,16 @@ public class MbGuia {
      * Variable privada: mensaje que indica el error al cancelar la guía
      */
     private String msgErrorCancelGuia;
+    
+    ///////////////////////////
+    // Extensión de vigencia //
+    ///////////////////////////
+    
+    /**
+     * Variable privada: flag que indica que el vencimiento de la guía fue actualizado.
+     * Se setea en false cuando se inicia el frme de extensión de vencimiento.
+     */
+    private boolean vencAtualizado;
     
     //////////////////////////////////////////
     // impresión de formularios provisorios //
@@ -523,6 +549,13 @@ public class MbGuia {
     private FormProv formProv;
     
     /**
+     * Variable privada: listado de guías que adeudan el pago de tasas.
+     * Para mostrar en caso en que esté configurada la opción de emitir
+     * guías con pagos adeudados.
+     */
+    private List<GuiaSinPago> guiasSinPago;
+    
+    /**
      * Variable privada: listado de entidades de servicio (id, nombre) para poblar el combo de guías emisoras
      * de formularios provisorias disponibles para la guía.
      */
@@ -613,10 +646,37 @@ public class MbGuia {
      */
     public MbGuia() {
     }
-    
+
     ///////////////////////
     // métodos de acceso //
-    ///////////////////////     
+    ///////////////////////
+    public boolean isVencAtualizado() {   
+        return vencAtualizado;
+    }
+
+    public void setVencAtualizado(boolean vencAtualizado) {   
+        this.vencAtualizado = vencAtualizado;
+    }
+
+    public List<GuiaSinPago> getGuiasSinPago() {
+        if(guiasSinPago == null){
+            verGuiasAdeudadas();
+        }
+        return guiasSinPago;
+    }
+
+    public void setGuiasSinPago(List<GuiaSinPago> guiasSinPago) {    
+        this.guiasSinPago = guiasSinPago;
+    }
+
+    public Domicilio getDomDestino() {
+        return domDestino;
+    }
+   
+    public void setDomDestino(Domicilio domDestino) {
+        this.domDestino = domDestino;
+    }
+
     public List<EntidadServicio> getLstGuiasEmisorasFormProv() {
         return lstGuiasEmisorasFormProv;
     }
@@ -1155,89 +1215,7 @@ public class MbGuia {
             case "tasas.xhtml":
                 // cargo el listado de las tasas configuradas para el tipo de Guía
                 lstNombresTasas = new ArrayList<>();
-                for(TipoGuiaTasa tgt : guiaAct.getTipo().getTasas()){
-                    // valido si discrimina según el tipo de intervención autorizado
-                    if("si".equals(ResourceBundle.getBundle("/Config").getString("DiscTasaTipoInterv"))){
-                        // verifico si la tasa leída es alguna de las tasas a discriminar (PCUS o PM).
-                        Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
-                        if(tgt.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TasaPCUS"))){
-                            // si es tasa PCUS guardo el nombre de dicha tasa solo si la intervención es PCUS
-                            if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPCUS"))){
-                                lstNombresTasas.add(tgt.getTipo().getNombre());
-                            }
-                        }else if(tgt.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TasaPM"))){
-                            // si es tasa PM guardo el nombre de dicha tasa solo si la intervención es PM
-                            if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPM"))){
-                                lstNombresTasas.add(tgt.getTipo().getNombre());
-                            }
-                        }else{
-                            // si no es ninguna de las dos, la guardo directamente
-                            lstNombresTasas.add(tgt.getTipo().getNombre());
-                        }
-
-                    }else{
-                        // si no discrimina cargo el nombre directamente
-                        lstNombresTasas.add(tgt.getTipo().getNombre());   
-                    }
-                }
-
-                // cargo los detalles por item
-                lstDetallesTasas = new ArrayList<>();
-                for(ItemProductivo item : guiaAct.getItemsAgrupados()){
-                    // obtengo el producto para sacar las tasas
-                    Producto prod = prodFacade.find(item.getIdProd());
-                    // instancio el DetalleTasa
-                    DetalleTasas detTasa = new DetalleTasas();
-                    // instancio el listado de TasasModel
-                    List<TasaModel> lstTasaModel = new ArrayList<>();
-                    detTasa.setNombreProd(prod.getEspecieLocal().getNombreVulgar());
-                    detTasa.setClase(prod.getClase().getNombre());
-                    detTasa.setCantidad(item.getTotal());
-                    detTasa.setUnidad(item.getUnidad());
-                    // obtengo las tasas del producto. En caso de no tener tasas asignadas irán todas en 0
-                    if(prod.getTasas().isEmpty()){
-                        for(String nomTasa : lstNombresTasas){
-                            lstTasaModel.add(new TasaModel(nomTasa, 0, 0));
-                        }
-                    }else{
-                        for(String nomTasa : lstNombresTasas){
-                            // por cada tasa asigno su valor, en los casos que la tengan configurada
-                            float subTotal;
-                            for(ProductoTasa prodTasa : prod.getTasas()){
-                                if(nomTasa.equals(prodTasa.getTipo().getNombre())){
-                                    lstTasaModel.add(new TasaModel(nomTasa, prodTasa.getMonto(), prodTasa.getMonto() * detTasa.getCantidad()));
-                                    subTotal = prodTasa.getMonto() * detTasa.getCantidad();
-                                    detTasa.setTotal(detTasa.getTotal() + subTotal);
-                                }
-                            }
-                        }
-                        // si hay tasas no configuradas para el item, las seteo en 0
-                        for(String nomTasa : lstNombresTasas){
-                            boolean existe = false;
-                            for(TasaModel tasa : lstTasaModel){
-                                if(nomTasa.equals(tasa.getHeader())){
-                                    existe = true;
-                                }
-                            }
-                            if(!existe){
-                                lstTasaModel.add(new TasaModel(nomTasa, 0, 0));
-                            }
-                        }
-                    }
-                    
-                    // asigno el listado de tasas
-                    detTasa.setTasas(lstTasaModel);
-                    // agrego el DetalleTasa al listado
-                    lstDetallesTasas.add(detTasa);
-                }   
-                // instancio la Liquidación y el array para el reporte
-                liquidacion = new LiqTotalTasas();
-                liquidaciones = new ArrayList<>();
-                // seteo los datos para mostrar en el reporte
-                liquidacion.setTipoGuia(guiaAct.getTipo().getNombre());
-                liquidacion.setCodGuia(guiaAct.getCodigo());
-                liquidacion.setDetalles(lstDetallesTasas);
-                liquidaciones.add(liquidacion);
+                liquidarTasas(guiaAct);
                 break;
             case "destino.xhtml":
                 cuitProcesado = false;
@@ -1270,6 +1248,11 @@ public class MbGuia {
                 }   break;
             case "emision.xhtml":
                 guia = guiaAct;
+                // si emite sin acreditar pagos seteo un código de recibo temporal
+                if(emiteSinPago){
+                    guia.setCodRecibo("TEMP");
+                    emiteSinPago = false;
+                }
                 formProv = new FormProv();
                 // instancio el listado de guías disponibles para asingar formularios provisorios
                 lstGuiasEmisorasFormProv = new ArrayList<>();
@@ -1285,6 +1268,9 @@ public class MbGuia {
                 msgCancelVencida = null;
                 msgCancelVigente = null;
                 validarVigencia(1);
+                break;
+            case "extender.xhtml":
+                vencAtualizado = false;
                 break;
             case "formularios.xhtml":
                 guia = guiaAct;
@@ -1326,21 +1312,32 @@ public class MbGuia {
     
     /**
      * Método para buscar la/s fuente/s de productos que correspondan según el tipo de Guía.
+     * Si estoy editando una guía limpio todo lo establecido previamente como fuente de produtos.
      * También setea el Prductor (Persona) según el CUIT obtenido.
      */
     public void buscarFuentesProductos(){
+        // si estoy editando limpio todo
+        if(guia.getId() != null && viewGuia){
+            autSelected = null;
+            guiaSelected = null;
+            guiaAsignada = null;
+            viewFuente = false;
+            guia.setNumFuente(null);
+            if(!guia.getGuiasfuentes().isEmpty()){
+                guia.getGuiasfuentes().clear();
+            }
+            lstGuiasMadre = null;
+            lstItemsOrigen = null;
+            lstItemsADescontar = null;
+        }
         // obtengo el rol de Proponente
         TipoParam tipoParamRol = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
         Parametrica rolProp = paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Proponente"), tipoParamRol);
         // obtengo el Producor
         productor = perFacade.findByCuitRol(cuitBuscar, rolProp);
         if(productor != null){
-            // seteo el tipo de Fuente
-            TipoParam tipoParamFuente = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoFuente"));
-            guia.setTipoFuente(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Autorizacion"), tipoParamFuente));
             // busco Autorizaciones que tengan al productor como Proponente
             lstAutorizaciones = autFacade.getFuenteByProponente(productor);
-            lstGuiasMadre = null;
         }else{
             JsfUtil.addErrorMessage("No se encontró un Productor registrado con el CUIT ingresado.");
         }
@@ -1352,8 +1349,6 @@ public class MbGuia {
      */
     public void buscarGuiasDisponibles(){
         // busco Guías que tengan al Productor como titular u origen y a la Autorización como fuente
-        TipoParam tipoParamFuente = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoFuente"));
-        guia.setTipoFuente(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaMadre"), tipoParamFuente));
         lstGuiasMadre = guiaFacade.getDispByTitularYFuente(productor.getCuit(), guia.getNumFuente());
     }
     
@@ -1369,56 +1364,87 @@ public class MbGuia {
     /**
      * Método para inicializar la edición de los datos generales de la Guía.
      * Seteo todos los datos para su gestión: fuente, guías de descuento, etc.
-     * Se descuenta de una autorización, solo seteo su detalla, 
+     * Si tomó productos de guías de movimiento interno, tomo como cuit del productor el del origen de las guías fuente, 
+     * dado que el origen de la guía puede ser un destinatario.
+     * Si descuenta de una autorización, solo seteo su detalle, 
      * si descuenta de guías, seteo las guías, madre de la autorización para ese titular,
      * seteo de ellas las que fueron seleccionadas y agrego sus respectivos ítems al listado
      * de los disponibles par adescontar. Pongo como guía asignada a la primera de las guías fuentes.
      * Finalmente, redirecciono al formlario de edición
      */
     public void prepareEdit(){
+        boolean cuitOrigenFuentes = false;
         edit = true;
         // cargo el listado de Tipos de Guía
         resetearCampos();
-        // seteo el CUIT buscado
-        cuitBuscar = guia.getOrigen().getCuit();
+        // verifico si la guía tomó productos de una de movimiento interno con la primera del listado es suficiente
+        if(guia.getGuiasfuentes().get(0).getTipo().isMovInterno()){
+            // si tomó productos de una guía de movimiento interno, tomo el cuit del origen de dicha guía para buscar las fuentes disponible
+            cuitBuscar = guia.getGuiasfuentes().get(0).getOrigen().getCuit();
+            cuitOrigenFuentes = true;
+        }else{
+            // si no, sigo normalmente
+            cuitBuscar = guia.getOrigen().getCuit();
+        }
         // seteo la fuente de productos
         buscarFuentesProductos();
+        // en cualquier caso, seteo el flag de la autorización seleccionada
+        for (Autorizacion aut : lstAutorizaciones){
+            if(aut.getNumero().equals(guia.getNumFuente())){
+                aut.setAsignadaDesc(true);
+            }
+        }   
         // si la guia descuenta productos de una Autorización, cargo el listado correspondiente, seteo la Autorización seleccionda y armo su detalle
         if(guia.getTipo().isDescuentaAutoriz()){
             autSelected = autFacade.getExistente(guia.getNumFuente());
             verDetalleFuente();
+            page = "general.xhtml";
         }else{
             // si la guía descuenta de otras guías seteo el listado de guías madre vinculadas, 
             // además de setear el detalle de la fuente, seteo lo correspondiente a las guías de descuento.
             verDetalleFuente();
-            // obtengo las guías madre
-            lstGuiasMadre = guiaFacade.getDispByTitularYFuente(guia.getOrigen().getCuit(), guia.getNumFuente());
+            // obtengo las guías madre según haya tomado productos de una de movimiento interno
+            if(cuitOrigenFuentes){
+                // si tomó de guías de movimiento interno, tomo el cuit del origen de las guías fuente
+                lstGuiasMadre = guiaFacade.getDispByTitularYFuente(guia.getGuiasfuentes().get(0).getOrigen().getCuit(), guia.getNumFuente());
+            }else{
+                // si tomó de guías sin movimiento interno, tomo el cuit del origen de la guía gestionada.
+                lstGuiasMadre = guiaFacade.getDispByTitularYFuente(guia.getOrigen().getCuit(), guia.getNumFuente());
+            }
+            
             // seteo su contenido con el flag de seleccionadas y seteo el listado de items a descontar
             lstItemsADescontar = new ArrayList<>();
-            for (Guia g : lstGuiasMadre){
-                // si la guía fue seteada como a descontar, actualizo el flag correspondiente 
-                // y agrego sus ítems al listado lstItemsADescontar
-                for (Guia gDesc : guia.getGuiasfuentes()){
-                    if(gDesc.equals(g)){
-                        g.setAsignadaDesc(true);
-                        for (ItemProductivo item : g.getItems()){
-                            lstItemsADescontar.add(item);
+            // verifico si obtuve guías madre para descontar
+            if(!lstGuiasMadre.isEmpty()){
+                for (Guia g : lstGuiasMadre){
+                    // si la guía fue seteada como a descontar, actualizo el flag correspondiente 
+                    // y agrego sus ítems al listado lstItemsADescontar
+                    for (Guia gDesc : guia.getGuiasfuentes()){
+                        if(gDesc.equals(g)){
+                            g.setAsignadaDesc(true);
+                            for (ItemProductivo item : g.getItems()){
+                                lstItemsADescontar.add(item);
+                            }
                         }
                     }
                 }
+                // seteo a la primera guía a descontar como guía asignada
+                guiaAsignada = lstGuiasMadre.get(0);
+                viewGuia = true;
+                page = "general.xhtml";
+            }else{
+                // las guías disponibles de la autorización seleccionada como fuente están vencidas.
+                JsfUtil.addErrorMessage("No se puede editar esta guía, es probable que la fuente de productos se encuentre vencida.");
             }
-            // seteo a la primera guía a descontar como guía asignada
-            guiaAsignada = lstGuiasMadre.get(0);
-            viewGuia = true;
-            //guiaSelected = guiaFacade.getExistente(guia.getNumFuente());
         }
-        page = "general.xhtml";
     }    
     
     /**
-     * Método para redireccionar a la vista detalle de la Guía
+     * Método para redireccionar a la vista detalle de la Guía.
+     * Actualizo la guía para deshacer los cambios que hubiera podido hacer
      */
     public void prepareView(){
+        guia = guiaFacade.find(guia.getId());
         limpiarForm();
         setearInmueblesOrigen();
         page = "generalView.xhtml";
@@ -1477,36 +1503,48 @@ public class MbGuia {
     }    
     
     /**
-     * Método para cancelar la Fuente seleccionada como origen de productos
+     * Método para cancelar la Fuente seleccionada (Autorización) como origen de productos
+     * Resteteo el flag de asignación y los listados y objetos seleccionados.
      */
     public void cancelarFuenteSelected(){
+        // reseteo el flag de asignación de la guía
+        for (Autorizacion aut : lstAutorizaciones){
+            if(Objects.equals(aut.getId(), autSelected.getId())){
+                aut.setAsignadaDesc(false);
+            }
+        }        
         autSelected = null;
-        
+        lstGuiasMadre = null;
+        guiaSelected = null;
+        lstItemsADescontar = null;
         viewFuente = false;
     }
     
     /**
      * Método para cancelar la Guía seleccionada para su asiganación para el descuento de productos.
-     * Se quitan del listado de items seleccionados agregados en verDetalleGuiaADesc(), los que correspondan a la guía
+     * Si ya hay ítems seleccionados, se quitan del listado de items seleccionados agregados en verDetalleGuiaADesc(), 
+     * los que correspondan a la guía.
      */
     public void cancelarGuiaSelected(){
-        // migro el listado a uno temporal
-        List<ItemProductivo> lstItADesTemp = new ArrayList<>();
-        lstItADesTemp.addAll(lstItemsADescontar);
-        lstItemsADescontar.clear();
-        // levanto los items de la guía a desasociar
-        List<ItemProductivo> lstItGuia = itemFacade.getByGuia(guiaSelected);
-        // recorro el listado temporal y valido cada item. Solo agrego al listado aquellos items que no forman parte de la guía a desasociar
-        for(ItemProductivo ipTemp : lstItADesTemp){
-            boolean aAgregar = true;
-            for(ItemProductivo iGuia : lstItGuia){
-                if(Objects.equals(iGuia.getId(), ipTemp.getId())){
-                    aAgregar = false;
+        // si ya hay items seleccionados los migro a un listado temporal
+        if(lstItemsADescontar != null){
+            List<ItemProductivo> lstItADesTemp = new ArrayList<>();
+            lstItADesTemp.addAll(lstItemsADescontar);
+            lstItemsADescontar.clear();
+            // levanto los items de la guía a desasociar
+            List<ItemProductivo> lstItGuia = itemFacade.getByGuia(guiaSelected);
+            // recorro el listado temporal y valido cada item. Solo agrego al listado aquellos items que no forman parte de la guía a desasociar
+            for(ItemProductivo ipTemp : lstItADesTemp){
+                boolean aAgregar = true;
+                for(ItemProductivo iGuia : lstItGuia){
+                    if(Objects.equals(iGuia.getId(), ipTemp.getId())){
+                        aAgregar = false;
+                    }
                 }
-            }
-            if(aAgregar){
-                lstItemsADescontar.add(ipTemp);
-            }
+                if(aAgregar){
+                    lstItemsADescontar.add(ipTemp);
+                }
+            }   
         }
         viewGuia = false;
         guiaSelected = null;
@@ -1518,6 +1556,12 @@ public class MbGuia {
      * y elimino la que pudiera estar para asignar.
      */
     public void deleteFuenteGuardada(){
+        // reseteo el flag de asignación de la guía
+        for (Autorizacion aut : lstAutorizaciones){
+            if(Objects.equals(aut.getId(), autSelected.getId())){
+                aut.setAsignadaDesc(false);
+            }
+        }    
         autSelected = null;
         guiaSelected = null;
         guiaAsignada = null;
@@ -1569,14 +1613,29 @@ public class MbGuia {
      * Método para guardar la Fuente de productos para la Guía.
      * Se define como fuente de productos al instrumento que autoriza su extracción
      * de uno o más inmuebles especificados.
+     * Si el origen de los productos es una autorización, se setea a este tipo como tipoFuente,
+     * si, en cambio es una o más guías madres, se setea al tipo como guía madre.
      */
     public void guardarFuente(){
+        // seteo el número de fuente de los productos
         guia.setNumFuente(autSelected.getNumero());
+        // seteo el flag de seleccionada a la autorización correspondiente
+        for (Autorizacion aut : lstAutorizaciones){
+            if(Objects.equals(aut.getId(), autSelected.getId())){
+                aut.setAsignadaDesc(true);
+            }
+        }  
+        // seteo el tipo de paramétrica para obtener el tipo de fuente de productos (origen del descuento)
+        TipoParam tipoParamFuente = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoFuente"));
         if(guia.getTipo().isDescuentaAutoriz()){
+            // seteo la autorización como el tipo de origen de productos
+            guia.setTipoFuente(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Autorizacion"), tipoParamFuente));
             JsfUtil.addSuccessMessage("Se ha registrado la Fuente de Productos, puede guardar los Datos Generales de la Guía");
         }else{
             // si no descuenta de Autorización, cargo las guías disponibles
             buscarGuiasDisponibles();
+            // seteo la guía como el tipo de origen de productos
+            guia.setTipoFuente(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaMadre"), tipoParamFuente));
             JsfUtil.addSuccessMessage("Se ha registrado la Fuente de Productos, puede continuar seleccionado la/s guía/s para descontar");
         }
         
@@ -1613,19 +1672,30 @@ public class MbGuia {
     
     /**
      * Método para persistir una Guía con los datos de origen.
+     * Crea o seleccina la entidad Origen y asigna el inmueble de origen
      * Sea inserción o edición
      */
     public void save(){
-        Date fechaAlta = null;
+        Date fechaAlta = new Date(System.currentTimeMillis());
+        // obtengo la EntidadGuia (Origen)
+        entOrigen = obtenerEntidadOrigen(productor, guia.getTipoFuente());
         if(!edit){
-            fechaAlta = new Date(System.currentTimeMillis());
             // seteo la fecha de alta
             guia.setFechaAlta(fechaAlta);
-            // obtengo la EntidadGuia (Origen) y seteo los datos de alta
-            entOrigen = obtenerEntidadOrigen(productor, guia.getTipoFuente());
         }
         try{
             guia.setUsuario(usLogueado);
+            // si no existe la EntidadGuia origen, la creo
+            if(entOrigen.getId() == null){
+                entOrigen.setUsuario(usLogueado);
+                entOrigen.setFechaAlta(fechaAlta);
+                entOrigen.setHabilitado(true);
+                entGuiaFacade.create(entOrigen);
+            }
+            // seteo o actualizo la EntidadGuia origen
+            if(entOrigen != null){
+                guia.setOrigen(entOrigen);
+            }
             // edito o inserto, según sea el caso
             if(!edit){
                 // Estado (carga inicial)
@@ -1633,17 +1703,8 @@ public class MbGuia {
                 if(estado != null){
                     // solo inserto si hay un estado configurado
                     guia.setEstado(estado);
-                    // si no existe la EntidadGuia origen, la creo
-                    if(entOrigen.getId() == null){
-                        entOrigen.setUsuario(usLogueado);
-                        entOrigen.setFechaAlta(fechaAlta);
-                        entOrigen.setHabilitado(true);
-                        entGuiaFacade.create(entOrigen);
-                    }
                     // Seteo el código. En principio será un autonumérico
                     guia.setCodigo(setCodigoGuia());
-                    // Seteo EntidadGuia origen
-                    guia.setOrigen(entOrigen);
                     // Creo la Guía
                     guiaFacade.create(guia);
                     JsfUtil.addSuccessMessage("La Guía se creo correctamente, puede continuar con los pasos siguientes para su emisión.");
@@ -1651,10 +1712,6 @@ public class MbGuia {
                     JsfUtil.addErrorMessage("No se pudo encontrar un Parámetro para el Estado de Guía: 'GuiaInicial'.");
                 }
             }else{
-                // actualizo la EntidadGuia origen
-                if(entOrigen != null){
-                    guia.setOrigen(entOrigen);
-                }
                 guiaFacade.edit(guia);
                 JsfUtil.addSuccessMessage("La Guía se actualizó correctamente, puede continuar con los pasos siguientes para su emisión.");
             }
@@ -1666,12 +1723,28 @@ public class MbGuia {
         }catch(Exception ex){
             JsfUtil.addErrorMessage("Hubo un error gestionando la Guía. " + ex.getMessage());
         }
-
     }
     
     /////////////
     // Destino //
     /////////////
+    /**
+     * Método para asignar un domicilio al destino de la guía.
+     * Ya se seleccionó un destinatario que puede tener varios domicilios,
+     * Con el domicilio asignado se obtiene la entidad destino
+     */
+    public void addDomDestino(){
+        entDestino = obtenerEntidadDestino(destinatario, domDestino);
+    }
+    
+    /**
+     * Método para quitar el domicilio seleccionado y dar nuevamente la opción de selecconar otro al usuario.
+     * Solo pone la entidad destino en null.
+     */
+    public void deleteDom(){
+        entDestino = null;
+    }
+    
     /**
      * Método para buscar la/s fuente/s de productos que correspondan según el tipo de Guía.
      * También setea el Prductor (Persona) según el CUIT obtenido.
@@ -1680,7 +1753,6 @@ public class MbGuia {
         Parametrica rolPersona = obtenerParametro(ResourceBundle.getBundle("/Config").getString("RolPersonas"), ResourceBundle.getBundle("/Config").getString("Destinatario"));
         destinatario = perFacade.findByCuitRol(cuitBuscar, rolPersona);
         if(destinatario != null){
-            entDestino = obtenerEntidadDestino(destinatario);
             cuitProcesado = true;
         }else{
             JsfUtil.addErrorMessage("No hay ningún Destinatario registrado con el CUIT ingresado.");
@@ -1702,6 +1774,7 @@ public class MbGuia {
      * Método para restaurar el destino de la Guía
      */
     public void restaurarDestino(){
+        destinatario = null;
         entDestino = guia.getDestino();
        	editCuit = false;
         cuitProcesado = false;
@@ -2399,20 +2472,13 @@ public class MbGuia {
     
     /**
      * Método para generar el volante de pago de las tasas inherentes a los
-     * Productos forestales asociados a los Items de la Guía
+     * Productos forestales asociados a los Items de la Guía.
+     * Invoca al método privado imprimirVolante()
      */
     public void generarVolante(){
         try{
-            JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(liquidaciones);
-            String reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "volante.jasper");
-            jasperPrint =  JasperFillManager.fillReport(reportPath, new HashMap(), beanCollectionDataSource);
-            HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
-            httpServletResponse.addHeader("Content-disposition", "attachment; filename=volante_pago_" + liquidaciones.get(0).getCodGuia() + ".pdf");
-            ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
-            
-            JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
-            FacesContext.getCurrentInstance().responseComplete();
-            
+            // imprimo el pdf con el volante
+            imprimirVolante();
             // seteo la fecha de emisión del volante de pago
             Date fechaEmision = new Date(System.currentTimeMillis());
             guia.setFechaEmisionVolante(fechaEmision);
@@ -2420,7 +2486,7 @@ public class MbGuia {
             EstadoGuia estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaLiquidada"));
             guia.setEstado(estado);
             guiaFacade.edit(guia);
-        }catch(JRException | IOException ex){
+        }catch(Exception ex){
             JsfUtil.addErrorMessage("Hubo un error al generar el volante de pago. " + ex.getMessage());
         }
     }
@@ -2441,8 +2507,27 @@ public class MbGuia {
     }
     
     /**
+     * Método para generar un volante de pago de una guía ya emitida.
+     * Invoca al método imprimirVolante()
+     */
+    public void emitirVolanteAdeudado(){
+        imprimirVolante();
+    }
+    
+    /**
+     * Método para generar un código de recibo temporal.
+     * Setea el flag para que en el método cargarFrame()
+     * se genere un código temporal para el recibo.
+     */
+    public void generarCodReciboTemp(){
+        emiteSinPago = true;
+        cargarFrame("emision.xhtml");
+    }
+    
+    /**
      * Método para emitir una Guía, con o sin transporte. En el caso de que sea de transporte, se detalla el proceso:
-     * Después de las validaciones se genera el pdf, luego se actualiza la Guía.e
+     * Después de las validaciones se genera el pdf con tantas copias de la guía como estén configuradas, enviando el martillo
+     * del inmueble y el número de expediente de la Autorización como parámetros, luego se actualiza la Guía.
      * Posteriormente, si la Guía no es de acopio interno (reporta Transporte) se registra en el Componente de Control y Verificación (CCV)
      * Finalmente se verifica la existencia de una cuenta de usuario para el Destinatario de la Guía
      * en el Componente de Gestión de Trazabilidad. Si no es así, la genera mediante la API-TRAZ, si ya existe la cuenta 
@@ -2454,8 +2539,12 @@ public class MbGuia {
      */    
     public void emitir(){
         List<Guia> guias = new ArrayList<>();
+        // encripto el código para generar el qr en el reporte y lo asigno a la guía
+        Date fechaEmision = new Date(System.currentTimeMillis());
+        String codLiso = guia.getCodigo() + "_" + fechaEmision.toString();
+        guia.setCodQr(CriptPass.encriptar(codLiso));
         // asigno la fecha de emisión
-        guia.setFechaEmisionGuia(new Date(System.currentTimeMillis()));
+        guia.setFechaEmisionGuia(fechaEmision);
         // asigno la fecha de vencimiento, si el tipo de Guía tiene vigencia asignada.
         if(guia.getTipo().getVigencia() > 0){
             Calendar calendar = Calendar.getInstance();
@@ -2467,9 +2556,22 @@ public class MbGuia {
         EstadoGuia estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaEmitida"));
         guia.setEstado(estado);        
         try{
+            // obtengo la autorización vinculada a la Guías
+            Autorizacion aut = autFacade.getExistente(guia.getNumFuente()); 
             // genero las copias que correspondan, según el listado de Copias asignado al Tipo de Guía
             Guia g;
+            // si la guía tomó productos de una u otras guías, agrupo los items
+            List<ItemProductivo> itemsAgr;
+            if(!guia.getTipo().isDescuentaAutoriz()){
+                itemsAgr = agruparItems();
+            }else{
+                itemsAgr = guia.getItems();
+            }
             for(CopiaGuia copia : guia.getTipo().getCopias()){
+                // obtengo la ruta al martillo (del primer inmueble asociado)
+                String rutaMartillo = aut.getInmuebles().get(0).getRutaArchivo() + aut.getInmuebles().get(0).getNombreArchivo();
+                // creo el inputStream con el martillo
+                FileInputStream fisMartillo = new FileInputStream(rutaMartillo);
                 // seteo la Guía en el listado
                 g = new Guia();
                 g.setCodigo(guia.getCodigo());
@@ -2477,10 +2579,12 @@ public class MbGuia {
                 g.setFechaAlta(guia.getFechaAlta());
                 g.setFechaEmisionGuia(guia.getFechaEmisionGuia());
                 g.setFechaVencimiento(guia.getFechaVencimiento());
-                g.setItems(guia.getItems());
+                g.setItems(itemsAgr);
                 g.setOrigen(guia.getOrigen());
                 g.setTipo(guia.getTipo());
                 g.setProvincia(guia.getProvincia());
+                g.setCodQr(guia.getCodQr());
+                g.setMartillo(fisMartillo);
                 // si la Guía habilita transporte, agrego los campos correspondientes
                 if(guia.getTipo().isHabilitaTransp()){
                     g.setDestino(guia.getDestino());
@@ -2489,45 +2593,26 @@ public class MbGuia {
                 guias.add(g);
             }
 
-            // genero el reporte con todas las copias
-            JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(guias);
-            String reportPath;
-            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
-                reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaTransp.jasper");
-            }else if(guia.getTipo().isHabilitaTransp() && guia.getTipo().isMovInterno()){
-                reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaAcopio.jasper");
-            }else{
-                reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guia.jasper");
+            imprimirGuia(guias, aut);
+
+            // actualizo la Guía. Si tiene un código de recibo temporal lo pongo nulo
+            if(guia.getCodRecibo() != null){
+                if(guia.getCodRecibo().equals("TEMP")){
+                    guia.setCodRecibo(null);
+                }
             }
-            
-            jasperPrint =  JasperFillManager.fillReport(reportPath, new HashMap(), beanCollectionDataSource);
-            HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
-            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
-                httpServletResponse.addHeader("Content-disposition", "attachment; filename=guiaTransp_" + guias.get(0).getCodigo() + ".pdf");
-            }else if(guia.getTipo().isHabilitaTransp() && guia.getTipo().isMovInterno()){
-                httpServletResponse.addHeader("Content-disposition", "attachment; filename=guiaAcopio_" + guias.get(0).getCodigo() + ".pdf");
-            }else{
-                httpServletResponse.addHeader("Content-disposition", "attachment; filename=guia_" + guias.get(0).getCodigo() + ".pdf");
-            }
-
-            ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
-
-            JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
-            FacesContext.getCurrentInstance().responseComplete(); 
-
-            // actualizo la Guía
             guiaFacade.edit(guia);
             
             // si la Guía habilita transporte y no es de acopio interno, se impacta en el Componente de Control y Verificación (CCV), 
             // y se prosigue con la verificación de cuenta de usuario en el componente de Gestión de Trazabilidad (CGT), 
             // si la Guía es de acopio interno, no se persiste en el CCV y pasa directamente a la verificación de la cuenta de usuario en el CGT 
-            if(guia.getTipo().isHabilitaTransp()){
+            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
                 boolean persistidaCcv = false;
-                // si no es de acopio interno persisto la Guía en el CCV
-                if(!guia.getTipo().isMovInterno()){
+//                // si no es de acopio interno persisto la Guía en el CCV
+//                if(!guia.getTipo().isMovInterno()){
                     List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item> lstItemCtrl = new ArrayList<>();
                     ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item itemCtrl;
-                    for(ItemProductivo item : guia.getItems()){
+                    for(ItemProductivo item : itemsAgr){
                         itemCtrl = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Item();
                         itemCtrl.setCodigoOrigen(item.getCodigoProducto());
                         itemCtrl.setNombreCientifico(item.getNombreCientifico());
@@ -2558,6 +2643,7 @@ public class MbGuia {
                     guiaCrtl.setFechaEmision(guia.getFechaEmisionGuia());
                     guiaCrtl.setFechaVencimiento(guia.getFechaVencimiento());
                     guiaCrtl.setProvincia(guia.getProvincia());
+                    guiaCrtl.setCodQr(guia.getCodQr());
                     
                     // obtengo el token si no está seteado o está vencido
                     if(tokenCtrl == null){
@@ -2578,9 +2664,9 @@ public class MbGuia {
                     if(responseCcv.getStatus() == 201){
                         persistidaCcv = true;
                     }
-                }else{
-                    persistidaCcv = true;
-                }
+//                }else{
+//                    persistidaCcv = true;
+//                }
                 // solo continúo si no hubo error
                 if(persistidaCcv){
                     // obtengo el token si no está seteado o está vencido
@@ -2684,7 +2770,7 @@ public class MbGuia {
                     msgErrorEmision = "Hubo un error reportanto la Guía para su control en el Componente de Control y Verificación, por lo tanto tampoco se notificó al Destinatario. Deberá contactar al Administrador.";
                 }
             }
-        }catch(JRException | IOException ex){
+        }catch(IOException ex){
             msgErrorEmision = "Hubo un error emitiendo la guía. " + ex.getMessage();
         }
     }
@@ -2946,6 +3032,182 @@ public class MbGuia {
     }
     
     /**
+     * Método para extender la vigencia de una guía. Aplicable para todo tipo de guías.
+     * Extiende su fecha de vencimiento, guarda los motivos del cambio, 
+     * genera un nueo código qr y si es de trnsporte y no de movimiento interno 
+     * actualiza los datos registrados en el componente de control (CTRL)
+     */
+    public void extenderVenc(){
+        boolean actualizoCtrl = true, error = false;
+        String msg = "";
+        // valido que la fecha de vencimiento sea mayor a la original
+        Guia g = guiaFacade.find(guia.getId());
+        if(guia.getFechaVencimiento().after(g.getFechaVencimiento())){
+            // encripto el código para generar el qr en el reporte y lo asigno a la guía
+            Date fechaExtend = new Date(System.currentTimeMillis());
+            String codLiso = guia.getCodigo() + "_" + fechaExtend.toString();
+            guia.setCodQr(CriptPass.encriptar(codLiso));        
+            // actualiza la guía localmente
+            guiaFacade.edit(guia);
+            // solo actualizo en CTRL si la guía es de transporte y no de movimiento interno
+            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
+                try{
+                    ///////////////////////////////
+                    // actualiza la guía en CTRL //
+                    ///////////////////////////////
+                    // obtengo el token si no está seteado o está vencido
+                    if(tokenCtrl == null){
+                        getTokenCtrl();
+                    }else try {
+                        if(!tokenCtrl.isVigente()){
+                            getTokenCtrl();
+                        }
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token de CTRL", ex.getMessage()});
+                    }
+                    // busco la Guía
+                    guiaCtrlClient = new GuiaCtrlClient();
+                    List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia> lstGuias;
+                    GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia>> gTypeG = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia>>() {};
+                    Response response = guiaCtrlClient.findByQuery_JSON(Response.class, guia.getCodigo(), null, null, tokenCtrl.getStrToken());
+                    lstGuias = response.readEntity(gTypeG);
+                    // valido que tuve respuesta
+                    if(lstGuias.get(0) != null){
+                        // obtengo el id de la guía en CCV
+                        Long idGuiaCtrl = lstGuias.get(0).getId();
+                        // instancio la guía a editar
+                        ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia guiaCtrol = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia();
+                        // seteo la nueva fecha de venicimiento y el nuevo qr
+                        guiaCtrol.setId(idGuiaCtrl);
+                        guiaCtrol.setFechaVencimiento(guia.getFechaVencimiento());
+                        guiaCtrol.setCodQr(guia.getCodQr());
+                        // seteo el estado y el cuit destino porque los chequea la API
+                        guiaCtrol.setEstado(lstGuias.get(0).getEstado());
+                        guiaCtrol.setCuitDestino(lstGuias.get(0).getCuitDestino());
+                        // obtengo el token si no está seteado o está vencido
+                        if(tokenCtrl == null){
+                            getTokenCtrl();
+                        }else try {
+                            if(!tokenCtrl.isVigente()){
+                                getTokenCtrl();
+                            }
+                        } catch (IOException ex) {
+                            logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+                        }
+                        response = guiaCtrlClient.edit_JSON(guiaCtrol, String.valueOf(guiaCtrol.getId()), tokenCtrl.getStrToken());
+                        if(response.getStatus() == 200){
+                            // seteo mensaje y flag
+                            msg = "Se actualizó la guía localmente y se actualizaron los datos en el componente de Control y Verificación";
+                        }else{
+                            // seteo mensaje y flag
+                            msg = "Se actualizó la guía localmente pero no se pudo actualizar en el componente de Control y Verificación.";
+                            actualizoCtrl = false;
+                            error = true;
+                        }
+                        // cierro el cliente
+                        guiaCtrlClient.close();
+                        // actualizo el flag para emitir
+                        vencAtualizado = true;
+                    }else{
+                        error = true;
+                        msg = "Se actualizo la guía localmente pero no se encontraron sus datos en el componente de Control y Verificación.";
+                    }
+                }catch(ClientErrorException ex){
+                    error = true;
+                    msg += " Hubo un error al actualizar los datos en el componente de Control y Verificación. " + ex.getMessage();
+                }
+            }else{
+                actualizoCtrl = true;
+            }
+            // notifico al titular que se extendió el período de vigencia de la guía si no hubo errores.
+            if(actualizoCtrl){
+                if(guia.getOrigen().getEmail() != null){
+                    if(notificarExtensionVig(guia.getOrigen().getEmail())){
+                        msg += " Se notificó al titular de la guía la extensión de la vigencia de la misma.";
+                    }else{
+                        error = true;
+                        msg += " No se pudo notificar al titular de la guía la extensión de la vigencia de la misma.";
+                    }
+                }else{
+                    error = true;
+                    msg += " No se pudo notificar al titular de la guía la extensión de la vigencia de la misma dado que no tiene registrada una dirección de correo.";
+                }
+            }
+            
+        }else{
+            error = true;
+            msg = "La nueva fecha de vencimiento debe ser mayor a la existente.";
+        }
+        
+        if(error){
+            JsfUtil.addErrorMessage(msg + " Por favor, contacte al administrador.");
+        }else{
+            JsfUtil.addSuccessMessage(msg);
+        }
+    }
+    
+    /**
+     * Método para limpiar los datos del formulario de extensión de vencimiento.
+     * Vacía el campo observaciones de la Guía.
+     */
+    public void limpiarFormExtend(){
+        guia = guiaFacade.find(guia.getId());
+        guia.setObs("");
+    }
+    
+    /**
+     * Método para emitir el pdf con los datos actualizados de la guía.
+     * Agrupo los items que pudieran tener productos repetidos surgidos de guías diferentes.
+     * Genero el listado a mandar al reporte con cada una de las copias según el tipo de guía
+     */
+    public void emitirExtend(){
+        List<Guia> guias = new ArrayList<>();
+
+        try{
+            // obtengo la autorización vinculada a la Guías
+            Autorizacion aut = autFacade.getExistente(guia.getNumFuente()); 
+            // genero las copias que correspondan, según el listado de Copias asignado al Tipo de Guía
+            Guia g;
+            // si la guía tomó productos de una u otras guías, agrupo los items
+            List<ItemProductivo> itemsAgr;
+            if(!guia.getTipo().isDescuentaAutoriz()){
+                itemsAgr = agruparItems();
+            }else{
+                itemsAgr = guia.getItems();
+            }
+            for(CopiaGuia copia : guia.getTipo().getCopias()){
+                // obtengo la ruta al martillo (del primer inmueble asociado)
+                String rutaMartillo = aut.getInmuebles().get(0).getRutaArchivo() + aut.getInmuebles().get(0).getNombreArchivo();
+                // creo el inputStream con el martillo
+                FileInputStream fisMartillo = new FileInputStream(rutaMartillo);
+                // seteo la Guía en el listado
+                g = new Guia();
+                g.setCodigo(guia.getCodigo());
+                g.setDestinoCopia(copia.getDestino());
+                g.setFechaAlta(guia.getFechaAlta());
+                g.setFechaEmisionGuia(guia.getFechaEmisionGuia());
+                g.setFechaVencimiento(guia.getFechaVencimiento());
+                g.setItems(itemsAgr);
+                g.setOrigen(guia.getOrigen());
+                g.setTipo(guia.getTipo());
+                g.setProvincia(guia.getProvincia());
+                g.setCodQr(guia.getCodQr());
+                g.setMartillo(fisMartillo);
+                // si la Guía habilita transporte, agrego los campos correspondientes
+                if(guia.getTipo().isHabilitaTransp()){
+                    g.setDestino(guia.getDestino());
+                    g.setTransporte(guia.getTransporte());
+                }
+                guias.add(g);
+            }
+            // imprimo las copias
+            imprimirGuia(guias, aut);
+        }catch(FileNotFoundException ex){
+            JsfUtil.addErrorMessage("Hubo un error generando el martillo para la guía. " + ex.getMessage());
+        }
+    }
+    
+    /**
      * Método para generar el pdf con los formularios provisorios a imprimir.
      * Valida que estén seteados la cantidad y las horas de vigencia.
      * Crea un listado de formularios y los manda como parámetro al reporte.
@@ -3054,17 +3316,29 @@ public class MbGuia {
 
     /**
      * Método para obtener la EntidadGuia de origen, si no existe se crea.
-     * Solo seteo los datos del Productor. Utilizado en save()
+     * Si la creo y la guía de la cual descuenta no es de movimiento interno, se setea el origen con los datos del titular de la guía origen. 
+     * En es movimiento interno se setean los datos del destino de la guía de la que descontó, porque puede no ser el mismo que el titular.
+     * Si se está editando la guía valida que tenga la autorización fuente.
+     * Utilizado en save()
      * @return EntidadGuia entidad guía generada
      */
     private EntidadGuia obtenerEntidadOrigen(Persona per, Parametrica tipoFuente) {
         EntidadGuia ent;
-        Inmueble inm = new Inmueble();
+        boolean fuenteMovInterno = false;
+        if(autSelected == null){
+            autSelected = autFacade.getExistente(guia.getNumFuente());
+        }
+        Inmueble inm = autSelected.getInmuebles().get(0);
         if(tipoFuente.getNombre().equals(ResourceBundle.getBundle("/Config").getString("Autorizacion"))){
-            inm = autSelected.getInmuebles().get(0);
-            // verifico si existe previamente
+            // si descontó de una autorización verifico si la entidad origen está registrada.
             ent = entGuiaFacade.getOrigenExistente(per.getCuit(), inm.getNombre());
+        }else if(guiaAsignada.getTipo().isMovInterno()){
+            // si descontó de otra guía y es de movimiento interno seteo el flag y
+            // verifico si está registrado el orígen para el inmueble y el destinatario de la guía de movimiento interno
+            fuenteMovInterno = true;
+            ent = entGuiaFacade.getOrigenExistente(guiaAsignada.getDestino().getCuit(), inm.getNombre());
         }else{
+            // seteo el origen de la guía de la que descontó
             ent = guiaAsignada.getOrigen();
         }
 
@@ -3072,12 +3346,20 @@ public class MbGuia {
             return ent;
         }else{
             ent = new EntidadGuia();
-            // productor
-            ent.setCuit(per.getCuit());
-            ent.setIdRue(per.getIdRue());
-            ent.setNombreCompleto(per.getNombreCompleto());
-            ent.setTipoPersona(per.getTipo());
-            ent.setEmail(per.getEmail());
+            // seteo la persona según el origen de los productos sea o no una guía de movimiento interno
+            if(fuenteMovInterno){
+                ent.setCuit(guiaAsignada.getDestino().getCuit());
+                ent.setIdRue(guiaAsignada.getDestino().getIdRue());
+                ent.setNombreCompleto(guiaAsignada.getDestino().getNombreCompleto());
+                ent.setTipoPersona(guiaAsignada.getDestino().getTipoPersona());
+                ent.setEmail(guiaAsignada.getDestino().getEmail());
+            }else{
+                ent.setCuit(per.getCuit());
+                ent.setIdRue(per.getIdRue());
+                ent.setNombreCompleto(per.getNombreCompleto());
+                ent.setTipoPersona(per.getTipo());
+                ent.setEmail(per.getEmail());
+            }
             // entidad
             TipoParam tipoParamEntGuia = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoEntidadGuia"));
             ent.setTipoEntidadGuia(paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TegFuente"), tipoParamEntGuia));
@@ -3097,16 +3379,16 @@ public class MbGuia {
     }
     
     /**
-     * Método para obtener la EntidadGuia de destino, si no existe se crea.
-     * Solo seteo los datos del Destinatario. Utilizado en buscarDestinatario()
+     * Método para obtener la EntidadGuia de destino, si no existe se crea
+     * seteando sus datos con los del destinatario y su domicilio seleccionado
      * @return EntidadGuia entidad guía generada
      */
-    private EntidadGuia obtenerEntidadDestino(Persona per) {
+    private EntidadGuia obtenerEntidadDestino(Persona per, Domicilio domDestino) {
         EntidadGuia ent;
         // verifico si existe previamente
         TipoParam tipoParamEntGuia = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoEntidadGuia"));
         Parametrica tipoEntidad = paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TegDestino"), tipoParamEntGuia);
-        ent = entGuiaFacade.getDestinoExistente(per.getCuit(), tipoEntidad);
+        ent = entGuiaFacade.getDestinoExistente(per.getCuit(), tipoEntidad, domDestino);
         if(ent != null){
             return ent;
         }else{
@@ -3118,34 +3400,39 @@ public class MbGuia {
             ent.setTipoPersona(per.getTipo());
             ent.setEmail(per.getEmail());
             // destino
-            try{
-                // obtengo el token si no está seteado o está vencido
-                if(tokenRue == null){
-                    getTokenRue();
-                }else try {
-                    if(!tokenRue.isVigente()){
-                        getTokenRue();
-                    }
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
-                }
-                
-                
-                personaClient = new PersonaClient();
-                personaRue = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(per.getIdRue()), tokenRue.getStrToken());
-                personaClient.close();
-                ent.setIdLocGT(personaRue.getDomicilio().getIdLocalidadGt());
-                ent.setInmDomicilio(personaRue.getDomicilio().getCalle() + "-" + personaRue.getDomicilio().getNumero());
-                ent.setLocalidad(personaRue.getDomicilio().getLocalidad());
-                ent.setDepartamento(personaRue.getDomicilio().getDepartamento());
-                ent.setProvincia(personaRue.getDomicilio().getProvincia());
-            }catch(ClientErrorException ex){
-                // muestro un mensaje al usuario
-                JsfUtil.addErrorMessage("Hubo un error obteniendo los datos de la Persona del Registro Unico. " + ex.getMessage());
-                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la Persona por id desde el "
-                        + "servicio REST de RUE", ex.getMessage()});
-                return null;
-            }
+            ent.setIdLocGT(domDestino.getIdLoc());
+            ent.setInmDomicilio(domDestino.getCalle() + "-" + domDestino.getNumero());
+            ent.setLocalidad(domDestino.getLocalidad());
+            ent.setDepartamento(domDestino.getDepartamento());
+            ent.setProvincia(domDestino.getProvincia());
+//            try{
+//                // obtengo el token si no está seteado o está vencido
+//                if(tokenRue == null){
+//                    getTokenRue();
+//                }else try {
+//                    if(!tokenRue.isVigente()){
+//                        getTokenRue();
+//                    }
+//                } catch (IOException ex) {
+//                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+//                }
+//                
+//                
+//                personaClient = new PersonaClient();
+//                personaRue = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(per.getIdRue()), tokenRue.getStrToken());
+//                personaClient.close();
+//                ent.setIdLocGT(personaRue.getDomicilio().getIdLocalidadGt());
+//                ent.setInmDomicilio(personaRue.getDomicilio().getCalle() + "-" + personaRue.getDomicilio().getNumero());
+//                ent.setLocalidad(personaRue.getDomicilio().getLocalidad());
+//                ent.setDepartamento(personaRue.getDomicilio().getDepartamento());
+//                ent.setProvincia(personaRue.getDomicilio().getProvincia());
+//            }catch(ClientErrorException ex){
+//                // muestro un mensaje al usuario
+//                JsfUtil.addErrorMessage("Hubo un error obteniendo los datos de la Persona del Registro Unico. " + ex.getMessage());
+//                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la Persona por id desde el "
+//                        + "servicio REST de RUE", ex.getMessage()});
+//                return null;
+//            }
             
             // entidad
             ent.setTipoEntidadGuia(tipoEntidad);
@@ -3332,7 +3619,7 @@ public class MbGuia {
             
         }catch(MessagingException ex){
             result = false;
-            System.out.println("Hubo un error enviando el correo de registro de usuario" + ex.getMessage());
+            System.out.println("Hubo un error enviando el corre al usuario" + ex.getMessage());
         }
         
         return result;        
@@ -3378,7 +3665,7 @@ public class MbGuia {
             
         }catch(MessagingException ex){
             result = false;
-            System.out.println("Hubo un error enviando el correo de registro de usuario" + ex.getMessage());
+            System.out.println("Hubo un error enviando el correo al usuario" + ex.getMessage());
         }
         
         return result;               
@@ -3408,24 +3695,24 @@ public class MbGuia {
         }
     }
     
-    /**
-     * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
-     * Utilizado en obtenerEntidadDestino(Persona per)
-     */
-    private void getTokenRue(){
-        try{
-            usClientRue = new ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient();
-            Response responseUs = usClientRue.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestRue"));
-            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
-            List<Object> lstHeaders = headers.get("Authorization");
-            strTokenRue = (String)lstHeaders.get(0); 
-            tokenRue = new Token(strTokenRue, System.currentTimeMillis());
-            usClientRue.close();
-        }catch(ClientErrorException ex){
-            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
-        }
-    }      
+//    /**
+//     * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
+//     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+//     * Utilizado en obtenerEntidadDestino(Persona per)
+//     */
+//    private void getTokenRue(){
+//        try{
+//            usClientRue = new ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient();
+//            Response responseUs = usClientRue.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestRue"));
+//            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+//            List<Object> lstHeaders = headers.get("Authorization");
+//            strTokenRue = (String)lstHeaders.get(0); 
+//            tokenRue = new Token(strTokenRue, System.currentTimeMillis());
+//            usClientRue.close();
+//        }catch(ClientErrorException ex){
+//            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+//        }
+//    }      
     
     /**
      * Método privado que obtiene y setea el tokenTraz para autentificarse ante la API rest de trazabilidad
@@ -3485,4 +3772,273 @@ public class MbGuia {
             }
         }
     }
+
+    /**
+     * Método privado para obtener los ítems agrupados de una guía que tome los productos de una o más guías
+     * dado que pueden tener más de un ítem con el mismo producto, surgidos de guías diferentes.
+     * Utilizado en emitir()
+     * @return List<ItemProductivo> Listado de los ítems agrupados por producto.
+     */
+    private List<ItemProductivo> agruparItems() {
+        // actualizo la guia
+        Guia g = guiaFacade.find(guia.getId());
+        List<ItemProductivo> itemsAgrupados = new ArrayList<>();
+        // recorro los ítems vinculados a la guía para poblar el listado de agrupados (sin repetir productos)
+        for (ItemProductivo item : g.getItems()){
+            boolean existe = false;
+            // recorro el listado de agrupados
+            for (ItemProductivo itemAgr : itemsAgrupados){
+                if(Objects.equals(itemAgr.getIdProd(), item.getIdProd())){
+                    existe = true;
+                }
+            }
+            if(!existe){
+                itemsAgrupados.add(item);
+            }
+        }
+        if(itemsAgrupados.size() != g.getItems().size()){
+            // si hay diferencia vuelvo a recorrer el listado original para hacer la agrupación
+            for (ItemProductivo item : g.getItems()){
+                // por cada item verifico si ya está registrado entre los agrupados
+                for (ItemProductivo itemAgr : itemsAgrupados){
+                    // si ya está registrado el producto entre los agrupados sumo los totales (total, totalKg)
+                    if(Objects.equals(itemAgr.getIdProd(), item.getIdProd()) && !Objects.equals(itemAgr.getId(), item.getId())){
+                        float total = itemAgr.getTotal();
+                        float totalKg = itemAgr.getTotalKg();
+                        // actualizo total
+                        itemAgr.setTotal(total + item.getTotal());
+                        // actualizo el totalKg
+                        itemAgr.setTotalKg(totalKg + item.getTotalKg());
+                    }
+                }
+            } 
+            return itemsAgrupados;
+        }else{
+            // si no es necesario agrupar retorno los ítems
+            return guia.getItems();
+        }
+    }
+
+    /**
+     * Método para liquidar todas las tasas de los productos de una guía para luego generar el volante de pago.
+     * Invocado por cargarFrame() al llamar a la vista tasas.xhtml
+     * @param guiaAct Guia guía de la cual se liquidarán las tasas.
+     */
+    private void liquidarTasas(Guia guiaAct) {
+        for(TipoGuiaTasa tgt : guiaAct.getTipo().getTasas()){
+            // valido si discrimina según el tipo de intervención autorizado
+            if("si".equals(ResourceBundle.getBundle("/Config").getString("DiscTasaTipoInterv"))){
+                // verifico si la tasa leída es alguna de las tasas a discriminar (PCUS o PM).
+                Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
+                if(tgt.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TasaPCUS"))){
+                    // si es tasa PCUS guardo el nombre de dicha tasa solo si la intervención es PCUS
+                    if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPCUS"))){
+                        lstNombresTasas.add(tgt.getTipo().getNombre());
+                    }
+                }else if(tgt.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TasaPM"))){
+                    // si es tasa PM guardo el nombre de dicha tasa solo si la intervención es PM
+                    if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPM"))){
+                        lstNombresTasas.add(tgt.getTipo().getNombre());
+                    }
+                }else{
+                    // si no es ninguna de las dos, la guardo directamente
+                    lstNombresTasas.add(tgt.getTipo().getNombre());
+                }
+
+            }else{
+                // si no discrimina cargo el nombre directamente
+                lstNombresTasas.add(tgt.getTipo().getNombre());   
+            }
+        }
+
+        // cargo los detalles por item
+        lstDetallesTasas = new ArrayList<>();
+        for(ItemProductivo item : guiaAct.getItemsAgrupados()){
+            // obtengo el producto para sacar las tasas
+            Producto prod = prodFacade.find(item.getIdProd());
+            // instancio el DetalleTasa
+            DetalleTasas detTasa = new DetalleTasas();
+            // instancio el listado de TasasModel
+            List<TasaModel> lstTasaModel = new ArrayList<>();
+            detTasa.setNombreProd(prod.getEspecieLocal().getNombreVulgar());
+            detTasa.setClase(prod.getClase().getNombre());
+            detTasa.setCantidad(item.getTotal());
+            detTasa.setUnidad(item.getUnidad());
+            // obtengo las tasas del producto. En caso de no tener tasas asignadas irán todas en 0
+            if(prod.getTasas().isEmpty()){
+                for(String nomTasa : lstNombresTasas){
+                    lstTasaModel.add(new TasaModel(nomTasa, 0, 0));
+                }
+            }else{
+                for(String nomTasa : lstNombresTasas){
+                    // por cada tasa asigno su valor, en los casos que la tengan configurada
+                    float subTotal;
+                    for(ProductoTasa prodTasa : prod.getTasas()){
+                        if(nomTasa.equals(prodTasa.getTipo().getNombre())){
+                            lstTasaModel.add(new TasaModel(nomTasa, prodTasa.getMonto(), prodTasa.getMonto() * detTasa.getCantidad()));
+                            subTotal = prodTasa.getMonto() * detTasa.getCantidad();
+                            detTasa.setTotal(detTasa.getTotal() + subTotal);
+                        }
+                    }
+                }
+                // si hay tasas no configuradas para el item, las seteo en 0
+                for(String nomTasa : lstNombresTasas){
+                    boolean existe = false;
+                    for(TasaModel tasa : lstTasaModel){
+                        if(nomTasa.equals(tasa.getHeader())){
+                            existe = true;
+                        }
+                    }
+                    if(!existe){
+                        lstTasaModel.add(new TasaModel(nomTasa, 0, 0));
+                    }
+                }
+            }
+
+            // asigno el listado de tasas
+            detTasa.setTasas(lstTasaModel);
+            // agrego el DetalleTasa al listado
+            lstDetallesTasas.add(detTasa);
+        }   
+        // instancio la Liquidación y el array para el reporte
+        liquidacion = new LiqTotalTasas();
+        liquidaciones = new ArrayList<>();
+        // seteo los datos para mostrar en el reporte
+        liquidacion.setTipoGuia(guiaAct.getTipo().getNombre());
+        liquidacion.setCodGuia(guiaAct.getCodigo());
+        liquidacion.setDetalles(lstDetallesTasas);
+        liquidaciones.add(liquidacion);
+    }
+    
+    /**
+     * Método para generar un pdf con las copias de una guía.
+     * Llamado por emitir() y emitirExtend()
+     * @param guias List<Guia> listado con las copias de las guías a imprimir
+     * @param aut Autorizacion autorización fuente de los productos de la guía para tomar de allí el martillo del inmueble
+     */
+    public void imprimirGuia(List<Guia> guias, Autorizacion aut){
+        try{
+            final Map<String,Object> parameters = new HashMap<>();
+            JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(guias);
+            String reportPath;
+            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
+                reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaTransp.jasper");
+            }else if(guia.getTipo().isHabilitaTransp() && guia.getTipo().isMovInterno()){
+                reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaAcopio.jasper");
+            }else{     
+                reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guia.jasper");
+            }
+            // si descuenta de una autorización muestro guardo el expediente como parámetro
+            if(guia.getTipo().isDescuentaAutoriz()){
+                parameters.put("expediente", aut.getNumExp());
+            }
+                
+            jasperPrint =  JasperFillManager.fillReport(reportPath, parameters, beanCollectionDataSource);
+            HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+            if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
+                httpServletResponse.addHeader("Content-disposition", "attachment; filename=guiaTransp_" + guias.get(0).getCodigo() + ".pdf");
+            }else if(guia.getTipo().isHabilitaTransp() && guia.getTipo().isMovInterno()){
+                httpServletResponse.addHeader("Content-disposition", "attachment; filename=guiaAcopio_" + guias.get(0).getCodigo() + ".pdf");
+            }else{
+                httpServletResponse.addHeader("Content-disposition", "attachment; filename=guia_" + guias.get(0).getCodigo() + ".pdf");
+            }
+
+            ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
+
+            JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
+            FacesContext.getCurrentInstance().responseComplete(); 
+        }catch(JRException | IOException ex){
+            msgErrorEmision = "Hubo un error emitiendo la guía. " + ex.getMessage();
+        }
+    }
+
+    /**
+     * Método que genera el pdf con el volante a partir de un listado de LiqTotalTasas con las tasas de una guía
+     * Llamado por generarVolante()
+     */
+    private void imprimirVolante() {
+        try{
+            JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(liquidaciones);
+            String reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "volante.jasper");
+            jasperPrint =  JasperFillManager.fillReport(reportPath, new HashMap(), beanCollectionDataSource);
+            HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+            httpServletResponse.addHeader("Content-disposition", "attachment; filename=volante_pago_" + liquidaciones.get(0).getCodGuia() + ".pdf");
+            ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
+
+            JasperExportManager.exportReportToPdfStream(jasperPrint, servletOutputStream);
+            FacesContext.getCurrentInstance().responseComplete();
+        }catch(JRException | IOException ex){
+            JsfUtil.addErrorMessage("Hubo un error al imprimir el volante de pago. " + ex.getMessage());
+        }
+    }
+    
+    /**
+     * Método privado para listar las guías que se emitieron sin registrar el comprobante de pago de tasas.
+     * Invocado por getGuiasSinPago(), solo se ejecuta si la aplicación está configurada para emitir guías
+     * sin registrar los pagos de tasas.
+     */
+    private void verGuiasAdeudadas(){
+        guiasSinPago = new ArrayList<>();
+        lstNombresTasas = new ArrayList<>();
+        List<Guia> adeudadas = guiaFacade.getSinPago(guia.getOrigen().getCuit());
+        for (Guia g : adeudadas){
+            // limpio el listado de liquidaciones
+            liquidaciones = new ArrayList<>();
+            // obtengo el total adeudado
+            liquidarTasas(g);
+            GuiaSinPago gsp = new GuiaSinPago();
+            gsp.setId(g.getId());
+            gsp.setCodGuia(g.getCodigo());
+            gsp.setFechaEmision(g.getFechaEmisionGuia());
+            gsp.setFechaVenc(g.getFechaVencimiento());
+            gsp.setTotalAdeudado(liquidaciones.get(0).getTotalALiquidar());
+            guiasSinPago.add(gsp);
+        }
+    }    
+    
+    /**
+     * Método para enviar un correo electrónico al titular de una guía
+     * para notificarlo de la extensión del período de vigencia.
+     * @param mail String dirección de correo electrónico del titular
+     * @return boolean verdadero o false según el resultado del envío.
+     */
+    private boolean notificarExtensionVig(String mail) {
+        SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date hoy = new Date(System.currentTimeMillis());
+        boolean result;
+        String bodyMessage;
+        mensaje = new MimeMessage(mailSesion);
+        
+        bodyMessage = "<p>Estimado/a</p> "
+                + "Hoy: " + formateador.format(hoy) + " se ha extendido la vigencia de la "
+                + "guía " + guia.getCodigo() + " emitida el " + formateador.format(guia.getFechaEmisionGuia()) + ", "
+                + "que ahora vencerá el " + formateador.format(guia.getFechaVencimiento()) + ".</p>"
+                
+                + "<p>Por favor, no responda este correo.</p> "
+                + "<p>Saludos cordiales</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("AutoridadLocal") + "</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("DependienteDe") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("DomicilioAutLocal") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("TelAutLocal") + "<br /> "
+                + "Correo electrónico: <a href=\"mailto:" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "\">" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "</a></p>";
+
+        try{
+            mensaje.setRecipient(Message.RecipientType.TO, new InternetAddress(mail));
+            mensaje.setSubject(ResourceBundle.getBundle("/Bundle").getString("Aplicacion") + ": Aviso de extensión del período de vigencia de Guía");
+            mensaje.setContent(bodyMessage, "text/html; charset=utf-8");
+            
+            Date timeStamp = new Date();
+            mensaje.setSentDate(timeStamp);
+            
+            Transport.send(mensaje);
+            
+            result = true;
+            
+        }catch(MessagingException ex){
+            result = false;
+            System.out.println("Hubo un error enviando el correo al usuario" + ex.getMessage());
+        }
+        
+        return result;               
+    }  
 }

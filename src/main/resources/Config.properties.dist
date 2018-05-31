@@ -86,6 +86,10 @@ IntervPM=PLAN MANEJO SOSTENIBLE
 TasaPCUS=RENTAS-PCUS
 TasaPM=RENTAS-PM
 
+# Permitir emisión de guías con tasas sin la acreditación del pago
+EmiteSinPagos=si
+CantEmitSinPago=1
+
 # ------------------------------------------------------------ #
 # Tipos de Parámetros y estados de Cotrol y Verificación (CCV) #
 # ------------------------------------------------------------ #

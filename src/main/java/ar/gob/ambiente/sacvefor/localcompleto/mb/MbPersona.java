@@ -29,7 +29,6 @@ import ar.gob.ambiente.sacvefor.servicios.rue.TipoSociedad;
 import ar.gob.ambiente.sacvefor.servicios.territorial.CentroPoblado;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Departamento;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Provincia;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -47,8 +46,6 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
 
 /**
  * Bean de respaldo para las entidades Persona, cuyos roles podrán ser:
@@ -59,6 +56,8 @@ import org.primefaces.model.UploadedFile;
  * Destinatario
  * etc.
  * Gestinoa las vistas aut/personas/ y guia/personas
+ * Para el caso de los destinatarios, se deberá consiganar (localmente) al menos un domicilio.
+ * Todos los demás podrán consignar un domicilio en el RUE que sería el oficial.
  * @author rincostante
  */
 public class MbPersona implements Serializable {
@@ -112,6 +111,11 @@ public class MbPersona implements Serializable {
     private List<Persona> lstDestFilter;
     
     /**
+     * Variable privada: objeto para setear el domicilio en el RUE en el caso que la persona sea un Destinatario
+     */    
+    private Domicilio domicilio;
+    
+    /**
      * Variable privada: listado de los Transportistas registrados
      */
     private List<Persona> lstTransportistas;
@@ -160,6 +164,12 @@ public class MbPersona implements Serializable {
      * Variable privada: Usuario de sesión
      */
     private Usuario usLogueado;
+    
+    /**
+     * Variable privada: Domicilio a registrar localmente para la persona si es un Destinatario
+     * Podrán ser más de uno
+     */
+    private ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio domicilioLocal;
     
     ///////////////////////////
     // inyección de recursos //
@@ -352,7 +362,7 @@ public class MbPersona implements Serializable {
      */
     private String rueCorreoElectronico;
     
-    // Domicilio
+    // Domicilio RUE
     /**
      * Variable privada: calle del domicilio de la persona en el RUE
      */
@@ -402,7 +412,23 @@ public class MbPersona implements Serializable {
     
     ///////////////////////
     // Métodos de acceso //
-    ///////////////////////    
+    ///////////////////////
+    public ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio getDomicilioLocal() {    
+        return domicilioLocal;
+    }
+
+    public void setDomicilioLocal(ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio domicilioLocal) {    
+        this.domicilioLocal = domicilioLocal;
+    }
+
+    public Domicilio getDomicilio() {
+        return domicilio;
+    }
+ 
+    public void setDomicilio(Domicilio domicilio) {
+        this.domicilio = domicilio;
+    }
+
     public List<Autorizacion> getLstAut() {
         return lstAut;
     }
@@ -784,7 +810,9 @@ public class MbPersona implements Serializable {
      */  
     @PostConstruct
     public void init(){
+        // seteo la persona y el domicilio para el caso que se trate de un destinatario.
         persona = new Persona();
+        domicilio = new Domicilio();
     	// obtento el usuario
 	ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
         sesion = (MbSesion)ctx.getSessionMap().get("mbSesion");
@@ -923,8 +951,10 @@ public class MbPersona implements Serializable {
             if(perExitente != null){
                 if(persona.getId() != null){
                     // si edita, no habilito si no es el mismo
-                    if(!perExitente.equals(persona)) valida = false;
-                    mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Proponente") + " con el CUIT que está registrando.";
+                    if(!perExitente.equals(persona)){
+                        valida = false;
+                        mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Proponente") + " con el CUIT que está registrando.";
+                    }
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
@@ -970,8 +1000,10 @@ public class MbPersona implements Serializable {
             if(perExitente != null){
                 if(perExitente.getId() != null){
                     // si edita, no habilito si no es el mismo
-                    if(!perExitente.equals(persona)) valida = false;
-                    mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Tecnico") + " con el CUIT que está registrando.";
+                    if(!perExitente.equals(persona)){
+                        valida = false;
+                        mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Tecnico") + " con el CUIT que está registrando.";
+                    }
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
@@ -1017,8 +1049,10 @@ public class MbPersona implements Serializable {
             if(perExitente != null){
                 if(perExitente.getId() != null){
                     // si edita, no habilito si no es el mismo
-                    if(!perExitente.equals(persona)) valida = false;
-                    mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Apoderado") + " con el CUIT que está registrando.";
+                    if(!perExitente.equals(persona)){
+                        valida = false;
+                        mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Apoderado") + " con el CUIT que está registrando.";
+                    }
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
@@ -1060,16 +1094,23 @@ public class MbPersona implements Serializable {
         Parametrica rolDest = obtenerRol(ResourceBundle.getBundle("/Config").getString("Destinatario"));
         try{
             Persona perExitente = perFacade.getExistente(persona.getCuit(), rolDest);
+            // valido que tenga al menos un domicilio registrado localmente
+            if(persona.getDomicilios().isEmpty()){
+                valida = false;
+                mensaje = "El " + ResourceBundle.getBundle("/Config").getString("Destinatario") + " debe tener al menos un domicilio registrado localmente. ";
+            }
             // valido por el nombre
             if(perExitente != null){
                 if(perExitente.getId() != null){
                     // si edita, no habilito si no es el mismo
-                    if(!perExitente.equals(persona)) valida = false;
-                    mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Destinatario") + " con el CUIT que está registrando.";
+                    if(!perExitente.equals(persona)){
+                        valida = false;
+                        mensaje = mensaje + "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Destinatario") + " con el CUIT que está registrando.";
+                    }
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
-                    mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Destinatario") + " con el CUIT que está registrando.";
+                    mensaje = mensaje + "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Destinatario") + " con el CUIT que está registrando.";
                 }
             }
             // si validó, continúo
@@ -1111,8 +1152,10 @@ public class MbPersona implements Serializable {
             if(perExitente != null){
                 if(perExitente.getId() != null){
                     // si edita, no habilito si no es el mismo
-                    if(!perExitente.equals(persona)) valida = false;
-                    mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Transportista") + " con el CUIT que está registrando.";
+                    if(!perExitente.equals(persona)){
+                        valida = false;
+                        mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Transportista") + " con el CUIT que está registrando.";
+                    }
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
@@ -1158,7 +1201,7 @@ public class MbPersona implements Serializable {
         }
         
         // valido el domicilio si lo tiene
-        valDom = validarDomicilio(rolPersona);
+        valDom = validarDomicilio();
         if(!valDom.equals("")){
             valida = false;
             mensaje = "Hubo un error validando el Domicilio ingresado. " + valDom;
@@ -1333,6 +1376,49 @@ public class MbPersona implements Serializable {
         cargarTiposEntidad();
         cargarTiposSociedad();
         cargarProvincias();
+    }
+    
+    /**
+     * Método para preparar el formulario de registro de domicilios para un Destinatario
+     */
+    public void prepareDomDest(){
+        domicilioLocal = new ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio();
+        cargarProvincias();
+    }
+    
+    /**
+     * Método para agregar un domicilio al Destinatario, registrado localmente.
+     * Registra los datos territoriales y lo agrega al listado de domicilios de la persona.
+     */
+    public void addDomLocal(){
+        // seteo la calle en mayúsculas
+        String sCalle = domicilioLocal.getCalle().toUpperCase();
+        domicilioLocal.setCalle(sCalle);
+        // guardo los datos territoriales
+        domicilioLocal.setIdLoc(localSelected.getId());
+        domicilioLocal.setLocalidad(localSelected.getNombre());
+        domicilioLocal.setDepartamento(deptoSelected.getNombre());
+        domicilioLocal.setProvincia(provSelected.getNombre());
+        // agrego el domicilio al Destinatario
+        persona.getDomicilios().add(domicilioLocal);
+        // limpio todo
+        limpiarFormDomLoc();
+    }
+    
+    public void deleteDomLocal(){
+        persona.getDomicilios().remove(domicilioLocal);
+    }
+    
+    /**
+     * Método para limpiar el formulario de registro de domicilios para un destinatario
+     */
+    public void limpiarFormDomLoc(){
+        domicilioLocal = new ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio();
+        provSelected = new EntidadServicio();
+        deptoSelected = new EntidadServicio();
+        listDepartamentos = new ArrayList<>();
+        localSelected = new EntidadServicio();
+        listLocalidades = new ArrayList<>();
     }
     
     /**
@@ -1855,9 +1941,7 @@ public class MbPersona implements Serializable {
 
     /**
      * Método para validar el domicilio según sea una edición o una inserción.
-     * Si se trata de una edición, verifico el rol de la Persona:
-     * Si es Destinatario, el Domicilio es obligatorio.
-     * Para los roles de Persona restantes valid los datos y opero según las tres alternativas posibles:
+     * Si se trata de una edición valido los datos y opero según las tres alternativas posibles:
      * 1: Domicilio completo, 2: Domicilio vacío, 3: Domicilio incompleto.
      * caso 1 => seteo el Domicilio;
      * caso 2 => elimino el Domicilio de la Persona;
@@ -1866,46 +1950,33 @@ public class MbPersona implements Serializable {
      * Utilizado en savePerRue(String rolPersona)
      * @return String resultado de la validación
      */
-    private String validarDomicilio(String rolPersona) {
+    private String validarDomicilio() {
         String result = "", valid;
 
         // defino los campos a validar según sea edición o insert
         if(personaRue.getId() != 0){
-            if(rolPersona.equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
-                // si se trata de un Destinatario, el Domicilio es obligatorio, valido que esté completo
-                valid = setearErrorDomEdit();
-                if(!valid.equals("")){
-                    // si está incompleto termino de armar el mensaje.
-                    result = valid + " No se ha podido validar el Domicilio";
-                }else{
-                    // si está completo, devuelvo el mensaje vacío.
-                    setearDom();
-                    result = "";
-                }
+            /**
+             * Actúo según el Domicilio estuviera o no persisitido con anterioridad, 
+             * dado que al prepararlo para la edición, en cualquier caso, ya se le asignó un Domicilio, persistido o no.
+             */
+            if(!personaRue.getDomicilio().getCalle().equals("") &&
+                        !personaRue.getDomicilio().getNumero().equals("") &&
+                        localSelected != null && deptoSelected != null && provSelected != null){
+                // si el Domicilio está completo lo seteo y devuelvo el mensaje vacío
+                setearDom();
+                result = "";
+            }else if(personaRue.getDomicilio().getCalle().equals("") &&
+                        personaRue.getDomicilio().getNumero().equals("") &&
+                        localSelected == null && deptoSelected == null && provSelected == null){
+                // si el domicilio está vacío, lo elimino de la Persona y devuelvo el mensaje vacío
+                personaRue.setDomicilio(null);
+                result = "";
             }else{
-                /**
-                 * si no es Destinatario, actúo según el Domicilio estuviera o no persisitido con anterioridad, 
-                 * dado que al prepararlo para la edición, en cualquier caso, ya se le asignó un Domicilio, persistido o no.
-                 */
-                if(!personaRue.getDomicilio().getCalle().equals("") &&
-                            !personaRue.getDomicilio().getNumero().equals("") &&
-                            localSelected != null && deptoSelected != null && provSelected != null){
-                    // si el Domicilio está completo lo seteo y devuelvo el mensaje vación
-                    setearDom();
-                    result = "";
-                }else if(personaRue.getDomicilio().getCalle().equals("") &&
-                            personaRue.getDomicilio().getNumero().equals("") &&
-                            localSelected == null && deptoSelected == null && provSelected == null){
-                    // si el domicilio está vacío, lo elimino de la Persona y devuelvo el mensaje vació
-                    personaRue.setDomicilio(null);
-                    result = "";
-                }else{
-                    // si el domicilio está incompleto, seteo el mensaje de error y lo devuelvo
-                    valid = setearErrorDomEdit();
-                    result = valid + " No se ha podido validar el Domicilio";
-                }
+                // si el domicilio está incompleto, seteo el mensaje de error y lo devuelvo
+                valid = setearErrorDomEdit();
+                result = valid + " No se ha podido validar el Domicilio";
             }
-        }else if(!rueCalle.equals("") || !rueNumero.equals("") || rolPersona.equals(ResourceBundle.getBundle("/Config").getString("Destinatario"))){
+        }else if(!rueCalle.equals("") || !rueNumero.equals("")){
             // se considera que hay domicilio seteado, valido los datos obligarorios
             valid = setearErrorDomNuevo();
             if(!valid.equals("")){

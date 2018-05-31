@@ -1,6 +1,7 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.entities;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -76,9 +77,8 @@ public class Guia implements Serializable {
     private TipoGuia tipo;
     
     /**
-     * Variable privada: Paramétrica que indica el tipo de Fuente de Productos:
-     * Autorización
-     * Guía madre
+     * Variable privada: Paramétrica que indica el tipo de origen de los Productos que toma la guía.
+     * Según el tipo de guía, dicho origen será de una autorización o de otra guía.
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -87,8 +87,10 @@ public class Guia implements Serializable {
     private Parametrica tipoFuente;
     
     /**
-     * Variable privada: Cadena que constituye el número identificatorio de la fuente de Productos,
-     * en el caso que sea una autorización
+     * Variable privada: Cadena que constituye el número identificatorio 
+     * de la autorización que oficia como fuente de productos para las guías 
+     * gestionadas por el componente local, es decir guías primarias.
+     * Se trata del número de resolución que autoriza la extracción de los productos
      */
     @Column (nullable=true, length=30)
     @Size(message = "El campo numFuente no puede tener más de 30 caracteres", max = 30)  
@@ -263,6 +265,23 @@ public class Guia implements Serializable {
      */
     @Column (nullable=true)
     private int formEmitidos;
+    
+    /**
+     * Variable privada: guarda la cadena codificada con md5 
+     * a partir del código de la guía y la fecha de emisión 
+     * para generar el código QR de la guía en papel.
+     */
+    @Column (nullable=true, length=100)
+    @Size(message = "El campo codQr no puede tener más de 100 caracteres", max = 100)       
+    private String codQr;
+    
+    /**
+     * Variable privada no persistida: destinada a guardar la imagen del martillo al setearse el listado
+     * de Guías para emitir el reporte.
+     * No está disponible para la API
+     */
+    @Transient
+    private FileInputStream martillo;    
 
     /**
      * Constructor, inicializa los ítems y las guías fuentes si corresponde
@@ -274,10 +293,26 @@ public class Guia implements Serializable {
     }
 
     @XmlTransient
+    public FileInputStream getMartillo() {
+        return martillo;
+    }
+
+    public void setMartillo(FileInputStream martillo) {
+        this.martillo = martillo;
+    }
+
+    public String getCodQr() {
+        return codQr;
+    }
+
+    public void setCodQr(String codQr) {
+        this.codQr = codQr;
+    }    
+    
+    @XmlTransient
     public List<FormProv> getFormProvisorios() {
         return formProvisorios;
     }
-
 
     public void setFormProvisorios(List<FormProv> formProvisorios) {
         this.formProvisorios = formProvisorios;

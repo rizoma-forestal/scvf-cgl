@@ -321,6 +321,23 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }
     
     /**
+     * Método para obtener las guías emitidas por el titular cuyo cuit se recibe,
+     * que adeudan el pago de tasas
+     * @param cuit cuit del titular de la guía
+     * @return List<Guia> listado de las guías correspondientes
+     */
+    public List<Guia> getSinPago(Long cuit){
+        String queryString = "SELECT guia FROM Guia guia "
+                + "WHERE guia.origen.cuit = :cuit "
+                + "AND guia.codRecibo = null "
+                + "AND guia.estado.nombre = 'EMITIDA' "
+                + "AND guia.tipo.abonaTasa = true";
+        Query q = em.createQuery(queryString)
+                .setParameter("cuit", cuit);
+        return q.getResultList(); 
+    }
+    
+    /**
      * Método para obtener todas las revisiones de la entidad
      * @param codigo String Código único identificatorio de la Guía
      * @return List<Guia> listado de las revisiones de una guía para su auditoría

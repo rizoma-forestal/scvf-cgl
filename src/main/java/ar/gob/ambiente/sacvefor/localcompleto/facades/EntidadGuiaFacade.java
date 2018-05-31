@@ -1,6 +1,7 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.facades;
 
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EntidadGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import java.util.ArrayList;
@@ -48,17 +49,22 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
     }    
     
     /**
-     * Metodo para validar una EntidadGuia destino existente según su cuit y tipo
+     * Metodo para validar una EntidadGuia destino existente según su cuit, tipo y domicilio
      * @param cuit Long Cuit a validar
      * @param tipoEntidadGuia Parametrica Tipo entidad correspondiente al tipo de EntidadGuia, en este caso: Destino
+     * @param dom domicilio seleccionado del destinatario.
      * @return EntidadGuia entidad guía crrespondiente a los parámetros indicados
      */
-    public EntidadGuia getDestinoExistente(Long cuit, Parametrica tipoEntidadGuia) {    
+    public EntidadGuia getDestinoExistente(Long cuit, Parametrica tipoEntidadGuia, Domicilio dom) {    
         List<EntidadGuia> lstEntidadGuia;
         String queryString = "SELECT entidad FROM EntidadGuia entidad "
                 + "WHERE entidad.cuit = :cuit "
-                + "AND entidad.tipoEntidadGuia = :tipoEntidadGuia";
+                + "AND entidad.tipoEntidadGuia = :tipoEntidadGuia "
+                + "AND entidad.idLocGT = :domIdLoc "
+                + "AND entidad.inmDomicilio = :domTexto";
         Query q = em.createQuery(queryString)
+                .setParameter("domIdLoc", dom.getIdLoc())
+                .setParameter("domTexto", dom.getCalle() + "-" + dom.getNumero())
                 .setParameter("cuit", cuit)
                 .setParameter("tipoEntidadGuia", tipoEntidadGuia);
         lstEntidadGuia = q.getResultList();

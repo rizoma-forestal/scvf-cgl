@@ -18,9 +18,9 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="24" splitType="Stretch">
+		<band height="15" splitType="Stretch">
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="349" y="0" width="70" height="24" uuid="04b0b1ed-024b-44ae-adbb-621b33f9d6e2"/>
+				<reportElement x="349" y="0" width="70" height="15" uuid="04b0b1ed-024b-44ae-adbb-621b33f9d6e2"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -35,7 +35,7 @@
 				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement x="229" y="0" width="120" height="24" uuid="9a1b1f47-ac71-4280-b33f-fa4806f7ba3a"/>
+				<reportElement x="229" y="0" width="120" height="15" uuid="9a1b1f47-ac71-4280-b33f-fa4806f7ba3a"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -50,7 +50,7 @@
 				<textFieldExpression><![CDATA[$F{unidad}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="159" height="24" uuid="23dfeef8-f8dc-4043-b759-6ff8b0f66041"/>
+				<reportElement x="0" y="0" width="159" height="15" uuid="23dfeef8-f8dc-4043-b759-6ff8b0f66041"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -65,7 +65,7 @@
 				<textFieldExpression><![CDATA[$F{nombreVulgar}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement x="159" y="0" width="70" height="24" uuid="c31c6fde-634e-4b0f-9228-b1ad5253dd19"/>
+				<reportElement x="159" y="0" width="70" height="15" uuid="c31c6fde-634e-4b0f-9228-b1ad5253dd19"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -80,7 +80,7 @@
 				<textFieldExpression><![CDATA[$F{clase}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="419" y="0" width="83" height="24" uuid="6ae7b545-c4b3-4f20-a954-f645766c437f"/>
+				<reportElement x="419" y="0" width="83" height="15" uuid="6ae7b545-c4b3-4f20-a954-f645766c437f"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>

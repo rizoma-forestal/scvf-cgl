@@ -7,19 +7,96 @@
     <h:body >
         <h:panelGrid columns="2" cellpadding="10">
             <img src="#{request.contextPath}/resources/img/file-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
-            <p:outputLabel styleClass="titPanel" value="Emisión de la Guía" />
+            <p:outputLabel styleClass="titPanel" value="Emisión de la Guía" 
+                           rendered="#{config.EmiteSinPagos eq 'no' 
+                                       or mbGuia.guia.estado.habilitaEmision}" />
+            <p:outputLabel styleClass="titPanel" value="Registro de pago de tasas" 
+                           rendered="#{config.EmiteSinPagos eq 'si' 
+                                       and mbGuia.guia.estado.nombre eq config.GuiaEmitida 
+                                       and mbGuia.guia.codRecibo eq null}" />
+            <p:outputLabel styleClass="titPanel" value="Registro de pago realizado" 
+                           rendered="#{config.EmiteSinPagos eq 'si' 
+                                       and mbGuia.guia.estado.nombre eq config.GuiaEmitida 
+                                       and mbGuia.guia.codRecibo ne null}" />
         </h:panelGrid>
+        <h:panelGrid columns="1" >
+            <p:outputLabel value="Esta por emitir la guía sin acreditar el pago de tasas." style="font-size: 20px !important; color: #8A0829" 
+                               rendered="#{mbGuia.guia.codRecibo eq 'TEMP' 
+                                           and mbGuia.guia.tipo.abonaTasa 
+                                           and mbGuia.guia.estado.nombre ne config.GuiaEmitida}"/>
+        </h:panelGrid>
+        <!-- Diálogo para confirmar la emisión sin registro de pago -->
+        <p:dialog header="Guías sin registro de pago" widgetVar="dlgVerGuiasSinPago" minHeight="40" closable="false">
+            <h:form prependId="false" id="frSinPagos">
+                <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 700px">
+                    <p:outputLabel value="El titular de la Guía ya ha llegado al cupo máximo permitido de guías emitidas sin acreditar pago de tasas: #{config.CantEmitSinPago}" 
+                                   style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guiasSinPago.size() >= config.CantEmitSinPago}" />
+                    <h:panelGrid columns="2" >
+                        <p:dataTable id="dtDestGuiasAdeudadas" value="#{mbGuia.guiasSinPago}" var="guiaAdeud" 
+                                     styleClass="table" >
+                            <p:column headerText="id" style="width: 35px">
+                                <p:outputLabel value="#{guiaAdeud.id}"/>
+                            </p:column>
+                            <p:column headerText="Guía" style="width: 100px">
+                                <p:outputLabel value="#{guiaAdeud.codGuia}"/>
+                            </p:column>
+                            <p:column headerText="Emisión" >
+                                <p:outputLabel value="#{guiaAdeud.fechaEmision}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Vencimiento" >
+                                <p:outputLabel value="#{guiaAdeud.fechaVenc}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Total a pagar ($)" style="text-align: right !important;" >
+                                <p:outputLabel value="#{guiaAdeud.totalAdeudado}" >
+                                    <f:convertNumber type="currency"  currencySymbol=""/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width:30px;" >
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-file-pdf-o" title="Emitir volante"
+                                                 action="#{mbGuia.emitirVolanteAdeudado()}" ajax="false" >
+                                    <f:setPropertyActionListener value="#{domLoc}" target="#{mbGuia.domDestino}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" >
+                        <p:commandButton title="Emitir la Guía sin el registro del pago de tasas" value="Emitir Guía" icon="fa fa-fw fa-file-pdf-o" 
+                                         action="#{mbGuia.generarCodReciboTemp()}" ajax="false" update="frEmision,pMenuIndex,frame,messages" 
+                                         rendered="#{not mbGuia.guia.estado.habilitaFuenteProductos 
+                                                     and mbSesion.usuario.rol.nombre ne config.Consulta
+                                                     and config.CantEmitSinPago > mbGuia.guiasSinPago.size()}"/>
+                    </h:panelGrid>
+                    <f:facet name="footer">
+                        <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerGuiasSinPago').hide();"/>
+                    </f:facet>
+            </p:panel>
+            </h:form>
+        </p:dialog>
         <h:form prependId="false" id="frEmision">
             <!-- Panel que recoge los datos del recibo de pago de tasas -->
             <p:panel id="pnCodigoRecibo" header="Recibo de pago de tasas" rendered="#{mbGuia.guia.tipo.abonaTasa and mbGuia.guia.codRecibo eq null}" >
-                <p:outputLabel value="Ingrese el código del recibo de pagos de las Tasas liquidadas para la Guía, como paso previo para su emisión." 
+                <p:outputLabel value="Ingrese el código del recibo de pagos de las Tasas liquidadas para la Guía, como paso previo para su emisión. " 
                                style="font-style: italic; font-size: small" />
+                <p:outputLabel value="Podrá validar si es posible emitir la Guía sin el registro del pago de las tasas correspondientes mediante el botón 'Validar emisión'." 
+                               style="font-style: italic; font-size: small" 
+                               rendered="#{config.EmiteSinPagos eq 'si' 
+                                           and mbGuia.guia.estado.nombre ne config.GuiaEmitida}" />
                 <h:panelGrid columns="2" >
                     <p:outputLabel value="Código de recibo" for="codRecibo"/>
                     <p:inputText id="codRecibo" value="#{mbGuia.guia.codRecibo}" 
                                  requiredMessage="Debe ingresar el código del recibo de pago de Tasas" required="true"/>
+                </h:panelGrid>
+                <h:panelGrid columns="2" cellspacing="2" >
                     <p:commandButton title="Registrar el código de recibo de pagos de Tasas" value="Registrar" icon="fa fa-fw fa-save" 
                                      action="#{mbGuia.registrarCodRecibo()}" update="frEmision,pMenuIndex,frame,messages"/>
+                    <p:commandButton title="Validar si es posible la emisión sin el registro del pago de tasas" value="Validar emisión" icon="fa fa-fw fa-check" 
+                                     oncomplete="PF('dlgVerGuiasSinPago').show();" update="pnViewGuias"
+                                     rendered="#{config.EmiteSinPagos eq 'si' 
+                                                 and mbGuia.guia.estado.nombre ne config.GuiaEmitida}" />
                 </h:panelGrid>
             </p:panel>
             
@@ -41,7 +118,9 @@
             </p:panel>
             
             <!-- Panel que muestra los datos generales de la guía que se va a emitir -->
-            <p:panel id="pnGeneralGuia" header="Emisión de Guía" rendered="#{not mbGuia.guia.estado.habilitaFuenteProductos and (not mbGuia.guia.tipo.abonaTasa or mbGuia.guia.codRecibo ne null)}" >
+            <p:panel id="pnGeneralGuia" header="Emisión de Guía" 
+                     rendered="#{not mbGuia.guia.estado.habilitaFuenteProductos 
+                                 and (not mbGuia.guia.tipo.abonaTasa or mbGuia.guia.codRecibo ne null)}" >
                 <h:panelGrid id="pgDatosGrales" columns="2" >
                     <p:outputLabel value="Tipo de Guía: " for="tipo"/>
                     <p:outputLabel id="tipo" value="#{mbGuia.guia.tipo.nombre}" 
@@ -86,11 +165,12 @@
                     </p:dataTable>
                 </h:panelGrid>
                 <!-- Formularios provisorios -->
-                <p:fieldset toggleable="true" legend="Formularios provisorios" style="margin-bottom:20px">
+                <p:fieldset toggleable="true" legend="Formularios provisorios" style="margin-bottom:20px" 
+                            rendered="#{config.ImprimeFormularios eq 'si' and not mbGuia.guia.tipo.descuentaAutoriz}">
                     <!-- formulario -->
                     <p:outputLabel value="Si la Guía que va a emitir está respaldada por uno o más formularios provisorios, podrá vincularlos completando el listado que está debajo. Podrá seleccionar la guía a partir de la cual se emitió el formulario, especificar su n° y asignarlo a la guía. La asinganción de formularios provisorios no es obligatoria. Si lo hace, tanto la selección de la guía emisora como el n° de orden del formulario son obligatorios." style="font-style: italic; font-size: small" />
                     <p:separator />
-                    <h:panelGrid id="pgFormProv" columns="2" rendered="#{config.ImprimeFormularios eq 'si'}">
+                    <h:panelGrid id="pgFormProv" columns="2" >
                         <p:outputLabel value="Guía emisora: " for="cmbGuia"/>   
                         <p:selectOneMenu id="cmbGuia" value="#{mbGuia.guiaEmisoraSelected}" converter="omnifaces.SelectItemsConverter" >
                             <f:selectItem itemLabel="Seleccione la Guía emisora" itemValue="" noSelectionOption="true"/>
@@ -101,14 +181,14 @@
                         <p:inputNumber id="numForm" value="#{mbGuia.formProv.numFormuario}" decimalPlaces="0" minValue="0" />
                     </h:panelGrid>
                     <!-- botones para guardar y limpiar -->
-                    <h:panelGrid id="pgBotForm" columns="2" rendered="#{config.ImprimeFormularios eq 'si'}" >
+                    <h:panelGrid id="pgBotForm" columns="2" >
                         <p:commandButton title="Asignar el formulario provisorio a la guía" value="Asignar" icon="fa fa-fw fa-save" 
                                          action="#{mbGuia.asignarFormProv()}" update="frEmision,messages"/>
                         <p:commandButton title="Limpiar los datos para el formulario provisorio" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                          resetValues="true" action="#{mbGuia.limpiarFormEmision()}" update="frEmision"/>
                     </h:panelGrid>
                     <!-- listado de formularios asignados -->
-                    <h:panelGrid id="pgFormAsig" columns="1" rendered="#{config.ImprimeFormularios eq 'si'}" >
+                    <h:panelGrid id="pgFormAsig" columns="1" >
                         <p:dataTable id="dtFormProv" value="#{mbGuia.guia.formProvisorios}" var="form" styleClass="table" style="width: 300px" >
                             <p:column headerText="Guía emisora" >
                                 <p:outputLabel value="#{form.codGuia}"/>

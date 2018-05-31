@@ -248,6 +248,13 @@ public class Autorizacion implements Serializable {
     private List<Persona> lstApoderados;   
     
     /**
+     * Variable privada no persistida: flag temporal que indica si la autorización fue 
+     * seleccionada para descontar productos para una guía, durante su registro
+     */
+    @Transient
+    private boolean asignadaDesc;    
+    
+    /**
      * Constructor que inicializa los listados
      */
     public Autorizacion(){
@@ -261,6 +268,14 @@ public class Autorizacion implements Serializable {
     /**********************
      * Métodos de acceso **
      **********************/
+    public boolean isAsignadaDesc() {
+        return asignadaDesc;
+    }
+
+    public void setAsignadaDesc(boolean asignadaDesc) {
+        this.asignadaDesc = asignadaDesc;
+    }
+
     public String getProvincia() {
         return provincia;
     }

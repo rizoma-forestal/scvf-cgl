@@ -11,7 +11,7 @@
             <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
         <h:form prependId="false" id="frDestino">
-            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar destinatario" rendered="#{mbGuia.entDestino eq null}" >
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar destinatario" rendered="#{mbGuia.entDestino eq null and mbGuia.destinatario eq null}" >
                 <p:outputLabel value="Ingrese el CUIT del Destinatario para seleccionarlo, sin '-' ni '.'" style="font-style: italic; font-size: small" />
                 <h:panelGrid columns="4" cellpadding="5">
                     <p:outputLabel value="CUIT" for="cuitBus"/>
@@ -23,7 +23,60 @@
                                      action="#{mbGuia.limpiarCuitDest()}" update="frDestino,pnSeleccionado" resetValues="true"/>
                 </h:panelGrid>
             </p:panel>
-            <p:panel id="pnSeleccionado" styleClass="centro" header="Destinatario seleccionado" rendered="#{mbGuia.entDestino ne null}" >
+            <!-- Destinatario seleccionado (a seleccionar domicilio) -->
+            <p:panel id="pnSelectDom" styleClass="centro" header="Destinatario seleccionado" rendered="#{mbGuia.entDestino eq null and mbGuia.destinatario ne null}" >
+                <h:panelGrid id="pgDestDatos" columns="2" cellpadding="2">
+                    <p:outputLabel value="Nombre completo: " />
+                    <p:outputLabel value="#{mbGuia.destinatario.nombreCompleto}" style="font-weight: bold" />
+                    <p:outputLabel value="CUIT: " />
+                    <p:outputLabel value="#{mbGuia.destinatario.cuit}" style="font-weight: bold" />
+                    <p:outputLabel value="Tipo: " />
+                    <p:outputLabel value="#{mbGuia.destinatario.tipo}" style="font-weight: bold" />
+                    <p:outputLabel value="E-Mail: " />
+                    <p:outputLabel value="#{mbGuia.destinatario.email}" style="font-weight: bold" />
+                </h:panelGrid>
+                <p:outputLabel value="Deberá seleccionar un domicilio del Destinatario mediante el botón de la derecha 
+                               de cada registro de los domicilios listados abajo para poder completar la configuración 
+                               del destino de la guía." style="font-style: italic; font-size: small" />
+                <h:panelGrid id="pgDestDom" columns="2" cellpadding="2">
+                    <p:dataTable id="dtDestDomLoc" value="#{mbGuia.destinatario.domicilios}" var="domLoc" 
+                                 styleClass="table" style="width: 800px" >
+                        <p:column headerText="Calle" >
+                            <p:outputLabel value="#{domLoc.calle}"/>
+                        </p:column>
+                        <p:column headerText="N°" style="width: 35px">
+                            <p:outputLabel value="#{domLoc.numero}"/>
+                        </p:column>
+                        <p:column headerText="Piso" style="width: 35px">
+                            <p:outputLabel value="#{domLoc.piso}"/>
+                        </p:column>
+                        <p:column headerText="Dto." style="width: 35px">
+                            <p:outputLabel value="#{domLoc.depto}"/>
+                        </p:column>
+                        <p:column headerText="Loc." >
+                            <p:outputLabel value="#{domLoc.localidad}"/>
+                        </p:column>
+                        <p:column headerText="Depto." >
+                            <p:outputLabel value="#{domLoc.departamento}"/>
+                        </p:column>
+                        <p:column headerText="Provincia" >
+                            <p:outputLabel value="#{domLoc.provincia}"/>
+                        </p:column>
+                        <p:column style="width:30px" >
+                            <p:commandButton styleClass="fa" icon="fa fa-fw fa-save" title="Asignar este domicilio" process="@this" 
+                                             update="@form,messages" action="#{mbGuia.addDomDestino()}" >
+                                <f:setPropertyActionListener value="#{domLoc}" target="#{mbGuia.domDestino}" /> 
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+                <h:panelGrid columns="1" cellpadding="2">
+                    <p:commandButton title="Limpiar el Destinatario seleccionado" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                     action="#{mbGuia.limpiarFormDestino()}" update="frDestino"/>
+                </h:panelGrid>
+            </p:panel>
+            <!-- EntidadGuia destino (con domicilio seleccionado) -->
+            <p:panel id="pnSeleccionado" styleClass="centro" header="Destino configurado" rendered="#{mbGuia.entDestino ne null}" >
                 <h:panelGrid id="pgEtiquetas" columns="2" cellpadding="2">
                     <p:outputLabel value="Nombre completo: " />
                     <p:outputLabel value="#{mbGuia.entDestino.nombreCompleto}" style="font-weight: bold" />
@@ -45,7 +98,7 @@
                     <p:outputLabel value="Nuevo vencimiento: " rendered="#{mbGuia.guia.fechaVencimiento ne null and mbGuia.editCuit}" />
                     <p:calendar value="#{mbGuia.guia.fechaVencimiento}" pattern="dd/MM/yyyy HH:mm:ss"
                                 rendered="#{mbGuia.guia.fechaVencimiento ne null and mbGuia.editCuit}"
-                                required="true" requiredMessage="Debe indicar el inicio del período a consultar" />
+                                required="true" requiredMessage="Debe indicar una fecha de vencimiento para la guía" />
                 </h:panelGrid>
                 <h:panelGrid columns="2" cellpadding="5" rendered="#{mbGuia.guia.fechaVencimiento ne null and mbGuia.editCuit}">
                     <p:outputLabel value="Motivos: " for="obs"/>
@@ -61,6 +114,9 @@
                                      rendered="#{(mbGuia.guia.destino eq null or mbGuia.cuitProcesado) 
                                                  and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      action="#{mbGuia.saveDestino()}" update="frDestino,pMenuIndex,frame,messages"/>
+                    <p:commandButton title="Seleccionar otro domicilio del Destinatario seleccionado" value="Cambiar domicilio" icon="fa fa-fw fa-reply" 
+                                     rendered="#{(mbGuia.guia.destino eq null or mbGuia.cuitProcesado)}" 
+                                     action="#{mbGuia.deleteDom()}" update="frDestino,pMenuIndex,frame,messages"/>
                     <p:commandButton title="Limpiar el Destinto configurado" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                      rendered="#{mbGuia.guia.destino eq null}"  
                                      action="#{mbGuia.limpiarFormDestino()}" update="frDestino"/>

@@ -27,6 +27,12 @@
                                             actionListener="#{mbGuia.cargarFrame('tasas.xhtml')}" rendered="#{mbGuia.guia.tipo.abonaTasa}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Emision}"
                                             actionListener="#{mbGuia.cargarFrame('emision.xhtml')}" rendered="#{mbGuia.guia.estado.habilitaEmision}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Registrar pago"
+                                            actionListener="#{mbGuia.cargarFrame('emision.xhtml')}" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaEmitida 
+                                                              and config.EmiteSinPagos eq 'si' 
+                                                              and mbGuia.guia.codRecibo eq null and mbGuia.guia.tipo.abonaTasa}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Extender vigencia"
+                                            actionListener="#{mbGuia.cargarFrame('extender.xhtml')}" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaEmitida}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Cancelar"
                                             actionListener="#{mbGuia.cargarFrame('cancelar.xhtml')}" 
                                             rendered="#{mbGuia.guia.estado.habilitaFuenteProductos 

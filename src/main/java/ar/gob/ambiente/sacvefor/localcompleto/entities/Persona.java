@@ -2,7 +2,10 @@
 package ar.gob.ambiente.sacvefor.localcompleto.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
@@ -126,8 +130,37 @@ public class Persona implements Serializable {
      */    
     @Transient
     private Date fechaRevision;    
+
+    /**
+     * Listado de los domicilios que tendrá la persona en el caso que su rol sea el de Destinatario
+     */
+    @Audited(targetAuditMode = NOT_AUDITED)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
+    @JoinColumn(name = "persona_id", referencedColumnName = "id")
+    private List<Domicilio> domicilios;     
     
-    // métodos de acceso
+    /**
+     * Constructor, instancia el lsitado de domicilios
+     */
+    public Persona(){
+        domicilios = new ArrayList<>();
+    }
+    
+    // métodos de acceso    
+    /**
+     * Método que devuelve los domicilio de una persona con el rol de destinatario
+     * No estará disponible en la API
+     * @return List<Domicilio> listado con los domicilios de la persona.
+     */
+    @XmlTransient
+    public List<Domicilio> getDomicilios() {    
+        return domicilios;
+    }
+
+    public void setDomicilios(List<Domicilio> domicilios) {
+        this.domicilios = domicilios;
+    }
+
     public String getEmail() {
         return email;
     }
