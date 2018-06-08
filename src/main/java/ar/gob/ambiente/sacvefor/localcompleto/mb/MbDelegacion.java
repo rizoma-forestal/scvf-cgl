@@ -323,6 +323,7 @@ public class MbDelegacion {
                     JsfUtil.addSuccessMessage("La Delegación fue registrado con exito");
                 }   
                 limpiarForm();
+                cargarProvincias();
             }else{
                 JsfUtil.addErrorMessage("La Delegación que está tratando de persisitir ya existe, por favor verifique los datos ingresados.");
             }
@@ -365,14 +366,11 @@ public class MbDelegacion {
      * Método para limpiar el formulario. Resetea los lisados y entidades seleccionadas
      */
     public void limpiarForm(){
-        if(delegacion.getId() == null){
-            delegacion= new Delegacion();
-        }
+        delegacion= new Delegacion();
         provSelected = new EntidadServicio();
         deptoSelected = new EntidadServicio();
         localSelected = new EntidadServicio();
         listDepartamentos = new ArrayList<>();
-        localSelected = new EntidadServicio();
         listLocalidades = new ArrayList<>();
         listProvincias = new ArrayList<>();
     }

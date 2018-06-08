@@ -937,7 +937,7 @@ public class MbVehiculo {
      */
     public void saveVehiculoRue(){
         boolean valida = true;
-        String mensaje = "", valMat, valMod, valAnio;
+        String mensaje = "", valMat, valMod, valAnio, valTit;
         
         if(vehiculoRue == null){
             vehiculoRue = new ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo();
@@ -984,7 +984,16 @@ public class MbVehiculo {
                 mensaje = mensaje + " Debe ingresar una matrícula.";
             }
         }
-
+        
+        // valido titular
+        if(titularSelected == null){
+            valida = false;
+            if(mensaje.equals("")){
+                mensaje = "Debe ingresar un titular del vehículo.";
+            }else{
+                mensaje = mensaje + " Debe ingresar un titular del vehículo.";
+            }
+        }
         
         // si validó persisto
         if(valida){

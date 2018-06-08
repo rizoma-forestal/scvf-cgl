@@ -4,6 +4,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProdConsulta;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuia;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
@@ -180,13 +181,15 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }
     
     /**
-     * Metodo que devuelve las Guías emitidas que tengan como Destinatario al CUIT recibido
+     * Metodo que devuelve las Guías emitidas que tengan como Destinatario al CUIT recibido.
+     * Que no sean de movimiento interno
      * @param cuit Long cuit del Destinatario cuyas Guías se busca
      * @return List<Guia> listado de las guías destinadas al cuit remitido
      */
     public List<Guia> getEmitidasByDestinatario(Long cuit){
         String queryString = "SELECT guia FROM Guia guia "
                 + "WHERE guia.destino.cuit = :cuit "
+                + "AND guia.tipo.movInterno = false "
                 + "AND guia.estado.nombre = 'EMITIDA'";
         Query q = em.createQuery(queryString)
                 .setParameter("cuit", cuit);
@@ -335,6 +338,33 @@ public class GuiaFacade extends AbstractFacade<Guia> {
         Query q = em.createQuery(queryString)
                 .setParameter("cuit", cuit);
         return q.getResultList(); 
+    }
+    
+    /**
+     * Método para obtener todas las guías registradas de un tipo determinado.
+     * @param tipo TipoGuia tipo de guías a buscar
+     * @return List<Guia> listado correspondiente.
+     */
+    public List<Guia> getByTipo(TipoGuia tipo){
+        String queryString = "SELECT guia FROM Guia guia "
+                + "WHERE guia.tipo = :tipo";
+        Query q = em.createQuery(queryString)
+                .setParameter("tipo", tipo);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener todas las guías registradas cuyo número de fuente sea el
+     * recibido como parámetro
+     * @param numFuente String número de la Autorización fuente
+     * @return List<Guia> listado correspondiente.
+     */
+    public List<Guia> getByNumFuente(String numFuente){
+        String queryString = "SELECT guia FROM Guia guia "
+                + "WHERE guia.numFuente = :numFuente";
+        Query q = em.createQuery(queryString)
+                .setParameter("numFuente", numFuente);
+        return q.getResultList();
     }
     
     /**

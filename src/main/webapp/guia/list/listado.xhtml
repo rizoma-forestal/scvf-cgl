@@ -17,6 +17,7 @@
                 </h:panelGrid>
                 
                 <h:form prependId="false" id="frListGuias">
+                    <p:growl id="messages" showDetail="false" />
                     <!-- Vista detalle -->
                     <p:panel id="pnFrmView" header="Detalle" rendered="#{mbGuia.view}" >
                         <h:panelGrid id="pgDatosGrales" columns="4" styleClass="panelColumns" >
@@ -210,8 +211,8 @@
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view and mbGuia.lstGuiasHijas ne null}" />
-                        <h:panelGrid columns="1" rendered="#{mbGuia.lstGuiasHijas ne null}" >
+                        <p:separator rendered="#{mbGuia.view and not empty mbGuia.lstGuiasHijas}" />
+                        <h:panelGrid columns="1" rendered="#{not empty mbGuia.lstGuiasHijas}" >
                             <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" 
                                              title="Ver las guías que descontaron productos de esta guía." 
                                              update="pnViewGuias" oncomplete="PF('dlgVerGuias').show();"/>
@@ -230,7 +231,7 @@
                         </h:panelGrid>
                     </p:panel>
                     
-                    <!-- Diálogo para ver las Guáis vinculadas a la Autorización -->
+                    <!-- Diálogo para ver las Guáis vinculadas a la Guía -->
                     <p:dialog header="Guías emitidas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
                         <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
                             <h:panelGrid columns="2" >
@@ -270,8 +271,81 @@
                         </p:panel>
                     </p:dialog>
 
+                    <!-- Formulario para la búsqueda de guías -->
+                    <p:panel id="pnBusqueda" header="Generar Listado" style="margin-bottom:10px;" rendered="#{not mbGuia.view}">
+                        <p:outputLabel value="Seleccione la opción de búsqueda de Guías y luego complete el parámetro correspondientes. 
+                                       Mediante el botón que corresponda se mostrará un listado con los resultados de la búsqueda que podrá 
+                                       filtrar según sus columnas." 
+                                           style="font-style: italic; font-size: small" />
+                        <h:panelGrid id="pgBusqueda" columns="2" cellpadding="10" >
+                            <h:panelGrid id="pgBusqSelectOpt" columns="2" cellpadding="2" >
+                                <p:outputLabel value="Buscar por: " for="cmbOpt"/>   
+                                <p:selectOneMenu id="cmbOpt" value="#{mbGuia.optBusqSelected}" converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione la Opción" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbGuia.lstOptBucarGuias}" 
+                                                   var="opt" itemLabel="#{opt.nombre}" itemValue="#{opt}"/>
+                                    <p:ajax update="pnBusqueda" />
+                                </p:selectOneMenu> 
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBusqTipoGuia" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 1}" >
+                                <p:outputLabel value="Tipo de guía: " for="cmbTipoGuia"/>
+                                <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Tipo de guías a buscar" id="cmbTipoGuia" 
+                                                 value="#{mbGuia.busqTipoGuiaSelected}" converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione el tipo de guía" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbGuia.lstBusqTipoGuias}" 
+                                                   var="tipoABusc" itemLabel="#{tipoABusc.nombre}" itemValue="#{tipoABusc}"/>
+                                </p:selectOneMenu> 
+                                <p:commandButton value="Buscar por Tipo de Guía" icon="fa fa-fw fa-search"
+                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias,messages" />
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBusqNumGuia" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 2}" >
+                                <p:outputLabel value="Código de guía: " for="txtCodGuiaBuscar"/>
+                                <p:inputMask placeholder="#{config.maskGuia}" id="txtCodGuiaBuscar" value="#{mbGuia.busqCodGuia}" 
+                                             style="text-transform: uppercase" requiredMessage="Debe ingresar el Número a buscar" 
+                                             required="true" mask="#{config.maskGuia}" />
+                                <p:commandButton value="Buscar por Número de Guía" icon="fa fa-fw fa-search" 
+                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias,messages" />
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBusqCuitTit" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 3}" >
+                                <p:outputLabel value="CUIT del Titular: " for="txtCuitTitBuscar"/>
+                                <p:inputNumber id="txtCuitTitBuscar" value="#{mbGuia.busqCuitTit}" thousandSeparator="" decimalPlaces="0" 
+                                               requiredMessage="Debe ingresar un CUIT del Titular de las guías a buscar" required="true" />
+                                <p:commandButton value="Buscar por Cuit Titular" icon="fa fa-fw fa-search" 
+                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBusqCuitDest" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 4}" >
+                                <p:outputLabel value="CUIT del Destinatario " for="txtCuitDestBuscar"/>
+                                <p:inputNumber id="txtCuitDestBuscar" value="#{mbGuia.busqCuitDest}" thousandSeparator="" decimalPlaces="0" 
+                                               requiredMessage="Debe ingresar un CUIT del Destinatario de las guías a buscar" required="true" />
+                                <p:commandButton value="Buscar por Cuit Destinatario" icon="fa fa-fw fa-search" 
+                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBusqAutFuente" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 5}" >
+                                <p:outputLabel value="Autorización fuente" for="txtAutFuenteBuscar"/>
+                                <p:inputMask placeholder="#{config.maskInstrumento}" id="txtAutFuenteBuscar" value="#{mbGuia.busqNumFuente}" 
+                                             style="text-transform: uppercase" requiredMessage="Debe ingresar el Número" 
+                                             required="true" mask="#{config.maskInstrumento}" />
+                                <p:commandButton value="Buscar por Autorización fuente" icon="fa fa-fw fa-search" 
+                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBusqEstGuia" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 6}" >
+                                <p:outputLabel value="Estado de guía: " for="cmbEstGuia"/>
+                                <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Estado de guías a buscar" id="cmbEstGuia" 
+                                                 value="#{mbGuia.busqEstadoGuiaSelected}" converter="omnifaces.SelectItemsConverter" >
+                                    <f:selectItem itemLabel="Seleccione el estado de guía" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbGuia.lstBusqEstadosGuias}" 
+                                                   var="estABusc" itemLabel="#{estABusc.nombre}" itemValue="#{estABusc}"/>
+                                </p:selectOneMenu> 
+                                <p:commandButton value="Buscar por Estado de Guía" icon="fa fa-fw fa-search" 
+                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
+                            </h:panelGrid>
+                        </h:panelGrid>
+                        <p:outputLabel value="No se registran guías con los parámetros ingresados." 
+                                       style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.busqSinResultados}" />
+                    </p:panel>
+                    
                     <!-- Listado -->
-                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;" rendered="#{mbGuia.listado.size() > 0}">
                         <p:dataTable styleClass="table" value="#{mbGuia.listado}"
                                      filteredValue="#{mbGuia.listadoFilter}"
                              var="guia"
@@ -286,6 +360,10 @@
                                          onclick="PF('guiaTable').clearFilters()" update="dtGuia"/>
                                 <p:commandButton id="toggler" type="button" value="Columnas" icon="ui-icon-calculator" style="margin-left: 10px" />
                                 <p:columnToggler datasource="dtGuia" trigger="toggler" />
+                                <h:commandLink>
+                                    <p:outputLabel value="Exportar listado" />
+                                    <p:dataExporter type="xls" target="dtGuia" fileName="Guías" />
+                                </h:commandLink>   
                             </f:facet>
                             <p:column headerText="id" style="width:25px">
                                 <p:outputLabel value="#{guia.id}"/>
@@ -351,7 +429,7 @@
                                 <p:outputLabel value="#{guia.estado.nombre}" />
                             </p:column>
 
-                            <p:column style="width:30px">
+                            <p:column style="width:30px" exportable="false">
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
                                                  update="@form" action="#{mbGuia.prepareViewDetalle()}" >
                                     <f:setPropertyActionListener value="#{guia}" target="#{mbGuia.guia}" /> 

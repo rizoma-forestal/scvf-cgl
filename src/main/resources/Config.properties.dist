@@ -54,8 +54,8 @@ Transportista=TRANSPORTISTA
 
 # Mensajes de impresión de formularios
 ImprimeFormularios=si
-MsgImpFormVencida=Solo se podrían imprimir formularos provisorios para guías que se encuentren dentro de su período de vigencia.
-MsgImpFormVigente=Podrá emitir los los formularios prpovisorios que considere necesarios, el productos podrá completar los datos en papel. Cada formulario provisorio amparará el movimiento de productos desde el predio hasta la Delegación forestal en la cual se emitirá la guía. Dicha guía no podrá contener más productos, en tipo y cantidad, que los indicados en el formulario. Se deberá consignar la Delegación forestal destinataria, la cantidad de horas de vigencia a partir de la fecha de salida que será registrada en papel por el productor.
+MsgImpFormVencida=Solo se podrían imprimir formularios provisorios para guías que se encuentren dentro de su período de vigencia.
+MsgImpFormVigente=Podrá emitir los los formularios provisorios que considere necesarios, el productor podrá completar los datos en papel. Cada formulario provisorio amparará el movimiento de productos desde el predio hasta la Delegación forestal en la cual se emitirá la guía. Dicha guía no podrá contener más productos, en tipo y cantidad, que los indicados en el formulario. Se deberá consignar la Delegación forestal destinataria, la cantidad de horas de vigencia a partir de la fecha de salida que será registrada en papel por el productor.
 
 # Mensajes de cancelación de guías
 MsgCancelVencida=Solo se podrán cancelar las guías durante su período de vigencia.
@@ -218,6 +218,7 @@ GuiaExtraviada=EXTRAVIADA
 GuiaConTransporte=CON TRANSP. Y PROD.
 GuiaSinTransporte=GUIA CON PROD. SIN TRANSP.
 GuiaConDestino=CON DEST. Y PROD.
+GuiaConProdAEmitir=CON PROD. A EMITIR
 
 # -------- #
 # Máscaras #

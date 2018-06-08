@@ -346,6 +346,7 @@ public class MbInmueble {
                         inmFacade.create(inmueble);
                         JsfUtil.addSuccessMessage("El Inmueble fue registrado con exito");
                     }  
+                    edit = false;
                 }
             }else{
                 JsfUtil.addErrorMessage("El Inmueble que está tratando de persisitir ya existe, por favor verifique los datos ingresados.");
@@ -455,6 +456,7 @@ public class MbInmueble {
                 }
                 // actualizo el flag
                 subeMartillo = true;
+                edit = true;
             }else{
                 JsfUtil.addErrorMessage("No se pudo obtener el destino de la imagen del Martillo.");
             }
