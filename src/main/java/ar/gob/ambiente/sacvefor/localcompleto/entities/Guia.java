@@ -267,12 +267,11 @@ public class Guia implements Serializable {
     private int formEmitidos;
     
     /**
-     * Variable privada: guarda la cadena codificada con md5 
-     * a partir del código de la guía y la fecha de emisión 
+     * Variable privada no persistida: cadena compuesta por el
+     * número de guía y el de la fuente separados por "|"
      * para generar el código QR de la guía en papel.
      */
-    @Column (nullable=true, length=100)
-    @Size(message = "El campo codQr no puede tener más de 100 caracteres", max = 100)       
+    @Transient
     private String codQr;
     
     /**
@@ -301,6 +300,7 @@ public class Guia implements Serializable {
         this.martillo = martillo;
     }
 
+    @XmlTransient
     public String getCodQr() {
         return codQr;
     }

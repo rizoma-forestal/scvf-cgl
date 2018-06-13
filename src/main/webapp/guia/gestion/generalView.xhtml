@@ -24,8 +24,8 @@
                             <p:outputLabel id="fechaEmisionVolante" value="#{mbGuia.guia.fechaEmisionVolante}" style=" font-weight: bold" >
                                 <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
                             </p:outputLabel>
-                            <p:outputLabel value="Código QR: " />
-                            <p:outputLabel value="#{mbGuia.guia.codQr}" style=" font-weight: bold" />
+                            <p:outputLabel value="Formularios emitidos: " rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc}" />
+                            <p:outputLabel value="#{mbGuia.guia.formEmitidos}" style=" font-weight: bold" rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc}" />
                         </h:panelGrid>
                     </p:fieldset>
                     <p:fieldset toggleable="true" legend="Vigencia" style="margin-bottom:20px">

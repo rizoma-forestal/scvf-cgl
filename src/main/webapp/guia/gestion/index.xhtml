@@ -30,9 +30,13 @@
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Registrar pago"
                                             actionListener="#{mbGuia.cargarFrame('emision.xhtml')}" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaEmitida 
                                                               and config.EmiteSinPagos eq 'si' 
-                                                              and mbGuia.guia.codRecibo eq null and mbGuia.guia.tipo.abonaTasa}" />
+                                                              and mbGuia.guia.codRecibo eq null 
+                                                              and mbGuia.guia.tipo.abonaTasa
+                                                              and mbSesion.usuario.rol.nombre ne config.Consulta}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Extender vigencia"
-                                            actionListener="#{mbGuia.cargarFrame('extender.xhtml')}" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaEmitida}" />
+                                            actionListener="#{mbGuia.cargarFrame('extender.xhtml')}" 
+                                            rendered="#{mbGuia.guia.estado.nombre eq config.GuiaEmitida
+                                                        and mbSesion.usuario.rol.nombre ne config.Consulta}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Cancelar"
                                             actionListener="#{mbGuia.cargarFrame('cancelar.xhtml')}" 
                                             rendered="#{mbGuia.guia.estado.habilitaFuenteProductos 

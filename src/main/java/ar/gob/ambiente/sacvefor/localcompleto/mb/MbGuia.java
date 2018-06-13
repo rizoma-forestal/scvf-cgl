@@ -2749,8 +2749,8 @@ public class MbGuia {
         List<Guia> guias = new ArrayList<>();
         // encripto el código para generar el qr en el reporte y lo asigno a la guía
         Date fechaEmision = new Date(System.currentTimeMillis());
-        String codLiso = guia.getCodigo() + "_" + fechaEmision.toString();
-        guia.setCodQr(CriptPass.encriptar(codLiso));
+        String codQr = "guía:" + guia.getCodigo() + "|fuente:" + guia.getNumFuente();
+        guia.setCodQr(codQr);
         // asigno la fecha de emisión
         guia.setFechaEmisionGuia(fechaEmision);
         // asigno la fecha de vencimiento, si el tipo de Guía tiene vigencia asignada.
@@ -2851,7 +2851,6 @@ public class MbGuia {
                     guiaCrtl.setFechaEmision(guia.getFechaEmisionGuia());
                     guiaCrtl.setFechaVencimiento(guia.getFechaVencimiento());
                     guiaCrtl.setProvincia(guia.getProvincia());
-                    guiaCrtl.setCodQr(guia.getCodQr());
                     
                     // obtengo el token si no está seteado o está vencido
                     if(tokenCtrl == null){
@@ -3288,7 +3287,6 @@ public class MbGuia {
                         // seteo la nueva fecha de venicimiento y el nuevo qr
                         guiaCtrol.setId(idGuiaCtrl);
                         guiaCtrol.setFechaVencimiento(guia.getFechaVencimiento());
-                        guiaCtrol.setCodQr(guia.getCodQr());
                         // seteo el estado y el cuit destino porque los chequea la API
                         guiaCtrol.setEstado(lstGuias.get(0).getEstado());
                         guiaCtrol.setCuitDestino(lstGuias.get(0).getCuitDestino());

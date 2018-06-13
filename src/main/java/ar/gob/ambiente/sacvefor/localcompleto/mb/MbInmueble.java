@@ -507,11 +507,11 @@ public class MbInmueble {
      * @return String nombre del archivo según la provincia, el cuit y la fecha
      */
     private String getNombreArchivoASubir(UploadedFile file){
-        Date date = new Date();
+        Date date = new Date(System.currentTimeMillis());
         String extension = file.getFileName().substring(file.getFileName().lastIndexOf(".") + 1);
-        String sufijo = JsfUtil.getDateInString(date);
+        Long sufijo = date.getTime();
         String nombreArchivo = ResourceBundle.getBundle("/Config").getString("IdProvinciaGt") + ""
-                + "_" + inmueble.getIdCatastral() + "_" + inmueble.getNombre() + "_" + sufijo + "." + extension;
+                + "_" + sufijo.toString() + "." + extension;
         return nombreArchivo;
     }       
     
