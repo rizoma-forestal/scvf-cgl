@@ -1,6 +1,9 @@
-# Parámetros dinámicos
+# Parámetros dinámicos de acceso a servicios
 Server=http://localhost:8080
-ServerServicios=http://localhost:8080
+ServerEntidades=http://localhost:8080
+ServerTrazabilidad=http://localhost:8080
+ServerCtrlVerif=http://localhost:8080
+ServerServiciosLectura=http://localhost:8080
 UrlTerritorial=/gestionTerritorial/rest
 UrlEspecies=/especiesVegetales/rest
 UrlEntidades=/rue/rest

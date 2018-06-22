@@ -37,7 +37,7 @@ public class GeneroClient {
      * Variable privada estática y final: String url general de acceso al servicio.
      * A partir de datos configurados en archivo de propiedades
      */
-    private static final String BASE_URI = ResourceBundle.getBundle("/Config").getString("ServerServicios") + "/"
+    private static final String BASE_URI = ResourceBundle.getBundle("/Config").getString("ServerServiciosLectura") + "/"
             + "" + ResourceBundle.getBundle("/Config").getString("UrlEspecies");
 
     /**
