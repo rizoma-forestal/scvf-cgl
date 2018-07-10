@@ -2741,8 +2741,6 @@ public class MbGuia {
      * en el Componente de Gestión de Trazabilidad. Si no es así, la genera mediante la API-TRAZ, si ya existe la cuenta 
      * solo se envía un correo al Destinatario dando aviso de la remisión de la Guía.
      * Si es una guía madre (que descuenta de una autorización) se setea el campo "formEmitidos" en 0.
-     * Se es una guía que descuenta de otra guía y toma formularios provisorios generados de una guía madre 
-     * recibirá el número de formulario provisorio y se seteará en el campo "numFormulario". 
      * Si no tomó de formulario se seteará en 0
      */    
     public void emitir(){
@@ -2763,6 +2761,10 @@ public class MbGuia {
         // cambio el estado de la Guía
         EstadoGuia estado = estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaEmitida"));
         guia.setEstado(estado);        
+        // si la Guía descuenta de una autorización, seteo "formEmitidos" en 0
+        if(guia.getTipo().isDescuentaAutoriz()){
+            guia.setFormEmitidos(0);
+        }        
         try{
             // obtengo la autorización vinculada a la Guías
             Autorizacion aut = autFacade.getExistente(guia.getNumFuente()); 
