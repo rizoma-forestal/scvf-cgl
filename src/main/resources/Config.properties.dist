@@ -12,7 +12,7 @@ UrlCtrlVerif=/ctrlVerif/rest
 
 # Usuarios de acceso a API's REST:
 # UsRestTax y UsRestTerr => sacvefor (para los servicios de taxonomías y territorial)
-# UsRestRue => admin [Provincia] para el estándar y admin_[provincia] para los locales (para el RUE)
+# UsRestRue => admin [Provincia] para el estándar y admin_[provincia] (admin_jujuy, admin santiago, admin salta) para los locales (para el RUE)
 # UsRestSvf => cgl-[provincia] para las provincias y gestionLocal para el estándar (para TRAZ y CTRL)
 UsRestTax=sacvefor
 UsRestTerr=sacvefor
