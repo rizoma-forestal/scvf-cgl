@@ -55,8 +55,8 @@
                                             rendered="#{mbSesion.usuario.rol.nombre eq config.Administrador 
                                                         or mbSesion.usuario.rol.nombre eq config.Pruebas}" />
                                 <p:menuitem value="#{config.Delegaciones}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.EntidadesParametricas}/deleg.xhtml" 
-                                            rendered="#{mbSesion.usuario.rol.nombre eq config.Administrador 
-                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas}" />
+                                            rendered="#{(mbSesion.usuario.rol.nombre eq config.Administrador 
+                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas) and config.ImprimeFormularios eq 'si'}" />
                                 <p:submenu label="#{config.Productos}" 
                                            rendered="#{mbSesion.usuario.rol.nombre eq config.Administrador 
                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas }" >
