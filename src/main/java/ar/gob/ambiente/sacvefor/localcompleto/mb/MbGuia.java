@@ -2044,7 +2044,7 @@ public class MbGuia {
                     // si está emitida (habilita descuento) coninúo si realmente hubo cambio de destino
                     if(!Objects.equals(entDestino.getId(), guia.getDestino().getId())){
                         // guardo el correo del destinatario anterior
-                        String mailAnterior = entDestino.getEmail();
+                        String mailAnterior = guia.getDestino().getEmail();
                         // seteo el nuevo destino
                         guia.setDestino(entDestino);
                         // actualizo la guía
