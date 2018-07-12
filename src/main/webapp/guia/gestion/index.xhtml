@@ -40,7 +40,7 @@
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="Cancelar"
                                             actionListener="#{mbGuia.cargarFrame('cancelar.xhtml')}" 
                                             rendered="#{mbGuia.guia.estado.habilitaFuenteProductos 
-                                                        and not mbGuia.guia.tipo.descuentaAutoriz 
+                                                        and not mbGuia.guia.tipo.habilitaDesc 
                                                         and mbSesion.usuario.rol.nombre ne config.Consulta}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" 
                                             update="frame" ajax="true" value="Imprimir formularios" 
