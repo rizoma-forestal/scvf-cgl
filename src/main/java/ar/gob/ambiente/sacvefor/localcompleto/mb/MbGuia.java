@@ -3370,7 +3370,9 @@ public class MbGuia {
      */
     public void emitirExtend(){
         List<Guia> guias = new ArrayList<>();
-
+        // encripto el código para generar el qr en el reporte y lo asigno a la guía
+        String codQr = "guía:" + guia.getCodigo() + "|fuente:" + guia.getNumFuente();
+        guia.setCodQr(codQr);
         try{
             // obtengo la autorización vinculada a la Guías
             Autorizacion aut = autFacade.getExistente(guia.getNumFuente()); 
