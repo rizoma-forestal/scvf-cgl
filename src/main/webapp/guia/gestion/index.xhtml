@@ -47,7 +47,8 @@
                                             actionListener="#{mbGuia.cargarFrame('formularios.xhtml')}" 
                                             rendered="#{mbGuia.guia.estado.habilitaFuenteProductos 
                                                         and mbGuia.guia.tipo.descuentaAutoriz 
-                                                        and config.ImprimeFormularios eq 'si' 
+                                                        and config.ImprimeFormularios eq 'si'
+                                                        and not mbGuia.guia.tipo.movInterno
                                                         and mbSesion.usuario.rol.nombre ne config.Consulta}" />
                             </p:submenu>
                             <p:submenu styleClass="hMenu" label="Auditorías" rendered="false" >

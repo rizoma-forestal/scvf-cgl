@@ -31,8 +31,8 @@
                                     <p:outputLabel id="fechaEmisionVolante" value="#{mbGuia.guia.fechaEmisionVolante}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
                                     </p:outputLabel>
-                                    <p:outputLabel value="Formularios emitidos: " rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc}" />
-                                    <p:outputLabel value="#{mbGuia.guia.formEmitidos}" style=" font-weight: bold" rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc}" />
+                                    <p:outputLabel value="Formularios emitidos: " rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc and not mbGuia.guia.tipo.movInterno}" />
+                                    <p:outputLabel value="#{mbGuia.guia.formEmitidos}" style=" font-weight: bold" rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc and not mbGuia.guia.tipo.movInterno}" />
                                 </h:panelGrid>
                             </p:fieldset>
                             <p:fieldset toggleable="true" legend="Vigencia" style="margin-bottom:20px">
@@ -47,7 +47,7 @@
                                     </p:outputLabel>
                                     <p:outputLabel value="Estado: " />
                                     <p:outputLabel value="#{mbGuia.guia.estado.nombre}" style=" font-weight: bold" />
-                                    <p:outputLabel value="Fecha de cierre: " for="fechaCierre"/>
+                                    <p:outputLabel value="Fecha de cierre: " for="fechaCierre" rendered="#{mbGuia.guia.tipo.habilitaTransp and not mbGuia.guia.tipo.movInterno}"/>
                                     <p:outputLabel id="fechaCierre" value="#{mbGuia.guia.fechaCierre}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy" />
                                     </p:outputLabel>

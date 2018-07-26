@@ -222,6 +222,7 @@ public class GuiaFacade extends AbstractFacade<Guia> {
                 + "WHERE guia.fechaEmisionGuia >= :inicio "
                 + "AND guia.fechaEmisionGuia <= :fin "
                 + "AND guia.tipo.habilitaTransp = true "
+                + "AND guia.tipo.movInterno = false "
                 + "AND (guia.estado.nombre = 'EMITIDA' "
                 + "OR guia.estado.nombre = 'CERRADA')";
         Query q = em.createQuery(queryString)
@@ -244,6 +245,7 @@ public class GuiaFacade extends AbstractFacade<Guia> {
                 + "WHERE guia.fechaEmisionGuia >= :inicio "
                 + "AND guia.fechaEmisionGuia <= :fin "
                 + "AND guia.tipo.habilitaTransp = true "
+                + "AND guia.tipo.movInterno = false "
                 + "AND origen.departamento =:depto "
                 + "AND (guia.estado.nombre = 'EMITIDA' "
                 + "OR guia.estado.nombre = 'CERRADA')";
@@ -271,6 +273,7 @@ public class GuiaFacade extends AbstractFacade<Guia> {
                 + "WHERE g.fechaemisionguia >= ?1 "
                 + "AND g.fechaemisionguia <= ?2 "
                 + "AND tipo.habilitatransp = TRUE "
+                + "AND guia.tipo.movInterno = false "
                 + "AND i.idprod = ?3 "
                 + "AND (est.nombre = 'EMITIDA' OR est.nombre = 'CERRADA') "
                 + "GROUP BY i.idprod, i.nombrevulgar, i.clase, i.unidad"; 
@@ -299,6 +302,7 @@ public class GuiaFacade extends AbstractFacade<Guia> {
                 + "WHERE g.fechaemisionguia >= ?1 "
                 + "AND g.fechaemisionguia <= ?2 "
                 + "AND tipo.habilitatransp = TRUE "
+                + "AND guia.tipo.movInterno = false "
                 + "AND ent.departamento = ?3 "
                 + "AND i.idprod = ?4 "
                 + "AND (est.nombre = 'EMITIDA' OR est.nombre = 'CERRADA') "
