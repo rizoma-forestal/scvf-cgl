@@ -5,9 +5,10 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body >
-        <h:panelGrid columns="2" cellpadding="10">
+        <h:panelGrid columns="3" cellpadding="10">
             <img src="#{request.contextPath}/resources/img/camionaje-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
             <p:outputLabel styleClass="titPanel" value="Transporte" />
+            <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
         <h:form prependId="false" id="frTransporte">
             <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar Vehículo" rendered="#{mbGuia.vehiculo.id eq 0 or mbGuia.buscarVehNuevo or mbGuia.vehiculo eq null}" >
@@ -54,7 +55,8 @@
                 <p:separator />
                 <h:panelGrid id="pgBotones" columns="3" cellpadding="2">
                     <p:commandButton title="Guardar el Transporte para la Guía" value="Guardar" icon="fa fa-fw fa-save" 
-                                     action="#{mbGuia.saveTransporte()}" update="frTransporte,pMenuIndex,frame,messages"/>
+                                     action="#{mbGuia.saveTransporte()}" update="frTransporte,pMenuIndex,frame,messages" 
+                                     rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                     <p:commandButton title="Limpiar los campos editables" value="Limpiar" icon="fa fa-fw fa-refresh" process="@this"  
                                      action="#{mbGuia.limpiarTransporte()}" update="frTransporte" resetValues="true" />
                     <p:commandButton title="Buscar otro Vehículo" value="Buscar otro" icon="fa fa-fw fa-plus" process="@this" 
@@ -83,7 +85,10 @@
                 </h:panelGrid>
                 <h:panelGrid id="pgBotEdit" columns="3" cellpadding="2">
                     <p:commandButton title="Editar los datos del Transporte" value="Editar" icon="fa fa-fw fa-pencil" 
-                                     action="#{mbGuia.prepareEditTranporte()}" rendered="#{mbGuia.guia.estado.habilitaEdicionComp}" update="frTransporte,messages"/>
+                                     action="#{mbGuia.prepareEditTranporte()}" 
+                                     rendered="#{mbGuia.guia.estado.habilitaEdicionComp 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
+                                     update="frTransporte,messages"/>
                 </h:panelGrid>
             </p:panel>
         </h:form>

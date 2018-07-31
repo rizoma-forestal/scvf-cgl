@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion> {
 
+    /**
+     * Constructor
+     */
     public EstadoAutorizacionFacade() {
         super(EstadoAutorizacion.class);
     }
     
     /**
      * Método para validar la existencia de un EstadoAutorizacion en función de su nombre
-     * @param nombre : Nombre del Estado cuya existencia se pretende validar
-     * @return 
+     * @param nombre String Nombre del Estado cuya existencia se pretende validar
+     * @return EstadoAutorizacion estado de la autorización con el nombre recibido
      */
     public EstadoAutorizacion getExistenteByNombre(String nombre) {
         List<EstadoAutorizacion> lstEstados;
@@ -38,8 +41,8 @@ public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion>
     
     /**
      * Método para validar la existencia de un EstadoAutorizacion en función de su código
-     * @param codigo : Código del Estado cuya existencia se pretende validar
-     * @return 
+     * @param codigo String Código del Estado cuya existencia se pretende validar
+     * @return EstadoAutorizacion estado de la autorización con el código recibido
      */
     public EstadoAutorizacion getExistenteByCodigo(String codigo) {
         List<EstadoAutorizacion> lstEstados;
@@ -57,7 +60,7 @@ public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion>
     
     /**
      * Método sobreescrito que lista los EstadoAutorizacion ordenadas por nombre
-     * @return 
+     * @return List<EstadoAutorizacion> listado de los estados ordenados por su nombre
      */
     @Override
     public List<EstadoAutorizacion> findAll(){
@@ -70,8 +73,8 @@ public class EstadoAutorizacionFacade extends AbstractFacade<EstadoAutorizacion>
     /**
      * Mátodo que solo devuelve las EstadoAutorizacion habilitados, menos el acutal.
      * Para poblar combos de selección de cambios de Estado.
-     * @param codigo : Código del EstadoAutorizacion que no debe estar incluido en la selección
-     * @return 
+     * @param codigo String Código del EstadoAutorizacion que no debe estar incluido en la selección
+     * @return List<EstadoAutorizacion> listado de los estados habilitados restantes al indicado como parámetro
      */
     public List<EstadoAutorizacion> getHabilitadosSinUno(String codigo){
         String queryString = "SELECT est FROM EstadoAutorizacion est "

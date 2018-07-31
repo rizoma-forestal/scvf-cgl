@@ -25,7 +25,6 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoEspecieLocalFacade
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.SubZonaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
-import ar.gob.ambiente.sacvefor.localcompleto.facades.UsuarioFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ZonaIntervencionFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
 import java.util.ArrayList;
@@ -41,115 +40,325 @@ import javax.faces.context.FacesContext;
 /**
  * Bean de respaldo para la gestión de Autorizaciones.
  * Implica la creación, edición y lectura de los datos 
- * de la Resolución autorizante
+ * de la Resolución autorizante.
+ * Gestiona las vistas de /aut/gestion/
  * @author rincostante
  */
 public class MbAutorizacion {
 
+    /**
+     * Variable privada: setea la página inicial para mostrar en el frame
+     */
     private String page = "instrumento.xhtml";
+    
+    /**
+     * Variable privada: objeto principal a gestionar
+     */
     private Autorizacion autorizacion;
+    
+    /**
+     * Variable privada: listado de las Autorizaciones existente
+     */
     private List<Autorizacion> listado;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla
+     */
     private List<Autorizacion> listadoFilter;
+    
+    /**
+     * Variable privada: número de la Autorización para obtenerla para su gestión
+     */
     private String autNumero;
+    
+    /**
+     * Variable privada: flag que indica que la autorización que se está gestionando es nueva
+     */
     private boolean nueva;
+    
+    /**
+     * Variable privada: flag que indica que la autorización que se está gestionando es existente
+     */
     private boolean edit;
+    
+    /**
+     * Variable privada: flag que indica que la autorización que se muestra no está editable
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que se está editando el estado de la autorización
+     */
     private boolean editEstado;
+    
+    /**
+     * Variable privada: MbSesion para gestionar las variables de sesión del usuario
+     */  
     private MbSesion sesion;
+    
+    /**
+     * Variable privada: Usuario de sesión
+     */
     private Usuario usLogueado;
     
     /**
-     * Listado de Tipos de Intervención autorizada
+     * Variable privada: Listado de Tipos de Intervención autorizada
      */
     private List<Parametrica> lstIntervenciones;
     
     /**
-     * Uso del suelo autorizado para el predio
+     * Variable privada: Uso del suelo autorizado para el predio
      */
     private List<Parametrica> lstUsosSuelo;
     
     /**
-     * Listado de Guías vinculadas a la Autorización
+     * Variable privada: Listado de Guías vinculadas a la Autorización
      */
     private List<Guia> lstGuias;
     
     /**
-     * Zona seleccionada según ordenamiento ambiental
+     * Variable privada: Zona seleccionada según ordenamiento ambiental
      */
     private ZonaIntervencion zonaSelected;
-    private List<ZonaIntervencion> lstZonas;
-    private boolean amarillaSelected;
-    private boolean verdeSelected;
     
     /**
-     * Sub Zonas vinculadas a la Autorización
+     * Variable privada: listado de las zonas de intervención que completa el combo para su selección
+     */
+    private List<ZonaIntervencion> lstZonas;
+    
+    /**
+     * Variable privada: flag que indica que la zona seleccionada es la amarilla, para la selección de las subzonas correspondientes
+     */
+    private boolean amarillaSelected;
+    
+    /**
+     * Variable privada: flag que indica que la zona seleccionada es la verde, para la selección de las subzonas correspondientes
+     */
+    private boolean verdeSelected;
+
+    /**
+     * Variable privada: Sub Zona vinculada a la Autorización
      * En función de la Zona
      */
     private SubZona subZonaSelected;
+    
+    /**
+     * Variable privada: listado de las subzonas correspondientes a la zona amarilla
+     */
     private List<SubZona> lstSubZonasAmarilla;
+    
+    /**
+     * Variable privada: listado de las subzonas correspondientes a la zona verde
+     */
     private List<SubZona> lstSubZonasVerde;
     
-    /*********************************
-     * Gestión de objetos a agregar **
-     *********************************/
+    ////////////////////////////////
+    // Búsqueda de Autorizaciones //
+    ////////////////////////////////
+    
     /**
-     * Personas
+     * Variable privada: cuit del proponente para buscar sus autorizaciones
+     */
+    private Long cuitPropBus;
+    
+    /**
+     * Variable privada: cadena conteniendo todo o parte del nombre del proponente para buscar sus autorizaciones
+     */
+    private String nombrePropBus;    
+    
+    ///////////////////////////////////
+    // Gestión de objetos a agregar ///
+    ///////////////////////////////////
+    ///////////////
+    // Personas ///
+    ///////////////
+    /**
+     * Variable privada: guarda el cuit para buscar una persona con el rol que corres y agregarla a la Autorización
      */
     private Long cuitBuscar;
-    private Persona persona;
-    private boolean viewPersona;
+    
     /**
-     * Inmuebles
+     * Variable privada: persona a vincular a vincular a la Autorización
+     */
+    private Persona persona;
+    
+    /**
+     * Variable privada: flag que indica que se está en una vista detalle de los datos de la persona
+     */
+    private boolean viewPersona;
+    
+    ///////////////
+    // Inmuebles //
+    ///////////////
+    /**
+     * Variable privada: identificación catastral para buscar el inmueble a vincular a la Autorización
      */
     private String catastroBuscar;
-    private Inmueble inmueble;
-    private boolean viewInmueble;
+    
     /**
-     * Productos
+     * Variable privada: inmueble a vincular a la Autorización
+     */
+    private Inmueble inmueble;
+    
+    /**
+     * Variable privada: flag que indica que se está en la vista detalle de los datos del inmueble
+     */
+    private boolean viewInmueble;
+    
+    ///////////////
+    // Productos //
+    ///////////////
+    /**
+     * Variable privada: listado de Especies locales para componer el combo para la selección de productos
      */
     private List<ProductoEspecieLocal> lstEspecieLocal;
-    private ProductoEspecieLocal especieSelected;
-    private List<Producto> lstProductos;
-    private Producto prodClaseSelected;
-    private Producto producto;
-    private boolean viewProducto;
-    private ItemProductivo itemAutorizado;
-    private List<ItemProductivo> lstItemsAut;
+    
     /**
-     * Estado
+     * Variable privada: especie local seleccionada para obtener los productos correspondientes
+     */
+    private ProductoEspecieLocal especieSelected;
+    
+    /**
+     * Variable privada: listado de productos disponibles para autorizar su extracción
+     */
+    private List<Producto> lstProductos;
+    
+    /**
+     * Variable privada: clase de producto seleccionada para generar el ítem productivo a asignar a la Autorización
+     */
+    private Producto prodClaseSelected;
+    
+    /**
+     * Variable privada: producto seleccionado para generar el ítem productivo a asignar a la Autorización
+     */
+    private Producto producto;
+    
+    /**
+     * Variable privada: flag que indica que se está ante una vista detalle de las propiedades del producto
+     */
+    private boolean viewProducto;
+    
+    /**
+     * Variable privada: Item a asignar a la Autorización para otorgar el cupo de extracción correspondiente
+     */
+    private ItemProductivo itemAutorizado;
+    
+    /**
+     * Variable privada: listado de los ítems productivos vincuados a la Autorización
+     */
+    private List<ItemProductivo> lstItemsAut;
+    
+    ////////////
+    // Estado //
+    ////////////
+    /**
+     * Variable privada: listado de los estados posibles para asiganar a la autorización
      */
     private List<EstadoAutorizacion> lstEstados;
+    
+    /**
+     * Variable privada: estado seleccionado
+     */
     private EstadoAutorizacion estadoSelected;
     
-    /********************
-     * Accesos a datos **
-     ********************/
+    //////////////////////////////////////////
+    // Accesos a datos, recursos inyectados //
+    //////////////////////////////////////////
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Autorizacion
+     */  
     @EJB
     private AutorizacionFacade autFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica
+     */
     @EJB
     private ParametricaFacade paramFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */
     @EJB
     private TipoParamFacade tipoParamFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ZonaIntervencion
+     */
     @EJB
     private ZonaIntervencionFacade zonaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de SubZona
+     */
     @EJB
     private SubZonaFacade subZonaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de EstadoAutorizacion
+     */
     @EJB
     private EstadoAutorizacionFacade estadoFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Persona
+     */
     @EJB
     private PersonaFacade perFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Inmueble
+     */
     @EJB
     private InmuebleFacade inmFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ProductoEspecieLocal
+     */
     @EJB
     private ProductoEspecieLocalFacade espLocalFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Producto
+     */
     @EJB
     private ProductoFacade prodFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ItemProductivo
+     */
     @EJB
     private ItemProductivoFacade itemFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Guia
+     */
     @EJB
     private GuiaFacade guiaFacade;
     
+    /**
+     * Cosntructor
+     */
     public MbAutorizacion() {
+    }
+    
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////       
+    public Long getCuitPropBus() {
+        return cuitPropBus;
+    }
+
+    public void setCuitPropBus(Long cuitPropBus) {
+        this.cuitPropBus = cuitPropBus;
+    }
+
+    public String getNombrePropBus() {
+        return nombrePropBus;
+    }
+ 
+    public void setNombrePropBus(String nombrePropBus) {
+        this.nombrePropBus = nombrePropBus;
     }
 
     public EstadoAutorizacion getEstadoSelected() {
@@ -176,6 +385,11 @@ public class MbAutorizacion {
         this.editEstado = editEstado;
     }
 
+    /**
+     * Método para completar el listado de estados de Autorización
+     * Incluye a todos menos el actual
+     * @return List<EstadoAutorizacion> listado de los estados obtenidos
+     */
     public List<EstadoAutorizacion> getLstEstados() {
         int i = 0, e = 0;
         lstEstados = estadoFacade.getHabilitadosSinUno(autorizacion.getEstado().getCodigo());
@@ -203,8 +417,16 @@ public class MbAutorizacion {
         this.view = view;
     }
 
+    /**
+     * Método para completar el listado con las Autorizaciones existentes.
+     * Como puede haber una búsqueda, se verifica que no esté buscando, en cuyo caso
+     * se respeta el listado correspondiente a la búsqueda realizada.
+     * @return List<Autorizacion> listado de las Autorizaciones
+     */
     public List<Autorizacion> getListado() {
-        listado = autFacade.findAll();
+        if(cuitPropBus == null && ("".equals(nombrePropBus) || nombrePropBus == null)){
+            listado = autFacade.findAll();
+        }
         return listado;
     }
 
@@ -220,6 +442,10 @@ public class MbAutorizacion {
         this.listadoFilter = listadoFilter;
     }
 
+    /**
+     * Método para obtener los ítems productivos vinculados a la autorización
+     * @return List<ItemProductivo> listado de los ítems correspondientes
+     */
     public List<ItemProductivo> getLstItemsAut() {
         lstItemsAut = itemFacade.getByAutorizacion(autorizacion);
         return lstItemsAut;
@@ -446,9 +672,13 @@ public class MbAutorizacion {
     }
     
     
-    /******************************
-     * Métodos de inicialización **
-     ******************************/
+    ///////////////////////////////
+    // Métodos de inicialización //
+    ///////////////////////////////
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa algunas entidades y listados a gestionar al inicio, 
+     * además del bean de sesión y el usuario
+     */
     @PostConstruct
     public void init(){
         TipoParam tipo = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoInterv"));
@@ -461,13 +691,16 @@ public class MbAutorizacion {
         usLogueado = sesion.getUsuario();
     }    
     
-    /***********************
-     * Métodos operativos **
-     ***********************/   
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
     /**
-     * Método que carga la vista que se mostrará en el iframe complementario
+     * Método que carga la vista que se mostrará en el iframe complementario.
+     * Según la vista solicitada se instanciarán los objetos a gestionar.
+     * Las vistas con tratamiento específico podrán ser:
+     * productos.xhtml o estado.xhtml
      * Por defecto será "instrumento.xhtml"
-     * @param strPage : vista a cargar recibida como parámetro
+     * @param strPage String vista a cargar recibida como parámetro
      */
     public void cargarFrame(String strPage){
         persona = null;
@@ -483,6 +716,87 @@ public class MbAutorizacion {
             estadoSelected = autorizacion.getEstado();
         }
     }  
+    
+    /**
+     * Método para buscar las autorizaciones relacionadas con uno o más proponentes
+     * Se validan los campos de búsqueda, si trae un CUIT, se prioriza este y se ignora la cadena a buscar.
+     * Al recibir cuit se busca la persona y luego todas las autorizaciones que la tengan como Proponente.
+     * Si se recibe solo el nombre, se buscan todo los Proponentes que contengan la cadena recibida en el nombre completo
+     * y por cada uno, las autorizaciones vinculadas, verificando que no se encuentren incluidas en el listado previamente.
+     */
+    public void buscarXProponente(){
+        // valido los datos de búsqueda
+        if(cuitPropBus == null && "".equals(nombrePropBus)){
+            // campos nulos
+            JsfUtil.addErrorMessage("Debe ingresar al menos un CUIT a buscar.");
+        }else if("".equals(nombrePropBus) && cuitPropBus.toString().length() < 11){
+            // cuit corto
+            JsfUtil.addErrorMessage("El CUIT ingresado debe tener 11 dígitos.");  
+        }else if(cuitPropBus != null){ // si tengo cuit, busco por el proponente correspondiente al cuit
+            // obtengo el proponente
+            TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
+            Parametrica rolProp = paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Proponente"), tipoParam); 
+            Persona prop = perFacade.findVigenteByCuitRol(cuitPropBus, rolProp);
+            // solo sigo si hay un proponente con el cuit ingresado
+            if(prop != null){
+                // obtengo las autorizaciones del proponente
+                List<Autorizacion> lstAutTemp = autFacade.getByPersona(prop, rolProp);
+                // sigo si hay alguna autorización vinculada al proponente
+                if(lstAutTemp != null){
+                    listado = new ArrayList<>();
+                    listado.addAll(lstAutTemp);
+                }else{
+                    JsfUtil.addErrorMessage("No se encontró ninguna Autorización vinculada al Proponente con el CUIT ingresado.");  
+                }
+            }else{
+                JsfUtil.addErrorMessage("No se encontró un Proponente registrado con el CUIT ingresado.");  
+            }
+
+        }else{ // si no tengo cuit, busco por nombre
+            // paso la cadena a mayúsculas
+            nombrePropBus = nombrePropBus.toUpperCase();
+            // busco todas las personas que contengan en su nombre completo la cadena a buscar
+            TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
+            Parametrica rolProp = paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Proponente"), tipoParam); 
+            List<Persona> lstProp = perFacade.findAllByNombreYRol(nombrePropBus, rolProp);
+            // si hay resultados, recorro el listado de proponentes y voy obteniendo sus autorizaciones. 
+            if(lstProp.size() > 0){
+                List<Autorizacion> lstAutTemp = new ArrayList<>();
+                for (Persona prop : lstProp){
+                    List<Autorizacion> lstAutXProp = autFacade.getByPersona(prop, rolProp);
+                    // sigo si hay autorizaciones para el proponente
+                    if(lstAutXProp !=  null){
+                        for (Autorizacion aut : lstAutXProp){
+                            if(!lstAutTemp.contains(aut)){
+                                // si no está en el listado, la agrego
+                                lstAutTemp.add(aut);
+                            }
+                        }
+                    }
+
+                }
+                // sigo si hay alguna autorización vinculada al proponente
+                if(lstAutTemp.size() > 0){
+                    listado = new ArrayList<>();
+                    listado.addAll(lstAutTemp);
+                }else{
+                    JsfUtil.addErrorMessage("No se encontró ninguna Autorización vinculada a los Proponentes correspondientes al nombre ingresado.");  
+                }
+            }else{
+                JsfUtil.addErrorMessage("No se encontró un Proponente registrado cuyo nombre completo contenga el nombre ingresado.");  
+            }
+        }
+    }
+    
+    /**
+     * Método para resetear los cámpos de búsqueda y el lisado de autorizaciones.
+     * Llama al método getListado() y limpia los campos
+     */
+    public void resetList(){
+        cuitPropBus = null;
+        nombrePropBus = "";
+        getListado();
+    }
     
     /**
      * Método que busca una Autorización según el número ingresado en el formulario de búsqueda.
@@ -712,7 +1026,7 @@ public class MbAutorizacion {
     }
     
     /**
-     * Método para cargar las Zonas y SubZonas para su edición
+     * Método para cargar las Zonas y SubZonas respectivas para su edición
      */
     public void cargarZonas() {
         //actualizo el listado de zonas
@@ -753,16 +1067,24 @@ public class MbAutorizacion {
         }
     }    
     
-    /**************************
-     * Métodos para personas **
-     **************************/
+    ///////////////////////////
+    // Métodos para personas //
+    ///////////////////////////
     /**
-     * @param rolPersona : Rol de la persona a buscar.
+     * Método para buscar una persona registrada localmente según un rol determinado.
+     * Si se trata de un Técnico o un Apoderado, valido la vigencia.
+     * En cualquier caso, todos deben estar habilitados.
+     * @param rolPersona String Rol de la persona a buscar.
      */
     public void buscarPersona(String rolPersona){
         TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
         Parametrica rolProp = paramFacade.getExistente(rolPersona, tipoParam);
-        persona = perFacade.getExistente(cuitBuscar, rolProp);
+        // si estoy buscando Técnico o Apoderado, valido la vigencia
+        if(rolProp.getNombre().equals(ResourceBundle.getBundle("/Config").getString("Tecnico")) || rolProp.getNombre().equals(ResourceBundle.getBundle("/Config").getString("Apoderado"))){
+            persona = perFacade.findVigenteByCuitRol(cuitBuscar, rolProp);
+        }else{
+            persona = perFacade.findByCuitRol(cuitBuscar, rolProp);
+        }
         if(persona == null){
             JsfUtil.addErrorMessage("No se registra un " + rolPersona + " con el CUIT ingresado.");
         }        
@@ -770,8 +1092,8 @@ public class MbAutorizacion {
     
     /**
      * Método para agregar una Persona a la Autorización
-     * Vávlido para Proponentes, Técnicos y Apoderados
-     * @param rolPersona : Rol de la Persona a asociar
+     * Válido para Proponentes, Técnicos y Apoderados
+     * @param rolPersona String Rol de la Persona a asociar
      */
     public void addPersona(String rolPersona){
         boolean valida = true;
@@ -809,8 +1131,8 @@ public class MbAutorizacion {
     
     /**
      * Método para desvincular una Persona a la Autorización
-     * Vávlido para Proponentes, Técnicos y Apoderados
-     * @param rolPersona : Rol de la Persona a desvincular
+     * Válido para Proponentes, Técnicos y Apoderados
+     * @param rolPersona String Rol de la Persona a desvincular
      */
     public void deletePersona(String rolPersona){
         int i = 0, j = 0;
@@ -850,9 +1172,9 @@ public class MbAutorizacion {
         persona = null;
     }
     
-    /***************************
-     * Métodos para Inmuebles **
-     ***************************/    
+    ////////////////////////////
+    // Métodos para Inmuebles //
+    ////////////////////////////
     /**
      * Método para buscar un Inmueble según el id Catastral ingresado.
      */
@@ -864,18 +1186,29 @@ public class MbAutorizacion {
     }
     
     /**
-     * Método para agregar un Inmueble a la Autorización
+     * Método para agregar un Inmueble a la Autorización previa validación de un posible vínculo anterior
      */
     public void addInmueble(){
         boolean valida = true;
 
-        // valido que la persona no esté vinculada ya con el mismo rol
+        // valido que no esté agregando el mismo inmueble
         for(Inmueble inm : autorizacion.getInmuebles()){
             if(Objects.equals(inm.getIdCatastral(), inmueble.getIdCatastral())){
                 valida = false;
                 JsfUtil.addErrorMessage("El " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " que está tratando de asociar, ya está vinculado a la Autorización con el mismo rol.");
             }
         }
+        
+        // Si ya hay un inmueble agregado,valido que el nuevo pertenezca al mismo departamento
+        if(!autorizacion.getInmuebles().isEmpty()){
+            // si ya hay un inmueble, obtengo el nombre del departamento del primero
+            if(!autorizacion.getInmuebles().get(0).getDepartamento().equals(inmueble.getDepartamento())){
+                // si no coinciden lanzo el error
+                valida = false;
+                JsfUtil.addErrorMessage("El " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " a ingresar debe pertenecer al mismo Departamento de los ya vinculados a la Autorización.");
+            }
+        }
+        
         try{
             if(valida){
                 autorizacion.getInmuebles().add(inmueble);
@@ -939,10 +1272,13 @@ public class MbAutorizacion {
         inmueble = null;
     } 
     
-    /***************************
-     * Métodos para Productos **
-     ***************************/ 
+    ////////////////////////////
+    // Métodos para Productos //
+    //////////////////////////// 
 
+    /**
+     * Método que se dispara al seleccinoar una especie local y obtiene los productos vinculados a ella
+     */
     public void especieChangeListener(){
         lstProductos = prodFacade.getByEspecieLocal(especieSelected);
     }
@@ -1089,9 +1425,12 @@ public class MbAutorizacion {
         }
     }
     
-    /********************************************************
-     * Métodos para actualizar el Estado de la Autorización **
-     ********************************************************/
+    //////////////////////////////////////////////////////////
+    // Métodos para actualizar el Estado de la Autorización //
+    //////////////////////////////////////////////////////////
+    /**
+     * Método que actualiza el estado, solo se ejecutará si la Autorización está completa
+     */
     public void actualizarEstado(){
         boolean valida = true;
         String result;
@@ -1133,9 +1472,9 @@ public class MbAutorizacion {
         editEstado = false;
     }
     
-    /**********************************************
-     * Métodos para el listado de Autorizaciones **
-     **********************************************/
+    ///////////////////////////////////////////////
+    // Métodos para el listado de Autorizaciones //
+    ///////////////////////////////////////////////
     /**
      * Método para inicializar el listado Autorizaciones
      */
@@ -1144,6 +1483,11 @@ public class MbAutorizacion {
         view = false;
     }
     
+    /**
+     * Método que prepara la vista detalle de la Autorización
+     * Incluye las Guías para las que sirvió de fuente y, si correspondiera,
+     * las Guías que tuvueron como fuente una Guía de las anteriores.
+     */
     public void prepareViewDetalle(){
         // Busco las Guías de las que pudiera ser fuente la Autorización
         lstGuias = guiaFacade.findByNumFuente(autorizacion.getNumero());
@@ -1164,12 +1508,12 @@ public class MbAutorizacion {
     }
     
     
-    /*********************
-     * Métodos privados **
-     *********************/
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
 
     /**
-     * Método para cargar el listado de las Sub Zonas correspondientes
+     * Método privado para cargar el listado de las Sub Zonas correspondientes
      * a la Zona seleccionada
      */
     private void cargarSubzonas(String codZona) {
@@ -1186,7 +1530,7 @@ public class MbAutorizacion {
     }
 
     /**
-     * Método para limpiar el listado de las Sub Zonas de la Zona que se eliminó de la selección
+     * Método privado para limpiar el listado de las Sub Zonas de la Zona que se eliminó de la selección
      */
     private void limpiarSubzonas(String codZona) {
         if(codZona.equals("I")){
@@ -1199,22 +1543,22 @@ public class MbAutorizacion {
     }
     
     /**
-     * Método para setear una Sub Zona como seleccionada
+     * Método privado para setear una Sub Zona como seleccionada
      */    
     public void addSubZona(){
         subZonaSelected.setSelected(true);
     }    
     
     /**
-     * Método para eliminar una Sub Zona de la selección
+     * Método privado para eliminar una Sub Zona de la selección
      */
     public void deleteSubZona(){
         subZonaSelected.setSelected(false);
     }    
 
     /**
-     * Método que valida que la superficie solicitada no sea mayor a la total y la autorizada no sea mayor a la solicitada.
-     * Si hay error devuelve un string con el mensaje correspondiente.
+     * Método privado que valida que la superficie solicitada no sea mayor a la total y la autorizada no sea mayor a la solicitada.
+     * Si hay error devuelve un string con el mensaje correspondiente. Utilizado en save()
      * @return 
      */
     private String validarSuperficies() {
@@ -1234,8 +1578,8 @@ public class MbAutorizacion {
     }
 
     /**
-     * Método que valida que se haya seleccionado al menos una zona para el predio
-     * Si hay error devuelve un string con el mensaje correspondiente.
+     * Método privado que valida que se haya seleccionado al menos una zona para el predio
+     * Si hay error devuelve un string con el mensaje correspondiente. Utilizado en save()
      * @return 
      */
     private String validarZonas() {
@@ -1248,7 +1592,8 @@ public class MbAutorizacion {
     }
 
     /**
-     * Método que resetea los campos del formulario
+     * Método privado que resetea los campos del formulario.
+     * Utilizado en prepareView(), limpiarForm() y save()
      */
     private void resetearCampos() {
         lstZonas = zonaFacade.getHabilitadas();
@@ -1261,8 +1606,8 @@ public class MbAutorizacion {
     }
 
     /**
-     * Método para validar que una Autorización tenga los datos mínimos para poder ser habilitada
-     * para emitir una Guía
+     * Método privado para validar que una Autorización tenga los datos mínimos para poder ser habilitada
+     * para emitir una Guía. Utilizado en actualizarEstado()
      * @return 
      */
     private String validarAutCompleta() {
@@ -1299,10 +1644,11 @@ public class MbAutorizacion {
     }
     
     /**
-     * Método para obtener una Paramétrica según su nombre y nombre del Tipo
-     * @param nomTipo : nombre del Tipo de Paramétrica
-     * @param nomParam : nombre de la Paramétrica
-     * @return 
+     * Método privado para obtener una Paramétrica según su nombre y nombre del Tipo.
+     * Utilizado en addProducto()
+     * @param nomTipo String nombre del Tipo de Paramétrica
+     * @param nomParam String nombre de la Paramétrica
+     * @return Parametrica paramétrica correspondiente a los parámetros remitidos
      */
     private Parametrica obtenerParametro(String nomTipo, String nomParam) {
         TipoParam tipo = tipoParamFacade.getExistente(nomTipo);
@@ -1310,7 +1656,7 @@ public class MbAutorizacion {
     }    
 
     /**
-     * Método para crear el código de origen del Producto que se compone de 
+     * Método privado para crear el código de origen del Producto que se compone de 
      * una cadena de elementos separados por '|' en este orden
      * nombreCientifico: nombre científico de la Especie constituido por 'Género/Especie'
      * nombreVulgar: nombre vulgar de la Especie definido de manera local
@@ -1319,10 +1665,12 @@ public class MbAutorizacion {
      * resolución: numero de la resolución (campo numero de la entidad Autorización)
      * provincia: nombre de la Provincia dentro de la cual se extraerá el Producto
      * EJ.:"1|Prosopis caldenia|Caldén|Rollo|Unidad|123-DGB-2017|Santiago del Estero"
+     * Utilizado en addProducto()
+     * @return String código del producto generado
      */
     private String crearCodigoProducto() {
         String codigo;
-        codigo = String.valueOf(itemAutorizado.getId()) + "|"
+        codigo = String.valueOf(itemAutorizado.getIdProd()) + "|"
                 + itemAutorizado.getNombreCientifico() + "|"
                 + itemAutorizado.getNombreVulgar() + "|"
                 + itemAutorizado.getClase() + "|"

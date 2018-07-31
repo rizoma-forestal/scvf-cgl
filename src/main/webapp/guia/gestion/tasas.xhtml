@@ -5,9 +5,10 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body >
-        <h:panelGrid columns="2" cellpadding="10">
+        <h:panelGrid columns="3" cellpadding="10">
             <img src="#{request.contextPath}/resources/img/price-tag-5.png" width="50" height="50" style="float: left; margin-left: 15px" />
             <p:outputLabel styleClass="titPanel" value="Liquidación de Tasas ($)" />
+            <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
         <h:form prependId="false" id="frTasas">
             <p:panel id="pnTablaDetalle" header="Tasas a liquidar por unidad de Producto" >
@@ -92,7 +93,9 @@
                 <h:panelGrid  columns="4" >
                     <p:commandButton title="Generar resumen de pago" styleClass="save" icon="fa fa-fw fa-file-pdf-o" 
                                      value="Generar Resumen" action="#{mbGuia.generarVolante()}"
-                                     update="pMenuIndex,frame,frTasas" ajax="false" rendered="#{mbGuia.guia.estado.habilitaLiquidacion}" />
+                                     update="pMenuIndex,frame,frTasas" ajax="false" 
+                                     rendered="#{mbGuia.guia.estado.habilitaLiquidacion 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" />
                     <p:outputLabel value="Resumen emitido con fecha: " style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guia.estado.habilitaEmision}" />
                     <p:outputLabel value="#{mbGuia.guia.fechaEmisionVolante}" 
                                    style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.guia.estado.habilitaEmision}" >

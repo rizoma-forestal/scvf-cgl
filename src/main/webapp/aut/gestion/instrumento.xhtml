@@ -22,7 +22,8 @@
                         <p:ajax update="pnBuscar,pnForm" resetValues="true" />
                     </p:commandButton>
                     <p:commandButton title="Crear una nueva Autorización" styleClass="save" icon="fa fa-fw fa-plus"
-                                     value="Crear nueva" process="@this" action="#{mbAutorizacion.prepareNew()}" update="@form,pMenuIndex" />
+                                     value="Crear nueva" process="@this" action="#{mbAutorizacion.prepareNew()}" update="@form,pMenuIndex" 
+                                     rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}" />
                 </h:panelGrid>
             </p:panel>
             <p:panel id="pnForm" header="Formulario" style="margin-bottom:10px;" rendered="#{mbAutorizacion.autorizacion ne null}">
@@ -59,7 +60,8 @@
                                            var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo}"/>
                         </p:selectOneMenu> 
                         <p:outputLabel value="Fecha vencimiento:" for="fechaVenc" />
-                        <p:calendar id="fechaVenc" value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" />
+                        <p:calendar id="fechaVenc" value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" 
+                                    required="true" requiredMessage="Debe especificar la fecha de vencimiento de la Autorización." />
                     </h:panelGrid>
                 </p:fieldset>
                 <p:fieldset toggleable="true" legend="Predio" style="margin-bottom:20px" >

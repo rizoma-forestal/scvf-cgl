@@ -15,10 +15,13 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.VehiculoFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.MarcaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.ModeloClient;
 import ar.gob.ambiente.sacvefor.localcompleto.rue.client.VehiculoClient;
+import ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import ar.gob.ambiente.sacvefor.servicios.rue.Marca;
 import ar.gob.ambiente.sacvefor.servicios.rue.Modelo;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,90 +38,298 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
- *
+ * Método para gestionar los vehículos. Gestiona la vista guia/transporte/vehiculo.xhtml
  * @author rincostante
  */
 public class MbVehiculo {
-
-    // campos para gestionar local
+    /////////////////////////////////
+    // campos para gestionar local //
+    /////////////////////////////////
+    
+    /**
+     * Variable privada: vehículo gestionado
+     */
     private Vehiculo vehiculo;
+    
+    /**
+     * Variable privada: listado de los vehículos registrados
+     */
     private List<Vehiculo> lstVehiculos;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de los vehículos registrados
+     */
     private List<Vehiculo> lstVehiculosFilter;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de vista detalle
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de edición
+     */
     private boolean edit;
-    // campos para gestionar rue
+    
+    ///////////////////////////////
+    // campos para gestionar rue //
+    ///////////////////////////////
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */  
     private static final Logger logger = Logger.getLogger(Vehiculo.class.getName());
+    
+    /**
+     * Variable privada: listado de las revisiones de la Persona
+     */
     private List<Vehiculo> lstRevisions; 
+    
+    /**
+     * Variable privada: matrícula del vehículo a biuscar para su vista o edición
+     */
     private String matBusqRue; 
+    
+    /**
+     * Variable privada: entidad Vehículo del RUE para su gestión mediante la API Rest RUE
+     */
     private ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo vehiculoRue;
-    // campos para gestionar Marcas en el rue
+    
+    ////////////////////////////////////////////
+    // campos para gestionar Marcas en el rue //
+    ////////////////////////////////////////////
+    
+    /**
+     * Variable privada: entidad marca del vehículo en el RUE
+     */
     private Marca marcaRue;
+    
+    /**
+     * Variable privada: nombre de la marca del vehículo en el RUE
+     */
     private String nombreMarcaRue;
+    
+    /**
+     * Variable privada: listado de las marcas registradas en el RUE
+     */
     private List<Marca> lstMarcas;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de las marcas
+     */
     private List<Marca> lstMarcasFilters;
+    
+    /**
+     * Variable privada: modelo del vehículo en el RUE
+     */
     private Modelo modeloRue;
+    
+    /**
+     * Variable privada: nombre del modelo del vehículo en el RUE
+     */
     private String nombreModeloRue;
+    
+    /**
+     * Variable privada: listado de los modelos registrados en el RUE
+     */
     private List<Modelo> lstModelos;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de los modelos
+     */
     private List<Modelo> lstModelosFilters;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de vista detalle de la marca
+     */
     private boolean viewMarca;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de edición de la marca
+     */
     private boolean editMarca;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de vista detalle del modelo
+     */
     private boolean viewModelo;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de edición del modelo
+     */
     private boolean editModelo;
+    
+    /**
+     * Variable privada: listado de las marcas existentes en el RUE
+     */
     private List<EntidadServicio> listMarcasRue;
+    
+    /**
+     * Variable privada: marca seleccionada del combo para asignar el vehículo
+     */
     private EntidadServicio marcaRueSelected;
+    
+    /**
+     * Variable privada: MbSesion para gestionar las variables de sesión del usuario
+     */  
     private MbSesion sesion;
+    
+    /**
+     * Variable privada: Usuario de sesión
+     */
     private Usuario usLogueado;    
     
+    //////////////////////////////////////////////////
+    // inyección de recursos para el acceso a datos //
+    //////////////////////////////////////////////////
     
-    // inyección de recursos
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Vehiculo
+     */      
     @EJB
     private VehiculoFacade vehiculoFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Persona
+     */     
     @EJB
     private PersonaFacade perFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Paramétrica
+     */     
     @EJB
     private ParametricaFacade paramFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */     
     @EJB
     private TipoParamFacade tipoParamFacade;    
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Guia
+     */     
     @EJB
     private GuiaFacade guiaFacade;  
     
-    // Clientes REST para la gestión del API de Vehículos, Marcas y Modelos
+    //////////////////////////////////////////////////////////////////////////
+    // Clientes REST para la gestión del API de Vehículos, Marcas y Modelos //
+    //////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Vehiculo en el RUE
+     */
     private VehiculoClient vehiculoClient;  
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Modelo en el RUE
+     */
     private ModeloClient modeloClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Marca en el RUE
+     */
     private MarcaClient marcaClient;
     
     /**
-     * Campos para la gestión de las Entidades provenientes de la API
-     * RUE en los combos del formulario.
-     * Las Entidades de servicio se componen de un par {id | nombre}
-     */   
-    private List<EntidadServicio> listModelos;
-    private EntidadServicio modeloSelected;    
-    private List<EntidadServicio> listMarcas;
-    private EntidadServicio marcaSelected;
-    // agrego otra para el titularSelected del Vehículo
-    private List<EntidadServicio> listTitulares;
-    private EntidadServicio titularSelected;
+     * Variable privada: Cliente para la API Rest de validación de usuarios en el RUE
+     */
+    private UsuarioClient usClientRue;
     
     /**
-     * Campos para el seteo de las Entidades RUE
+     * Variable privada: Token obtenido al validar el usuario de la API del RUE
+     */
+    private Token token;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API del RUE
+     */
+    private String strToken; 
+
+    ////////////////////////////////////////////////////////////////////
+    // Campos para la gestión de las Entidades provenientes de la API //
+    // RUE en los combos del formulario. ///////////////////////////////
+    // Las Entidades de servicio se componen de un par {id | nombre} ///
+    ////////////////////////////////////////////////////////////////////   
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los Modelos
+     */   
+    private List<EntidadServicio> listModelos;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Modelo seleccionado del combo
      */    
+    private EntidadServicio modeloSelected;
+
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Marcas
+     */   
+    private List<EntidadServicio> listMarcas;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Marca seleccionada del combo
+     */    
+    private EntidadServicio marcaSelected;
+    
+    //////////////////////////////////////////////////////
+    // agrego otra para el titularSelected del Vehículo //
+    //////////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Personas en el RUE
+     * que tendrán el rol de titular del vehículo
+     */ 
+    private List<EntidadServicio> listTitulares;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Titular seleccionado del combo
+     */ 
+    private EntidadServicio titularSelected;
+    
+    ///////////////////////////////////////////////
+    // Campos para el seteo de las Entidades RUE //
+    ///////////////////////////////////////////////
+    
+    /**
+     * Variable privada: matrícula del vehículo para buscarlo en el RUE
+     */
     private String rueVehiculoMatricula;
+    
+    /**
+     * Variable privada: año del modelo del vehículo para buscarlo en el RUE
+     */
     private int rueVehiculoAnio;
+    
+    /**
+     * Variable privada: flag que indica si el vehículo en el RUE está editable.
+     * Solo serán editables las entidades que hayan sido registradas por el presente componente local
+     */
     private boolean rueEditable;
     
-    // listado de Guías vinculadas
+    /////////////////////////////////
+    // listado de Guías vinculadas //
+    /////////////////////////////////
+    
+    /**
+     * Variable privada: List<Guia> listado de las Guías que tienen al vehículo asignado como transporte
+     */
     private List<Guia> lstGuias;
     
+    /**
+     * Constructor
+     */
     public MbVehiculo() {
     }
        
-    /**********************
-     * Métodos de acceso **
-     **********************/          
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////        
     public List<Guia> getLstGuias() {
         return lstGuias;
     }
@@ -151,14 +362,27 @@ public class MbVehiculo {
         this.modeloRue = modeloRue;
     }
    
+    /**
+     * Método que obtiene los modelos de los vehículos registrados en el RUE, mediante el acceso a la API respectiva
+     * @return List<Modelo> listado de los modelos registrados en el RUE
+     */
     public List<Modelo> getLstModelos() {
         // seteo el listado
         try{
-            // instancio el cliente para la selección de las Marcas de Vehículos
+            // instancio el cliente para la selección de las Marcas de Vehículos, obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             modeloClient = new ModeloClient();
             // obtengo el listado de modelos
             GenericType<List<Modelo>> gType = new GenericType<List<Modelo>>() {};
-            Response response = modeloClient.findAll_JSON(Response.class);
+            Response response = modeloClient.findAll_JSON(Response.class, token.getStrToken());
             lstModelos = response.readEntity(gType);
             // cierro el cliente
             modeloClient.close();
@@ -211,14 +435,27 @@ public class MbVehiculo {
         this.marcaRue = marcaRue;
     }
 
+    /**
+     * Método que obtiene las Marcas de los vehículos registrados en el RUE, mediante el acceso a la API respectiva
+     * @return List<Marca> listado de las marcas registrados en el RUE
+     */    
     public List<Marca> getLstMarcas() {
         // seteo el listado
         try{
-            // instancio el cliente para la selección de las Marcas de Vehículos
+            // instancio el cliente para la selección de las Marcas de Vehículos, obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             marcaClient = new MarcaClient();
             // obtengo el listado de marcas
             GenericType<List<Marca>> gType = new GenericType<List<Marca>>() {};
-            Response response = marcaClient.findAll_JSON(Response.class);
+            Response response = marcaClient.findAll_JSON(Response.class, token.getStrToken());
             lstMarcas = response.readEntity(gType);
             // cierro el cliente
             marcaClient.close();
@@ -421,10 +658,14 @@ public class MbVehiculo {
     }
     
     
-    /**********************
-     * Métodos de inicio **
-     * ********************/
+    ///////////////////////
+    // Métodos de inicio //
+    ///////////////////////
 
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar
+     * y el bean de sesión y el usuario
+     */  
     @PostConstruct
     public void init(){
         vehiculo = new Vehiculo();
@@ -659,9 +900,9 @@ public class MbVehiculo {
     }    
     
     
-    /***********************
-     * Métodos operativos **
-     ***********************/
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
     /**
      * Método para deshabilitar un Vehículo. Modificará su condición de habilitado a false.
      * Los Vehículos deshabilitados no estarán disponibles para su selección.
@@ -696,7 +937,7 @@ public class MbVehiculo {
      */
     public void saveVehiculoRue(){
         boolean valida = true;
-        String mensaje = "", valMat, valMod, valAnio;
+        String mensaje = "", valMat, valMod, valAnio, valTit;
         
         if(vehiculoRue == null){
             vehiculoRue = new ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo();
@@ -743,7 +984,16 @@ public class MbVehiculo {
                 mensaje = mensaje + " Debe ingresar una matrícula.";
             }
         }
-
+        
+        // valido titular
+        if(titularSelected == null){
+            valida = false;
+            if(mensaje.equals("")){
+                mensaje = "Debe ingresar un titular del vehículo.";
+            }else{
+                mensaje = mensaje + " Debe ingresar un titular del vehículo.";
+            }
+        }
         
         // si validó persisto
         if(valida){
@@ -751,8 +1001,18 @@ public class MbVehiculo {
                 // seteo el Vehículo con los campos del formulario
                 // obtengo el modelo desde el API RUE
                 Modelo modelo;
+                // obtengo el token si no está seteado o está vencido
+                if(token == null){
+                    getTokenRue();
+                }else try {
+                    if(!token.isVigente()){
+                        getTokenRue();
+                    }
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+                }
                 modeloClient = new ModeloClient();
-                modelo = modeloClient.find_JSON(Modelo.class, String.valueOf(modeloSelected.getId()));
+                modelo = modeloClient.find_JSON(Modelo.class, String.valueOf(modeloSelected.getId()), token.getStrToken());
                 // cierro el cliente
                 modeloClient.close();
                 // seteo el Modelo
@@ -774,14 +1034,13 @@ public class MbVehiculo {
                 // seteo la fecha de alta
                 vehiculoRue.setFechaAlta(new Date(System.currentTimeMillis()));
                 
-                
                 // utilizo el cliente rest según corresponda
                 vehiculoClient = new VehiculoClient();
                 Response res;
                 if(vehiculoRue.getId() == 0){
-                    res = vehiculoClient.create_JSON(vehiculoRue);
+                    res = vehiculoClient.create_JSON(vehiculoRue, token.getStrToken());
                 }else{
-                    res = vehiculoClient.edit_JSON(vehiculoRue, String.valueOf(vehiculoRue.getId()));
+                    res = vehiculoClient.edit_JSON(vehiculoRue, String.valueOf(vehiculoRue.getId()), token.getStrToken());
                 }
                 
                 vehiculoClient.close();
@@ -840,12 +1099,6 @@ public class MbVehiculo {
                     vehiculoFacade.edit(vehiculo);
                     JsfUtil.addSuccessMessage("El Vehículo fue guardado con exito");
                 }else{
-//                    // si tiene titular lo seteo
-//                    if(titularSelected != null){    
-//                        // obtengo el titular
-//                        Persona per = perFacade.find(titularSelected.getId());
-//                        vehiculo.setTitular(per);
-//                    }
                     // seteo la fecha de alta y habilitado
                     Date fechaAlta = new Date(System.currentTimeMillis());
                     vehiculo.setFechaAlta(fechaAlta);
@@ -871,9 +1124,18 @@ public class MbVehiculo {
         boolean valida = true;
         if(!nombreMarcaRue.equals("")){
             try{
-                // instancio el cliente para la consulta sobre existencia del nombre
+                // instancio el cliente para la consulta sobre existencia del nombre, obtengo el token si no está seteado o está vencido
+                if(token == null){
+                    getTokenRue();
+                }else try {
+                    if(!token.isVigente()){
+                        getTokenRue();
+                    }
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+                }
                 marcaClient = new MarcaClient();
-                Marca mrcRueExistente = marcaClient.findByName_JSON(Marca.class, nombreMarcaRue.toUpperCase());
+                Marca mrcRueExistente = marcaClient.findByName_JSON(Marca.class, nombreMarcaRue.toUpperCase(), token.getStrToken());
                 // valido por el nombre
                 if(mrcRueExistente != null){
                     if(!marcaRue.getId().equals(Long.valueOf(0))){
@@ -891,9 +1153,9 @@ public class MbVehiculo {
                     // persisto la Marca según sea edición o insercion
                     Response res;
                     if(marcaRue.getId().equals(Long.valueOf(0))){
-                        res = marcaClient.create_JSON(marcaRue);
+                        res = marcaClient.create_JSON(marcaRue, token.getStrToken());
                     }else{
-                        res = marcaClient.edit_JSON(marcaRue, String.valueOf(marcaRue.getId()));
+                        res = marcaClient.edit_JSON(marcaRue, String.valueOf(marcaRue.getId()), token.getStrToken());
                     }
                     marcaClient.close();
 
@@ -929,9 +1191,18 @@ public class MbVehiculo {
         boolean valida = true;
         if(!nombreModeloRue.equals("") && marcaRueSelected.getId() != null){
             try{
-                // instancio el cliente para la consulta sobre existencia del nombre
+                // instancio el cliente para la consulta sobre existencia del nombre, obtengo el token si no está seteado o está vencido
+                if(token == null){
+                    getTokenRue();
+                }else try {
+                    if(!token.isVigente()){
+                        getTokenRue();
+                    }
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+                }
                 modeloClient = new ModeloClient();
-                Modelo modRueExistente = modeloClient.findByName_JSON(Modelo.class, nombreModeloRue.toUpperCase());
+                Modelo modRueExistente = modeloClient.findByName_JSON(Modelo.class, nombreModeloRue.toUpperCase(), token.getStrToken());
                 // valido por el nombre
                 if(modRueExistente != null){
                     if(!modeloRue.getId().equals(Long.valueOf(0))){
@@ -949,7 +1220,7 @@ public class MbVehiculo {
                     // obtengo la Marca seleccionada
                     Marca marca;
                     marcaClient = new MarcaClient();
-                    marca = marcaClient.find_JSON(Marca.class, String.valueOf(marcaRueSelected.getId()));
+                    marca = marcaClient.find_JSON(Marca.class, String.valueOf(marcaRueSelected.getId()), token.getStrToken());
                     // cierro el cliente
                     marcaClient.close();
                     // seteo la Marca
@@ -957,9 +1228,9 @@ public class MbVehiculo {
                     // persisto la Marca según sea edición o insercion
                     Response res;
                     if(modeloRue.getId().equals(Long.valueOf(0))){
-                        res = modeloClient.create_JSON(modeloRue);
+                        res = modeloClient.create_JSON(modeloRue, token.getStrToken());
                     }else{
-                        res = modeloClient.edit_JSON(modeloRue, String.valueOf(modeloRue.getId()));
+                        res = modeloClient.edit_JSON(modeloRue, String.valueOf(modeloRue.getId()), token.getStrToken());
                     }
                     modeloClient.close();
 
@@ -988,23 +1259,33 @@ public class MbVehiculo {
     }    
     
     
-    /*********************
-     * Métodos privados **
-     *********************/ 
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
     /**
-     * Método que carga el listado de Modelos según la Marca seleccionada
-     * @param id : de la Marca a obtener los modelos
+     * Método que carga el listado de Modelos según la Marca seleccionada.
+     * Utilizado en preparaEditRue() y marcaChangeListener()
+     * @param id Long de la Marca a obtener los modelos
      */    
     private void getModelosSrv(Long idMarca) {
         EntidadServicio modelo;
         List<Modelo> listSrv;
         
         try{
-            // instancio el cliente para la selección de los Modelos
+            // instancio el cliente para la selección de los Modelos, obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             marcaClient = new MarcaClient();
             // obtngo el listado
             GenericType<List<Modelo>> gType = new GenericType<List<Modelo>>() {};
-            Response response = marcaClient.findModelosByMarca_JSON(Response.class, String.valueOf(idMarca));
+            Response response = marcaClient.findModelosByMarca_JSON(Response.class, String.valueOf(idMarca), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listModelos = new ArrayList<>();
@@ -1023,17 +1304,27 @@ public class MbVehiculo {
     }
 
     /**
-     * Método que obtiene un Vehículo del RUE mediante el uso de la API correspondiente
-     * @return 
+     * Método que obtiene un Vehículo del RUE mediante el uso de la API correspondiente.
+     * Utilizado en buscarVehiculoRue()
+     * @return ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo vehículo registrado en el RUE
      */
     private ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo obtenerVehiculoRueByMat() {
         List<ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo> listVehiculos = new ArrayList<>();
         
         try{
-            // instancio el cliente para la obtención de la Persona
+            // instancio el cliente para la obtención de la Persona, obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             vehiculoClient = new VehiculoClient();
             GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo>> gType = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo>>() {};
-            Response response = vehiculoClient.findByQuery_JSON(Response.class, null, matBusqRue.toUpperCase(), null);
+            Response response = vehiculoClient.findByQuery_JSON(Response.class, null, matBusqRue.toUpperCase(), null, token.getStrToken());
             listVehiculos = response.readEntity(gType); 
             // cierro el cliente
             vehiculoClient.close();
@@ -1054,17 +1345,28 @@ public class MbVehiculo {
 
     /**
      * Método para validar la Matrícula del Vehículo
-     * Que no esté registrado ya en el RUE
-     * @return 
+     * Que no esté registrado ya en el RUE.
+     * Utilizado en saveVehiculoRue()
+     * @return String mensaje correspondiente a la validación
      */
     private String validarMatricula() {
         String result = "";
         try{
             // instancio el cliente para verificar la existencia de una Persona con el mismo CUIT
             List<ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo> listVehiculos = new ArrayList<>();
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             vehiculoClient = new VehiculoClient();
             GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo>> gType = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo>>() {};
-            Response response = vehiculoClient.findByQuery_JSON(Response.class, null, rueVehiculoMatricula, null);
+            Response response = vehiculoClient.findByQuery_JSON(Response.class, null, rueVehiculoMatricula, null, token.getStrToken());
             listVehiculos = response.readEntity(gType);
             // cierro el cliente
             vehiculoClient.close();
@@ -1088,7 +1390,8 @@ public class MbVehiculo {
     }
 
     /**
-     * Método para cargar el listado de Transportistas
+     * Método para cargar el listado de Transportistas.
+     * Utilizado en preparaEditRue() y prepareNewInsertRue()
      */
     private void cargarTitulares() {
         EntidadServicio titular;
@@ -1112,9 +1415,10 @@ public class MbVehiculo {
     } 
     
     /**
-     * Método para obtener el rol de la persona según la cadena recibida
-     * @param sRol : rol de la persona a buscar
-     * @return 
+     * Método para obtener el rol de la persona según la cadena recibida.
+     * Utilizada en cargarTitulares()
+     * @param sRol String nombre del rol de la persona a buscar
+     * @return Parametrica paramétrica euivalente al rol
      */
     public Parametrica obtenerRol(String sRol) {
         TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
@@ -1122,18 +1426,29 @@ public class MbVehiculo {
     }        
 
     /**
-     * Método para cargar el listado de Marcas para su selección
+     * Método para cargar el listado de Marcas para su selección.
+     * Utilizado en preparaEditRue(), getLstModelos() y prepareNewInsertRue()
+     * @return List<EntidadServicio> listado de las marcas solicitadas
      */    
     private List<EntidadServicio> cargarMarcas(List<EntidadServicio> lMarcas) {
         EntidadServicio marca;
         List<Marca> listSrv;
 
         try{
-            // instancio el cliente para la selección de las Marcas de Vehículos
+            // instancio el cliente para la selección de las Marcas de Vehículos, obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             marcaClient = new MarcaClient();
             // obtengo el listado de marcas
             GenericType<List<Marca>> gType = new GenericType<List<Marca>>() {};
-            Response response = marcaClient.findAll_JSON(Response.class);
+            Response response = marcaClient.findAll_JSON(Response.class, token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con las provincias como un objeto Entidad Servicio
             lMarcas = new ArrayList<>();
@@ -1157,14 +1472,24 @@ public class MbVehiculo {
     }
 
     /**
-     * Método que obtiene una Vehículo desde la API RUE, según su id
-     * @return 
+     * Método que obtiene una Vehículo desde la API RUE, según su id.
+     * Utilizado en preparaEditRue()
+     * @return ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo vehículo obtenido del RUE
      */    
     private ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo buscarVehiculoRueById() {
         try{
-            // instancio el cliente para la selección de la Persona RUE
+            // instancio el cliente para la selección de la Persona RUE, obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             vehiculoClient = new VehiculoClient();
-            ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo response = vehiculoClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo.class, String.valueOf(vehiculo.getIdRue()));
+            ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo response = vehiculoClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo.class, String.valueOf(vehiculo.getIdRue()), token.getStrToken());
             vehiculoClient.close();
             return response;
         }catch(ClientErrorException ex){
@@ -1177,13 +1502,23 @@ public class MbVehiculo {
     }
 
     /**
-     * Método que obtine un Vehículo del RUE según su id
+     * Método que obtine un Vehículo del RUE según su id.
+     * Utilizado en prepareEdit() y verDatosRue()
      */
     private void cargarVehiculo() {
         try{
-            // instancio el cliente para la obtención de la Persona
+            // instancio el cliente para la obtención de la Persona, obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenRue();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenRue();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token RUE", ex.getMessage()});
+            }
             vehiculoClient = new VehiculoClient();
-            vehiculoRue = vehiculoClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo.class, String.valueOf(vehiculo.getIdRue()));
+            vehiculoRue = vehiculoClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Vehiculo.class, String.valueOf(vehiculo.getIdRue()), token.getStrToken());
             vehiculoClient.close();
         }catch(ClientErrorException ex){
             // muestro un mensaje al usuario
@@ -1196,8 +1531,8 @@ public class MbVehiculo {
     /**
      * Obtiene el vehículo a partir de la id
      * método para el converter
-     * @param key
-     * @return 
+     * @param key Long identificador del Vehiculo
+     * @return Object vehículo correspondiente s su id
      */
     private Object getVehiculo(Long key) {
         return vehiculoFacade.find(key);
@@ -1205,7 +1540,7 @@ public class MbVehiculo {
 
     /**
      * Método que valida la selección del modelo del vehículo a registrar
-     * @return 
+     * @return String resultado de la validación
      */
     private String validarModelo() {
         String result = "";
@@ -1215,6 +1550,11 @@ public class MbVehiculo {
         return result;
     }
 
+    /**
+     * Método para validar el año del modelo del vehículo.
+     * Debe ser mayor o igual a 1950
+     * @return String mensaje de la validación
+     */
     private String validarAnio() {
         String result = "";
         if(rueVehiculoAnio <= 1950){
@@ -1223,10 +1563,30 @@ public class MbVehiculo {
         return result;
     }
 
+    /**
+     * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en cargarVehiculo(), buscarVehiculoRueById(), cargarMarcas(List<EntidadServicio> lMarcas),
+     * validarMatricula(), obtenerVehiculoRueByMat(), getModelosSrv(), saveModeloRue(),
+     * saveMarcaRue(), saveVehiculoRue(), getLstMarcas() y getLstModelos()
+     */
+    private void getTokenRue(){
+        try{
+            usClientRue = new ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient();
+            Response responseUs = usClientRue.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestRue"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strToken = (String)lstHeaders.get(0); 
+            token = new Token(strToken, System.currentTimeMillis());
+            usClientRue.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token para la API RUE: " + ex.getMessage());
+        }
+    }      
     
-    /*****************************
-    ** Converter para Inmueble  **
-    ******************************/ 
+    /////////////////////////////
+    // Converter para Vehículo //
+    ///////////////////////////// 
     @FacesConverter(forClass = Vehiculo.class)
     public static class VehiculoConverter implements Converter {
 

@@ -20,32 +20,78 @@ import org.primefaces.context.RequestContext;
 
 /**
  * Bean de respaldo para la gestión de entidades paramétricas
+ * Gestiona las vistas param/
  * TipoParametro: Caracterización de cada una de las enitdades paramétricas registradas
  * Parametrica: Entidad paramétrica a utilizar por las entidades principales del modelo
  * @author rincostante
  */
 public class MbParametrica implements Serializable{
 
+    /**
+     * Variable privada: tipo de paramétrica a asignar
+     */
     private TipoParam tipoParam;
+    
+    /**
+     * Variable privada: objeto a gestionar
+     */
     private Parametrica parametrica;
+    
+    /**
+     * Variable privada: listado de los tipos de paramétricas disponibles para poblar el combo correspondiente
+     */
     private List<TipoParam> lstTipoParam;
+    
+    /**
+     * Variable privada: listado de las paramétricas existentes
+     */
     private List<Parametrica> lstParam;
+    
+    /**
+     * Variable privada: listado para filtrar la tabla de tipos de paramétricas
+     */
     private List<TipoParam> lstTipoFilters;
+    
+    /**
+     * Variable privada: listado para filtrar la tabla de paramétricas existentes
+     */
     private List<Parametrica> lstParamFilters;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando no está editable
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando es existente
+     */
     private boolean edit;
     
+    ///////////////////////////////////////////////////
+    // acceso a datos mediante inyección de recursos //
+    ///////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoGuia
+     */ 
     @EJB
     private ParametricaFacade paramFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoGuia
+     */ 
     @EJB
     private TipoParamFacade tipoParamFacade;
     
+    /**
+     * Constructor
+     */
     public MbParametrica() {
     }
         
-    /**********************
-     * Métodos de acceso **
-     **********************/  
+    ///////////////////////
+    // Métodos de acceso //
+    /////////////////////// 
     public boolean isEdit() {
         return edit;
     }
@@ -112,9 +158,9 @@ public class MbParametrica implements Serializable{
         this.view = view;
     }
     
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
     @PostConstruct
     public void init(){
         tipoParam = new TipoParam();
@@ -302,21 +348,32 @@ public class MbParametrica implements Serializable{
         RequestContext.getCurrentInstance().openDialog("dlgViewParam", options, null);
     }
     
-    /*********************
-     * Métodos privados **
-     *********************/
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
+    
+    /**
+     * Método privado que obtiene el Tipo de Paramétrica
+     * @param key Long identificador del Tipo de Paramétrica
+     * @return Object Tipo de Paramétrica solicitado
+     */
     private Object getTipoParam(Long key) {
         return tipoParamFacade.find(key);
     }
 
+    /**
+     * Método privado que obtiene la Paramétrica
+     * @param key Long identificador la Paramétrica
+     * @return Object Paramétrica solicitado
+     */    
     private Object getParametrica(Long key) {
         return paramFacade.find(key);
     }
     
     
-    /*************************
-    ** Converter TipoParam  **
-    **************************/    
+    /////////////////////////
+    // Converter TipoParam //
+    /////////////////////////   
     @FacesConverter(forClass = TipoParam.class)
     public static class TipoParamConverter implements Converter {
 
@@ -363,9 +420,9 @@ public class MbParametrica implements Serializable{
         }
     }     
     
-    /***************************
-    ** Converter Parametrica  **
-    ****************************/ 
+    ///////////////////////////
+    // Converter Parametrica //
+    ///////////////////////////
     @FacesConverter(forClass = Parametrica.class)
     public static class ParametricaConverter implements Converter {
 

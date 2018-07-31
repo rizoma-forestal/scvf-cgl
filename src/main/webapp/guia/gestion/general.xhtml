@@ -10,6 +10,7 @@
             <p:outputLabel styleClass="titPanel" value="Datos generales" />
         </h:panelGrid>
         <h:form prependId="false" id="frOrigen">
+            <!-- Selección de nueva o gestión de existente -->
             <p:panel id="pnBuscar" styleClass="centro" header="Buscar Guía existente o Crear nueva" rendered="#{mbGuia.guia eq null}" >
                 <h:panelGrid columns="5">
                     <p:outputLabel value="Número" for="numeroBuscar"/>
@@ -22,10 +23,13 @@
                         <p:ajax update="pnBuscar" resetValues="true" />
                     </p:commandButton>
                     <p:commandButton title="Crear una nueva Guía" styleClass="save" icon="fa fa-fw fa-plus"
-                                     value="Crear nueva" process="@this" action="#{mbGuia.prepareNew()}" update="@form,pMenuIndex" />
+                                     value="Crear nueva" process="@this" action="#{mbGuia.prepareNew()}" update="@form,pMenuIndex" 
+                                     rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}" />
                 </h:panelGrid>
             </p:panel>
+            <!-- Formulario de nueva o edición -->
             <p:panel id="pnForm" header="Formulario" style="margin-bottom:10px;" rendered="#{mbGuia.guia ne null}">
+                <!-- Selección de tipo de guía -->
                 <p:fieldset toggleable="true" legend="Tipo de Guía" style="margin-bottom:20px">
                     <p:outputLabel value="Seleccione el Tipo de Guía a confeccionar." style="font-style: italic; font-size: small" />
                     <h:panelGrid columns="2" cellpadding="5">
@@ -38,6 +42,7 @@
                         </p:selectOneMenu>
                     </h:panelGrid>
                 </p:fieldset>
+                <!-- Ingreso del cuit del productor -->
                 <p:fieldset toggleable="true" legend="Productor" style="margin-bottom:20px">
                     <p:outputLabel value="Ingrese el CUIT del Productor para seleccionar la fuente de los Productos, sin '-' ni '.'" style="font-style: italic; font-size: small" />
                     <h:panelGrid columns="4" cellpadding="5">
@@ -46,7 +51,7 @@
                                        requiredMessage="Debe haber un CUIT para buscar" required="true" />
                         <p:commandButton title="Buscar Fuentes de Productos" value="Buscar" icon="fa fa-fw fa-search" 
                                          rendered="#{mbGuia.autSelected eq null and mbGuia.guiaSelected eq null}" 
-                                         action="#{mbGuia.buscarFuentesProductos()}" update="pnForm,fsAutFuentes,messages"/>
+                                         action="#{mbGuia.buscarFuentesProductos()}" update="pnForm,fsAutFuentes,fsGuiaAut,fsProductos,fsCompletar,messages"/>
                         <p:commandButton title="Limpiar el CUIT a buscar" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                          action="#{mbGuia.limpiarCuit()}" update="pnForm" rendered="#{mbGuia.guia.id eq null}"/>
                     </h:panelGrid>
@@ -58,13 +63,17 @@
                         <p:outputLabel id="perNomCompleto" value="#{mbGuia.productor.nombreCompleto}" style="font-weight: bold"/>
                     </h:panelGrid>
                 </p:fieldset>
+                <!-- Listado de fuentes de productos para seleccionar la que corresponda -->
                 <p:fieldset id="fsAutFuentes" toggleable="true" legend="Fuentes de Productos" style="margin-bottom:20px" rendered="#{mbGuia.lstAutorizaciones ne null}">
-                    <p:outputLabel value="Seleccione una de las Fuentes de productos listadas haciendo clic en el botón de la columna 'Ver'." 
+                    <p:outputLabel value="Seleccione una de las Fuentes de productos listadas haciendo clic en el botón azul de la columna de la derecha. 
+                                   Si está editando una guía existente, podrá desvincular la fuente seleccionada mediante el botón amarillo de la columna de la derecha." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.autSelected eq null and mbGuia.lstAutorizaciones.size() ne 0}" />
                     <p:outputLabel value="Para registrar la Fuente seleccionada, haga clic en el botón 'Guardar', o en 'Ver otra' para ver el detalle de otra fuente disponible." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.autSelected ne null}" />
-                    <p:outputLabel value="Los Datos Generales fueron completados, puede guardar la Guía mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Cancelar'." 
-                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null}" />
+                    <p:outputLabel value="  Los Datos Generales fueron completados, puede guardar la Guía mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Limpiar'." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null and mbGuia.guia.tipo.descuentaAutoriz}" />
+                    <p:outputLabel value=" El siguiente paso es la selección de la/s guía/s para descontar productos. Podrá seleccionarla/s mediante el botón 'Ver guías disponibles'" 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null and not mbGuia.guia.tipo.descuentaAutoriz}" />
                     <p:outputLabel value="El Productor seleccionado no posée Fuentes de Productos disponibles." 
                                    style="font-size: 30px !important; color: #610B21" rendered="#{mbGuia.lstAutorizaciones.size() eq 0 and mbGuia.lstGuiasMadre eq null}" />
                     <h:panelGrid columns="1" rendered="#{mbGuia.autSelected eq null and mbGuia.lstAutorizaciones.size() ne 0}" >
@@ -121,16 +130,22 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy" />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Ver" style="width:30px">
+                            <p:column style="width:30px">
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver Detalle" process="@this" 
-                                                 update="@form" action="#{mbGuia.verDetalleFuente(config.Autorizacion)}" >
+                                                 update="@form" action="#{mbGuia.verDetalleFuente()}"
+                                                 rendered="#{(not aut.asignadaDesc and mbGuia.guia.id ne null) or mbGuia.guia.id eq null}" >
+                                    <f:setPropertyActionListener value="#{aut}" target="#{mbGuia.autSelected}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Quitar esta Autorización como fuente de productos" process="@this" 
+                                                 update="@form,fsAutFuentes,fsGuiaAut,fsProductos,fsCompletar,messages" action="#{mbGuia.deleteFuenteGuardada()}" 
+                                                 rendered="#{aut.asignadaDesc and mbGuia.guia.id ne null}" >
                                     <f:setPropertyActionListener value="#{aut}" target="#{mbGuia.autSelected}" /> 
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
                     </h:panelGrid>
                     
-                    <p:panel id="pnFrmAutView" header="Detalle" rendered="#{mbGuia.view and mbGuia.autSelected ne null}" >
+                    <p:panel id="pnFrmAutView" header="Detalle" rendered="#{mbGuia.viewFuente and mbGuia.autSelected ne null}" >
                         <h:panelGrid id="pgAutDatosGrales" columns="2" >
                             <p:outputLabel value="Id: " for="aut_id"/>
                             <p:outputLabel id="aut_id" value="#{mbGuia.autSelected.id}"/>
@@ -151,13 +166,19 @@
                             <p:outputLabel value="Fecha ingreso: " for="aut_fechaIng"/>
                             <p:outputLabel id="aut_fechaIng" value="#{mbGuia.autSelected.fechaIngExpte}" >
                                 <f:convertDateTime pattern="dd/MM/yyyy" />
-                            </p:outputLabel>
+                            </p:outputLabel>                            
                             <p:outputLabel value="Sup. Total (Has.): " for="aut_supTot"/>
-                            <p:outputLabel id="aut_supTot" value="#{mbGuia.autSelected.supTotal}"/>
+                            <p:outputLabel id="aut_supTot" value="#{mbGuia.autSelected.supTotal}" >
+                                <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
                             <p:outputLabel value="Sup. Solicitada (Has.): " for="aut_supSol"/>
-                            <p:outputLabel id="aut_supSol" value="#{mbGuia.autSelected.supSolicitada}"/>
+                            <p:outputLabel id="aut_supSol" value="#{mbGuia.autSelected.supSolicitada}" >
+                                <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
                             <p:outputLabel value="Sup. Autorizada (Has.): " for="aut_supAut"/>
-                            <p:outputLabel id="aut_supAut" value="#{mbGuia.autSelected.supAutorizada}"/>
+                            <p:outputLabel id="aut_supAut" value="#{mbGuia.autSelected.supAutorizada}" >
+                                <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
                             <p:outputLabel value="Fecha Vencimiento: " for="aut_fechaVenc"/>
                             <p:outputLabel id="aut_fechaVenc" value="#{mbGuia.autSelected.fechaVencAutoriz}" >
                                 <f:convertDateTime pattern="dd/MM/yyyy" />
@@ -169,7 +190,7 @@
                         </h:panelGrid>
                         <h:panelGrid id="pgAutProductos" columns="1" >
                             <p:outputLabel value="Productos Autorizados" style="font-weight: bold" />
-                            <p:dataTable styleClass="table" value="#{mbGuia.lstItemsOrigen}"
+                            <p:dataTable styleClass="table" value="#{mbGuia.autSelected.items}"
                                          var="itemOrigen"
                                          id="dtAutItemsOrigen" >
                                 <p:column headerText="id" style="width:50px">
@@ -194,8 +215,8 @@
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view}" />
-                        <h:panelGrid id="pgAutDatosAdmin" columns="2" rendered="#{mbGuia.view}" >
+                        <p:separator rendered="#{mbGuia.viewFuente}" />
+                        <h:panelGrid id="pgAutDatosAdmin" columns="2" rendered="#{mbGuia.viewFuente}" >
                             <p:outputLabel value="Fecha Alta: " for="aut_fechaAlta"/>
                             <p:outputLabel id="aut_fechaAlta" value="#{mbGuia.autSelected.fechaAlta}" >
                                 <f:convertDateTime pattern="dd/MM/yyyy" />
@@ -206,29 +227,34 @@
                         <h:panelGrid columns="2" >
                             <p:commandButton icon="fa fa-fw fa-download" title="Registrar la Autorización como Fuente de Productos" 
                                              rendered="#{mbGuia.guia.numFuente eq null}" value="Guardar" update="@form,messages" 
-                                             action="#{mbGuia.guardarFuente(config.Autorizacion)}" />
+                                             action="#{mbGuia.guardarFuente()}" />
                             <p:commandButton icon="fa fa-fw fa-share" title="Ver el detalle de otra Fuente" 
                                              rendered="#{mbGuia.guia.numFuente eq null}" value="Ver Otra" update="@form" 
-                                             action="#{mbGuia.cancelarFuenteSelected(config.Autorizacion)}" />
+                                             action="#{mbGuia.cancelarFuenteSelected()}" />
                             <p:outputLabel value="FUENTE SELECCIONADA" style="color: #3B8980; font-weight: bold" rendered="#{mbGuia.guia.numFuente ne null}"/>
                             <p:commandButton icon="fa fa-fw fa-close" title="Cancelar la Fuente seleccionada" 
-                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form" 
-                                             action="#{mbGuia.deleteFuenteGuardada(config.Autorizacion)}" />
+                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form,fsGuiaAut" 
+                                             action="#{mbGuia.deleteFuenteGuardada()}" />
+                            <p:commandButton icon="fa fa-fw fa-search" title="Ver Guías disponibles para descontar productos" 
+                                             rendered="#{mbGuia.guia.numFuente ne null and not mbGuia.guia.tipo.descuentaAutoriz and mbGuia.lstGuiasMadre eq null}" value="Ver Guías disponibles" update="@form" 
+                                             action="#{mbGuia.buscarGuiasDisponibles()}" />
                         </h:panelGrid>
                     </p:panel>
                 </p:fieldset>
-                
-                
-                <p:fieldset id="fsGuiaFuentes" toggleable="true" legend="Fuentes de Productos" style="margin-bottom:20px" 
-                            rendered="#{mbGuia.lstGuiasMadre ne null}">
-                    <p:outputLabel value="Seleccione una de las Fuentes de productos listadas haciendo clic en el botón de la columna 'Ver'." 
+                <!-- Listado de Items autorizados por la resolución -->     
+
+                <!-- Listado de Guías disponibles para descontar productos -->                
+                <p:fieldset id="fsGuiaAut" toggleable="true" legend="Guías disponibles para descuento" style="margin-bottom:20px" 
+                            rendered="#{mbGuia.lstGuiasMadre ne null and not mbGuia.guia.tipo.descuentaAutoriz}">
+                    <p:outputLabel value="Seleccione una de las Guías disponibles para el descuento listadas haciendo clic en el botón azul de la columna de la derecha. 
+                                   Si está editando una guía existente podrá desvincular la guía de descuento elegida previamente mediante el botón amarillo de la comlumna derecha." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.guiaSelected eq null and mbGuia.lstGuiasMadre.size() ne 0}" />
-                    <p:outputLabel value="Para registrar la Fuente seleccionada, haga clic en el botón 'Guardar', o en 'Ver otra' para ver el detalle de otra fuente disponible." 
+                    <p:outputLabel value="Para registrar la Guía seleccionada, haga clic en el botón 'Guardar', o en 'Ver otra' para ver el detalle de otra fuente disponible." 
                                    style="font-style: italic; font-size: small" rendered="#{mbGuia.guiaSelected ne null}" />
-                    <p:outputLabel value="Los Datos Generales fueron completados, puede guardar la Guía mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Cancelar'." 
-                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.guia.numFuente ne null}" />
-                    <p:outputLabel value="El Productor seleccionado no posée Fuentes de Productos disponibles para el tipo de Guía seleccionado." 
-                                   style="font-size: 30px !important; color: #610B21" rendered="#{mbGuia.lstGuiasMadre.size() eq 0 and mbGuia.lstAutorizaciones eq null}" />
+                    <p:outputLabel value="Los Datos Generales fueron completados, puede guardar la Guía que está gestionando mediante el botón 'Guardar' o cancelar la selección mediante el botón 'Limpiar'." 
+                                   style="font-style: italic; font-size: small" rendered="#{mbGuia.lstGuiasMadre.size() ne 0 and mbGuia.guia.numFuente ne null}" />
+                    <p:outputLabel value="El Productor seleccionado no posée Guías disponibles para el descuento de productos." 
+                                   style="font-size: 30px !important; color: #610B21" rendered="#{mbGuia.lstGuiasMadre.size() eq 0}" />
                     <h:panelGrid columns="1" rendered="#{mbGuia.guiaSelected eq null and mbGuia.lstGuiasMadre.size() ne 0}" >
                         <p:dataTable styleClass="table" value="#{mbGuia.lstGuiasMadre}"
                                      filteredValue="#{mbGuia.lstGuiasMadreFilters}"
@@ -309,16 +335,22 @@
                                 <p:outputLabel value="#{guia.estado.nombre}" />
                             </p:column>
 
-                            <p:column style="width:30px">
-                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
-                                                 update="@form" action="#{mbGuia.verDetalleFuente(config.GuiaMadre)}" >
+                            <p:column style="width:30px" >
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-plus-circle" title="Ver detalle para asignar" process="@this" 
+                                                 update="@form" action="#{mbGuia.verDetalleGuiaADesc()}" 
+                                                 rendered="#{not guia.asignadaDesc}" >
+                                    <f:setPropertyActionListener value="#{guia}" target="#{mbGuia.guiaSelected}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Desasignar esta Guía" process="@this" 
+                                                 update="@form,messages" action="#{mbGuia.deleteGuiaSeleccionada()}" 
+                                                 rendered="#{guia.asignadaDesc}" >
                                     <f:setPropertyActionListener value="#{guia}" target="#{mbGuia.guiaSelected}" /> 
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
                     </h:panelGrid>
                     
-                    <p:panel id="pnFrmGuiaView" header="Detalle" rendered="#{mbGuia.view and mbGuia.guiaSelected ne null}" >
+                    <p:panel id="pnFrmGuiaView" header="Detalle" rendered="#{mbGuia.viewGuia and mbGuia.guiaSelected ne null}" >
                         <h:panelGrid id="pgGuiaDatosGrales" columns="2" >
                             <p:outputLabel value="Id: " for="guia_id"/>
                             <p:outputLabel id="guia_id" value="#{mbGuia.guiaSelected.id}"/>
@@ -337,7 +369,7 @@
                             <p:outputLabel value="Estado: " />
                             <p:outputLabel value="#{mbGuia.guiaSelected.estado.nombre}" />
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view}" />
+                        <p:separator rendered="#{mbGuia.viewGuia}" />
                         <h:panelGrid id="pgGuiaInmueble" columns="2" >
                             <p:outputLabel value="Nombre Inmueble de origen: " />
                             <p:outputLabel value="#{mbGuia.guiaSelected.origen.inmNombre}" />
@@ -348,7 +380,7 @@
                             <p:outputLabel value="Departamento: " />
                             <p:outputLabel value="#{mbGuia.guiaSelected.origen.departamento}" />
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view}" />
+                        <p:separator rendered="#{mbGuia.viewGuia}" />
                         <h:panelGrid id="pgGuiaFuente" columns="2" >
                             <p:outputLabel value="Tipo de Fuente de productos: " />
                             <p:outputLabel value="#{mbGuia.guiaSelected.tipoFuente.nombre}" />
@@ -356,34 +388,34 @@
                             <p:outputLabel value="#{mbGuia.guiaSelected.numFuente}" />
                         </h:panelGrid>
                         <h:panelGrid id="pgGuiaProductos" columns="1" >
-                            <p:outputLabel value="Productos Autorizados" style="font-weight: bold" />
-                            <p:dataTable styleClass="table" value="#{mbGuia.lstItemsOrigen}"
-                                         var="itemOrigen"
-                                         id="dtGuiaItemsOrigen" >
+                            <p:outputLabel value="Productos Disponibles" style="font-weight: bold" />
+                            <p:dataTable styleClass="table" value="#{mbGuia.guiaSelected.items}"
+                                         var="itemGuia"
+                                         id="dtGuiaItems" >
                                 <p:column headerText="id" style="width:50px">
-                                    <p:outputLabel value="#{itemOrigen.id}"/>
+                                    <p:outputLabel value="#{itemGuia.id}"/>
                                 </p:column>
                                 <p:column headerText="Especie local" >
-                                    <p:outputLabel value="#{itemOrigen.nombreVulgar}"/>
+                                    <p:outputLabel value="#{itemGuia.nombreVulgar}"/>
                                 </p:column>
                                 <p:column headerText="Nombre científico" >
-                                    <p:outputLabel value="#{itemOrigen.nombreCientifico}"/>
+                                    <p:outputLabel value="#{itemGuia.nombreCientifico}"/>
                                 </p:column>
                                 <p:column headerText="Clase" >
-                                    <p:outputLabel value="#{itemOrigen.clase}"/>
+                                    <p:outputLabel value="#{itemGuia.clase}"/>
                                 </p:column>
                                 <p:column headerText="Unidad" >
-                                    <p:outputLabel value="#{itemOrigen.unidad}"/>
+                                    <p:outputLabel value="#{itemGuia.unidad}"/>
                                 </p:column>
                                 <p:column headerText="Saldo disp." style="text-align: right !important;" >
-                                    <p:outputLabel value="#{itemOrigen.saldo}" >
+                                    <p:outputLabel value="#{itemGuia.saldo}" >
                                         <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                     </p:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view}" />
-                        <h:panelGrid id="pgGuiaDatosAdmin" columns="2" rendered="#{mbGuia.view}" >
+                        <p:separator rendered="#{mbGuia.viewGuia}" />
+                        <h:panelGrid id="pgGuiaDatosAdmin" columns="2" rendered="#{mbGuia.viewGuia}" >
                             <p:outputLabel value="Fecha Alta: " for="guia_fechaAlta"/>
                             <p:outputLabel id="guia_fechaAlta" value="#{mbGuia.guiaSelected.fechaAlta}" >
                                 <f:convertDateTime pattern="dd/MM/yyyy" />
@@ -392,25 +424,74 @@
                             <p:outputLabel id="guia_us" value="#{mbGuia.guiaSelected.usuario.nombreCompleto}"/>
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-download" title="Registrar la Guía como Fuente de Productos" 
-                                             rendered="#{mbGuia.guia.numFuente eq null}" value="Guardar" update="@form,messages" 
-                                             action="#{mbGuia.guardarFuente(config.GuiaMadre)}" />
-                            <p:commandButton icon="fa fa-fw fa-share" title="Ver el detalle de otra Fuente" 
-                                             rendered="#{mbGuia.guia.numFuente eq null}" value="Ver Otra" update="@form" 
-                                             action="#{mbGuia.cancelarFuenteSelected(config.GuiaMadre)}" />
-                            <p:outputLabel value="FUENTE SELECCIONADA" style="color: #3B8980; font-weight: bold" rendered="#{mbGuia.guia.numFuente ne null}"/>
-                            <p:commandButton icon="fa fa-fw fa-close" title="Cancelar la Fuente seleccionada" 
-                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form" 
-                                             action="#{mbGuia.deleteFuenteGuardada(config.GuiaMadre)}" />
+                            <p:commandButton icon="fa fa-fw fa-download" title="Registrar la Guía para descontar Productos" 
+                                             rendered="#{mbGuia.guiaSelected ne null}" value="Guardar" update="@form,messages" 
+                                             action="#{mbGuia.guardarGuiaADesc()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" title="Ver el detalle de otra Guía a seleccionar" 
+                                             rendered="#{mbGuia.guiaSelected ne null}" value="Ver Otra" update="@form" 
+                                             action="#{mbGuia.cancelarGuiaSelected()}" />
                         </h:panelGrid>
                     </p:panel>
                 </p:fieldset>
-                
-                
-                <p:fieldset id="fsCompletar" toggleable="true" style="margin-bottom:20px" rendered="#{mbGuia.guia.numFuente ne null}">
-                    <h:panelGrid columns="3" >
+                <!-- Listado de productos a descontar correspondientes a las Guías seleccionadas -->
+                <p:fieldset id="fsProductos" toggleable="true" style="margin-bottom:20px" 
+                            legend="Productos a descontar provenientes de las Guías seleccionadas" 
+                            rendered="#{mbGuia.lstItemsADescontar ne null and mbGuia.lstItemsADescontar.size() ne 0}">
+                    <h:panelGrid columns="1" >
+                        <p:dataTable styleClass="table" value="#{mbGuia.lstItemsADescontar}"
+                                     var="itemADesc"
+                                     id="dtGuiaItemsADescontar" >
+                            <p:column headerText="Guía" >
+                                <p:outputLabel value="#{itemADesc.guia.codigo}"/>
+                            </p:column>
+                            <p:column headerText="id" style="width:50px">
+                                <p:outputLabel value="#{itemADesc.id}"/>
+                            </p:column>
+                            <p:column headerText="Especie local" >
+                                <p:outputLabel value="#{itemADesc.nombreVulgar}"/>
+                            </p:column>
+                            <p:column headerText="Nombre científico" >
+                                <p:outputLabel value="#{itemADesc.nombreCientifico}"/>
+                            </p:column>
+                            <p:column headerText="Clase" >
+                                <p:outputLabel value="#{itemADesc.clase}"/>
+                            </p:column>
+                            <p:column headerText="Unidad" >
+                                <p:outputLabel value="#{itemADesc.unidad}"/>
+                            </p:column>
+                            <p:column headerText="Saldo disp." style="text-align: right !important;" >
+                                <p:outputLabel value="#{itemADesc.saldo}" >
+                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGrid>
+                </p:fieldset>
+                <!-- Botones finales -->
+                <p:fieldset id="fsCompletar" toggleable="true" style="margin-bottom:20px" 
+                            rendered="#{(mbGuia.guia.numFuente ne null and mbGuia.guia.tipo.descuentaAutoriz) 
+                                        or (mbGuia.guiaAsignada ne null and not mbGuia.guia.tipo.descuentaAutoriz)}" >
+                    <!-- para las que descuentan de autorización -->
+                    <h:panelGrid columns="3" rendered="#{mbGuia.guia.numFuente ne null and mbGuia.guia.tipo.descuentaAutoriz}" >
                         <p:commandButton icon="fa fa-fw fa-save" title="Guardar los datos generales de la Guía para continuar el registro" 
-                                             value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" />
+                                         value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" 
+                                         rendered="#{mbGuia.guia.numFuente ne null}" />
+                        <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                         rendered="#{mbGuia.guia.id eq null}" > 
+                            <p:ajax listener="#{mbGuia.limpiarCuit()}" update="pnForm" resetValues="true" />
+                        </p:commandButton>
+                        <p:commandButton title="Recuperar los datos de Tipo de Guía y CUIT modificados" icon="fa fa-fw fa-refresh" value="Limpiar" 
+                                         rendered="#{mbGuia.guia.id ne null}" >
+                            <p:ajax update="pnForm" resetValues="true" />
+                        </p:commandButton>
+                        <p:commandButton title="Volver a la vista de los datos generales" styleClass="save" icon="fa fa-fw fa-close" value="Cerrar" 
+                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" rendered="#{mbGuia.guia.id ne null}" />
+                    </h:panelGrid>
+                    <!-- para las que descuentan de guías -->
+                    <h:panelGrid columns="3" rendered="#{mbGuia.guiaAsignada ne null and not mbGuia.guia.tipo.descuentaAutoriz}" >
+                        <p:commandButton icon="fa fa-fw fa-save" title="Guardar los datos generales de la Guía para continuar el registro" 
+                                         value="Guardar" update="pMenuIndex,frame,@form,messages" action="#{mbGuia.save()}" 
+                                         rendered="#{mbGuia.guia.numFuente ne null and mbGuia.guiaAsignada ne null}" />
                         <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
                                          rendered="#{mbGuia.guia.id eq null}" >
                             <p:ajax listener="#{mbGuia.limpiarCuit()}" update="pnForm" resetValues="true" />
@@ -420,8 +501,7 @@
                             <p:ajax update="pnForm" resetValues="true" />
                         </p:commandButton>
                         <p:commandButton title="Volver a la vista de los datos generales" styleClass="save" icon="fa fa-fw fa-close" value="Cerrar" 
-                                         rendered="#{mbGuia.guia.id ne null}"
-                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" />
+                                         action="#{mbGuia.prepareView()}" update="pMenuIndex,frame" rendered="#{mbGuia.guia.id ne null}" />
                     </h:panelGrid>
                 </p:fieldset>
             </p:panel>

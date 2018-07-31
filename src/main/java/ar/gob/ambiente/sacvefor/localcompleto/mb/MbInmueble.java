@@ -3,16 +3,22 @@ package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Inmueble;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.InmuebleFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.territ.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.DepartamentoClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.LocalidadClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.ProvinciaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import ar.gob.ambiente.sacvefor.servicios.territorial.CentroPoblado;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Departamento;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Provincia;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -23,48 +29,153 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
 
 /**
  * Bean de respaldo para la gestión de Inmuebles
+ * Gestiona la vista aut/inm/inmueble.xhtml
  * @author rincostante
  */
 public class MbInmueble {
 
+    /**
+     * Variable privada: objeto principal a gestionar
+     */
     private Inmueble inmueble;
-    private List<Inmueble> listado;
-    private List<Inmueble> listFilters;
-    private List<Inmueble> lstInmOrigen;
-    private boolean view;
-    private boolean edit;
-    private static final Logger logger = Logger.getLogger(Inmueble.class.getName());    
     
-    // inyección de recursos
+    /**
+     * Variable privada: listado de los inmuebles existentes
+     */
+    private List<Inmueble> listado;
+    
+    /**
+     * Variable privada: listado para filtrar la tabla de inmuebles existentes
+     */
+    private List<Inmueble> listFilters;
+    
+    /**
+     * Variable privada: listado de los inmuebles existentes para poblar el combo de selección de inmueble de origen, si corresponde
+     */
+    private List<Inmueble> lstInmOrigen;
+    
+    /**
+     * Variable privada: flag que indica que el inmueble que se está gestionando no está editable
+     */
+    private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que el inmueble que se está gestionando es existente
+     */
+    private boolean edit;
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */ 
+    private static final Logger logger = Logger.getLogger(Inmueble.class.getName());  
+    
+    /**
+     * Variable privada: flag que indica si se está subiendo una imagen de martillo
+     */
+    private boolean subeMartillo;    
+    
+    ///////////////////////////////////////////////////
+    // acceso a datos mediante inyección de recursos //
+    ///////////////////////////////////////////////////
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Inmueble
+     */ 
     @EJB
     private InmuebleFacade inmFacade;
     
-    // Clientes REST para la selección de datos territoriales
-    private ProvinciaClient provClient;    
-    private DepartamentoClient deptoClient;
-    private LocalidadClient localidadClient;    
-
+    ////////////////////////////////////////////////////////////
+    // Clientes REST para la selección de datos territoriales //
+    ////////////////////////////////////////////////////////////
+    
     /**
-     * Campos para la gestión de los elementos territoriales en los combos del formulario.
-     * Las Entidades de servicio se componen de un par {id | nombre}
+     * Variable privada: cliente para el acceso a la API de Provincias de Organización territorial
+     */
+    private ProvinciaClient provClient;    
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Departamentos de Organización territorial
+     */
+    private DepartamentoClient deptoClient;
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Localidades de Organización territorial
+     */
+    private LocalidadClient localidadClient;   
+    
+    /**
+     * Variable privada: cliente para el acceso a la API de Validación de usuarios para el acceso a Organización territorial
+     */
+    private UsuarioClient usuarioClient;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API de Organización territorial
+     */    
+    private Token token;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API de Organización territorial
      */ 
+    private String strToken;    
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // Campos para la gestión de los elementos territoriales en los combos del formulario. //
+    // Las Entidades de servicio se componen de un par {id | nombre} ////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Provincias
+     */
     private List<EntidadServicio> listProvincias;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Provincia seleccionada del combo
+     */
     private EntidadServicio provSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los Departamentos
+     */
     private List<EntidadServicio> listDepartamentos;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Departamento seleccionado del combo
+     */
     private EntidadServicio deptoSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Localidades
+     */
     private List<EntidadServicio> listLocalidades;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Localidad seleccionado del combo
+     */
     private EntidadServicio localSelected;       
     
+    /**
+     * Constructor
+     */
     public MbInmueble() {
     }
-        
-    /**********************
-     * Métodos de acceso **
-     **********************/   
+
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////  
+    public boolean isSubeMartillo() {        
+        return subeMartillo;
+    }    
+    
+    public void setSubeMartillo(boolean subeMartillo) {
+        this.subeMartillo = subeMartillo;
+    }
+
     public List<Inmueble> getLstInmOrigen() {
         lstInmOrigen = inmFacade.getHabilitados();
         return lstInmOrigen;
@@ -165,9 +276,14 @@ public class MbInmueble {
     }
 
     
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Mátodos operativos //
+    ////////////////////////
+    
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar, 
+     * el inmueble y las provincias a seleccionar
+     */  
     @PostConstruct
     public void init(){
         inmueble = new Inmueble();
@@ -191,6 +307,7 @@ public class MbInmueble {
     
     /**
      * Método para guardar el Inmueble, sea inserción o edición.
+     * Con la condición de haber guardado previamente el archivo de la imagen del martillo
      * Previa validación
      */      
     public void save(){
@@ -209,24 +326,28 @@ public class MbInmueble {
                 }
             }
             if(valida){
-                inmueble.setIdCatastral(inmueble.getIdCatastral().toUpperCase());
-                String tempNombre = inmueble.getNombre();
-                inmueble.setNombre(tempNombre.toUpperCase());
-                String tempDomicilio = inmueble.getDomicilio();
-                inmueble.setDomicilio(tempDomicilio.toUpperCase());
-                // seteo los datos territoriales
-                inmueble.setIdLocGt(localSelected.getId());
-                inmueble.setLocalidad(localSelected.getNombre());
-                inmueble.setDepartamento(deptoSelected.getNombre());
-                inmueble.setProvincia(provSelected.getNombre());
-                if(inmueble.getId() != null){
-                    inmFacade.edit(inmueble);
-                    JsfUtil.addSuccessMessage("El Inmueble fue guardado con exito");
-                }else{
-                    inmueble.setHabilitado(true);
-                    inmFacade.create(inmueble);
-                    JsfUtil.addSuccessMessage("El Inmueble fue registrado con exito");
-                }  
+                // procedo al guardado definitivo de la imagen del martillo
+                if(saveMartillo()){
+                    inmueble.setIdCatastral(inmueble.getIdCatastral().toUpperCase());
+                    String tempNombre = inmueble.getNombre();
+                    inmueble.setNombre(tempNombre.toUpperCase());
+                    String tempDomicilio = inmueble.getDomicilio();
+                    inmueble.setDomicilio(tempDomicilio.toUpperCase());
+                    // seteo los datos territoriales
+                    inmueble.setIdLocGt(localSelected.getId());
+                    inmueble.setLocalidad(localSelected.getNombre());
+                    inmueble.setDepartamento(deptoSelected.getNombre());
+                    inmueble.setProvincia(provSelected.getNombre());
+                    if(inmueble.getId() != null){
+                        inmFacade.edit(inmueble);
+                        JsfUtil.addSuccessMessage("El Inmueble fue guardado con exito");
+                    }else{
+                        inmueble.setHabilitado(true);
+                        inmFacade.create(inmueble);
+                        JsfUtil.addSuccessMessage("El Inmueble fue registrado con exito");
+                    }  
+                    edit = false;
+                }
             }else{
                 JsfUtil.addErrorMessage("El Inmueble que está tratando de persisitir ya existe, por favor verifique los datos ingresados.");
             }
@@ -282,7 +403,7 @@ public class MbInmueble {
      */
     public void habilitar(){
         try{
-            inmueble.setHabilitado(false);
+            inmueble.setHabilitado(true);
             inmFacade.edit(inmueble);
             limpiarForm();
         }catch(Exception ex){
@@ -294,6 +415,12 @@ public class MbInmueble {
      * Limpia el formulario de inserción/edición
      */
     public void limpiarForm() {
+        // si ya subió un martillo, si estoy creando un inmueble nuevo, lo elimino
+        if(inmueble.getNombreArchivo() != null && inmueble.getId() == null){
+            File martillo = new File(inmueble.getRutaArchivo() + inmueble.getNombreArchivo());
+            martillo.delete();
+            JsfUtil.addSuccessMessage("El martillo cargado ha sido eliminado.");
+        }        
         inmueble = new Inmueble();
         provSelected = new EntidadServicio();
         deptoSelected = new EntidadServicio();
@@ -302,24 +429,128 @@ public class MbInmueble {
         listLocalidades = new ArrayList<>();
     }    
     
+    ////////////////////////////////////////
+    // Métodos para gestionar el martillo //
+    ////////////////////////////////////////
+    /**
+     * Método para subir la imagen del martillo en el subdirectorio temporal
+     * El subdirectorio temporal se llama "TMP"
+     * Se configuran en el archivo de propiedades configurable "Config.properties"
+     * @param event FileUploadEvent evento de subida de martillo
+     */
+    public void subirMartilloTmp(FileUploadEvent event){ 
+        // subo el archivo al directorio temporal
+        try{
+            UploadedFile fileMartillo = event.getFile();
+            String destino = ResourceBundle.getBundle("/Config").getString("SubdirTemp");
+            // obtengo el nombre del archivo
+            String nombreArchivo = getNombreArchivoASubir(fileMartillo);
+            // si todo salió bien, procedo
+            if(nombreArchivo != null){
+                // si logré subir el archivo, guardo la ruta
+                if(JsfUtil.copyFile(nombreArchivo, fileMartillo.getInputstream(), destino)){
+                    JsfUtil.addSuccessMessage("El archivo " + fileMartillo.getFileName() + " se ha subido al servidor con el nombre " + nombreArchivo);
+                    inmueble.setRutaArchivo(destino);
+                    inmueble.setNombreArchivo(nombreArchivo);
+                    inmueble.setRutaTemporal(true);
+                }
+                // actualizo el flag
+                subeMartillo = true;
+                edit = true;
+            }else{
+                JsfUtil.addErrorMessage("No se pudo obtener el destino de la imagen del Martillo.");
+            }
+        }catch(IOException e){
+            JsfUtil.addErrorMessage("Hubo un error subiendo la imagen del Martillo" + e.getLocalizedMessage());
+        }
+    }      
     
-    /*********************
-     * Métodos privados **
-     *********************/      
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
+    
+    /**
+     * Método para guardar la imagen del martillo a un directorio definitivo.
+     * Completado el renombrado y guardado, elimino el archivo del directorio temporal
+     * El directorio es "martillos" y está seteado en el Config.properties.
+     * Utilizado en save()
+     */
+    private boolean saveMartillo() {
+        if(subeMartillo){
+            // obtengo la imagen del martillo del directorio temporal
+            File martARenombrar = new File(ResourceBundle.getBundle("/Config").getString("SubdirTemp") + inmueble.getNombreArchivo());
+            // instancio un nuevo File para el renombrado con el path al directorio definitivo
+            File martDefinitivo = new File(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
+                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos") + inmueble.getNombreArchivo());
+            // si existe, lo elimino
+            martDefinitivo.delete();
+            // renombro y devuelvo el resultado: true si fue existoso, false, si no lo fue.
+            if(martARenombrar.renameTo(martDefinitivo)){
+                // si todo fue bien, actualizo la ruta en la persona y la condición de temporal de la ruta
+                inmueble.setRutaArchivo(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
+                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos"));
+                inmueble.setRutaTemporal(false);
+                subeMartillo = false;
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return true;
+        }
+    }    
+    
+    /**
+     * Método para nombrear un archivo subido, en este caso, el Martillo del Proponente.
+     * Utilizado en subirMartilloTmp(FileUploadEvent event)
+     * @param file UploadedFile archivo a subir
+     * @return String nombre del archivo según la provincia, el cuit y la fecha
+     */
+    private String getNombreArchivoASubir(UploadedFile file){
+        Date date = new Date(System.currentTimeMillis());
+        String extension = file.getFileName().substring(file.getFileName().lastIndexOf(".") + 1);
+        Long sufijo = date.getTime();
+        String nombreArchivo = ResourceBundle.getBundle("/Config").getString("IdProvinciaGt") + ""
+                + "_" + sufijo.toString() + "." + extension;
+        return nombreArchivo;
+    }       
+    
+    /**
+     * Método para obtener el inmueble según su clave identificatoria.
+     * Utilizado en el converter
+     * @param key Long identificación única del inmueble
+     * @return Object Inmueble obtenido
+     */
     private Object getInmueble(Long key) {
         return inmFacade.find(key);
     }
 
+    /**
+     * Método priviado para obtener las Provincias mediante el servicio REST de Organización territorial.
+     * Obtiene las provincias y por cada una crea una EntidadServicio con el id y nombre.
+     * Luego las incluye en el listado listProvincias.
+     * Utilizado por init()
+     */
     private void cargarProvincias() {
         EntidadServicio provincia;
         List<Provincia> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             provClient = new ProvinciaClient();
             // obtengo el listado de provincias 
             GenericType<List<Provincia>> gType = new GenericType<List<Provincia>>() {};
-            Response response = provClient.findAll_JSON(Response.class);
+            Response response = provClient.findAll_JSON(Response.class, token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con las provincias como un objeto Entidad Servicio
             listProvincias = new ArrayList<>();
@@ -340,18 +571,29 @@ public class MbInmueble {
     }
 
     /**
-     * Método para poblar el listado de Departamentos según la Provincia seleccionada del servicio REST de centros poblados
+     * Método para poblar el listado de Departamentos según la Provincia seleccionada del servicio REST de Organización territorial.
+     * Utilizado por cargarEntidadesSrv(Long idLocGt)
      */  
     private void getDepartamentosSrv(Long idProv) {
         EntidadServicio depto;
         List<Departamento> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             provClient = new ProvinciaClient();
             // obtngo el listado
             GenericType<List<Departamento>> gType = new GenericType<List<Departamento>>() {};
-            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv));
+            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(idProv), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listDepartamentos = new ArrayList<>();
@@ -370,18 +612,29 @@ public class MbInmueble {
     }
 
     /**
-     * Método para poblar el listado de Localidades según el Departamento seleccionado del servicio REST de centros poblados
+     * Método para poblar el listado de Localidades según el Departamento seleccionado del servicio REST de Organización territorial
+     * Utilizado por deptoChangeListener()
      */    
     private void getLocalidadesSrv(Long idDepto) {
         EntidadServicio local;
         List<CentroPoblado> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             deptoClient = new DepartamentoClient();
             // obtngo el listado
             GenericType<List<CentroPoblado>> gType = new GenericType<List<CentroPoblado>>() {};
-            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto));
+            Response response = deptoClient.findByDepto_JSON(Response.class, String.valueOf(idDepto), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listLocalidades = new ArrayList<>();
@@ -400,15 +653,26 @@ public class MbInmueble {
     }
 
     /**
-     * Método para cargar entidades de servicio y los listados, para actualizar el Domicilio de la Persona
+     * Método para cargar entidades de servicio y los listados, para actualizar el Domicilio de la Persona.
+     * Utilizado por prepareEdit()
      */    
     private void cargarEntidadesSrv(Long idLocGt) {
         CentroPoblado cp;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTerr();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTerr();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
             // instancio el cliente para la selección de las provincias
             localidadClient = new LocalidadClient();
-            cp = localidadClient.find_JSON(CentroPoblado.class, String.valueOf(idLocGt));
+            cp = localidadClient.find_JSON(CentroPoblado.class, String.valueOf(idLocGt), token.getStrToken());
             // cierro el cliente
             localidadClient.close();
             // instancio las Entidades servicio
@@ -430,10 +694,28 @@ public class MbInmueble {
         }
     }
     
+    /**
+     * Método privado que obtiene y setea el token para autentificarse ante la API rest de Territorial
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado por cargarProvincias(), getDepartamentosSrv(Long idProv), getLocalidadesSrv(Long idDepto) y cargarEntidadesSrv(Long idLocGt)
+     */
+    private void getTokenTerr(){
+        try{
+            usuarioClient = new UsuarioClient();
+            Response responseUs = usuarioClient.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTerr"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strToken = (String)lstHeaders.get(0); 
+            token = new Token(strToken, System.currentTimeMillis());
+            usuarioClient.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+        }
+    }        
     
-    /*****************************
-    ** Converter para Inmueble  **
-    ******************************/ 
+    /////////////////////////////
+    // Converter para Inmueble //
+    /////////////////////////////
     @FacesConverter(forClass = Inmueble.class)
     public static class InmuebleConverter implements Converter {
 

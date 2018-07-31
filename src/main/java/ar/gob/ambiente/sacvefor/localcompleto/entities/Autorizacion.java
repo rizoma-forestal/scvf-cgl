@@ -33,12 +33,16 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 public class Autorizacion implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Paramétrica cuyo tipo es "Tipos de Autorización"
+     * Variable privada: Paramétrica cuyo tipo es "Tipos de Autorización"
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -47,7 +51,7 @@ public class Autorizacion implements Serializable {
     private Parametrica tipo;
     
     /**
-     * Número identificatorio del Intrumento administrativo que autorice la extracción
+     * Variable privada: Número identificatorio del Intrumento administrativo que autorice la extracción
      * El formato será validado en la lógica de la aplicación
      * en función de lo configurado en el Config.properties
      */
@@ -57,13 +61,13 @@ public class Autorizacion implements Serializable {
     private String numero;
     
     /**
-     * Fecha de la Resolución o instrumento autorizante
+     * Variable privada: Fecha de la Resolución o instrumento autorizante
      */
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date fechaInstrumento;
     
     /**
-     * Paramétrica cuyo tipo es "Tipos de Intervención"
+     * Variable privada: Paramétrica cuyo tipo es "Tipos de Intervención"
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -72,7 +76,7 @@ public class Autorizacion implements Serializable {
     private Parametrica intervencion;
     
     /**
-     * Paramétrica cuyo tipo es "Uso de Suelo"
+     * Variable privada: Paramétrica cuyo tipo es "Uso de Suelo"
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -81,7 +85,7 @@ public class Autorizacion implements Serializable {
     private Parametrica usoSuelo;
 
     /**
-     * Zona de asinganada al predio
+     * Variable privada: Listado de Zonas asinganadas al predio
      * Verde
      * Roja
      * Amarilla
@@ -97,7 +101,7 @@ public class Autorizacion implements Serializable {
     private List<ZonaIntervencion> zonas;  
     
     /**
-     * Listado de SubZonas vinculadas a la Autorización en el caso de que las tuviera
+     * Variable privada: Listado de SubZonas vinculadas a la Autorización en el caso de que las tuviera
      * Solo tendrán Sub Zonas las Zonas Verde y Amarilla
      */
     @Audited(targetAuditMode = NOT_AUDITED)
@@ -110,7 +114,7 @@ public class Autorizacion implements Serializable {
     private List<SubZona> subZonas;
 
     /**
-     * Listado de Personas vinculadas con la Autorización, estas podrán ser:
+     * Variable privada: Listado de Personas vinculadas con la Autorización, estas podrán ser:
      * Técnicos,
      * Proponentes,
      * Apoderados
@@ -128,7 +132,7 @@ public class Autorizacion implements Serializable {
     private List<Persona> personas;     
     
     /**
-     * Listado de Inuebles afectados a la Autrización
+     * Variable privada: Listado de Inuebles afectados a la Autrización
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToMany
@@ -140,13 +144,13 @@ public class Autorizacion implements Serializable {
     private List<Inmueble> inmuebles;   
     
     /**
-     * Listado de los items autorizados correspondientes a la Autorización
+     * Variable privada: Listado de los items autorizados correspondientes a la Autorización
      */
     @OneToMany (mappedBy="autorizacion")
     private List<ItemProductivo> items;  
     
     /**
-     * Estado de la autorización
+     * Variable privada: Estado de la autorización
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -155,7 +159,7 @@ public class Autorizacion implements Serializable {
     private EstadoAutorizacion estado;
     
     /**
-     * Número identificatorio del Expediente mediante el cual tramitó la Autorización
+     * Variable privada: Número identificatorio del Expediente mediante el cual tramitó la Autorización
      * El formato será validado en la lógica de la aplicación
      * en función de lo configurado en el Config.properties
      */
@@ -165,53 +169,53 @@ public class Autorizacion implements Serializable {
     private String numExp;
     
     /**
-     * Fecha de ingreso del Expediente a la Autiridad local
+     * Variable privada: Fecha de ingreso del Expediente a la Autiridad local
      */
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date fechaIngExpte;
     
     /**
-     * Superficie solicitada para autorizar la extracción
+     * Variable privada: Superficie solicitada para autorizar la extracción
      */
     private float supSolicitada;
     
     /**
-     * Superficie autorizada por la Autoridad local para realizar la extracción
+     * Variable privada: Superficie autorizada por la Autoridad local para realizar la extracción
      */
     private float supAutorizada;
     
     /**
-     * Superficie total obtenida de la sumatoria de las superficies
+     * Variable privada: Superficie total obtenida de la sumatoria de las superficies
      * de los inmuebles vinculados a la Autorización
      */
     private float supTotal;
     
     /**
-     * Fecha de vencimiento de la autorización
+     * Variable privada: Fecha de vencimiento de la autorización
      */
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date fechaVencAutoriz;
     
     /**
-     * Observaciones que pudieran corresponder
+     * Variable privada: Observaciones que pudieran corresponder
      */
     @Column (length=500)
     @Size(message = "El campo obs no puede tener más de 500 caracteres", max = 500)     
     private String obs;
     
     /**
-     * Provincia que la emitió. Surge de la configurada en cada aplciación
+     * Variable privada: Provincia que la emitió. Surge de la configurada en cada aplciación
      */
     private String provincia;
     
     /**
-     * Fecha de registro de la Autorización
+     * Variable privada: Fecha de registro de la Autorización
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaAlta;
     
     /**
-     * Usuario que gestiona la Autorización
+     * Variable privada: Usuario que gestiona la Autorización
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -220,33 +224,39 @@ public class Autorizacion implements Serializable {
     private Usuario usuario;
     
     /**
-     * Campo que mostrará la fecha de las revisiones
-     * No se persiste
+     * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
     private Date fechaRevision;
     
     /**
-     * Listado de Técnicos vinculados a la Autorización
-     * No se persiste
+     * Variable privada no persistida: Listado de Técnicos vinculados a la Autorización
      */
     @Transient
     private List<Persona> lstTecnicos;
     
     /**
-     * Listado de Proponentes vinculados a la Autorización
-     * No se persiste
+     * Variable privada no persistida: Listado de Proponentes vinculados a la Autorización
      */
     @Transient
     private List<Persona> lstProponentes;
     
     /**
-     * Listado de Apoderados vinculados a la Autorización
-     * No se persiste
+     * Variable privada no persistida: Listado de Apoderados vinculados a la Autorización
      */
     @Transient
     private List<Persona> lstApoderados;   
     
+    /**
+     * Variable privada no persistida: flag temporal que indica si la autorización fue 
+     * seleccionada para descontar productos para una guía, durante su registro
+     */
+    @Transient
+    private boolean asignadaDesc;    
+    
+    /**
+     * Constructor que inicializa los listados
+     */
     public Autorizacion(){
         personas = new ArrayList<>();
         inmuebles = new ArrayList<>();
@@ -258,6 +268,14 @@ public class Autorizacion implements Serializable {
     /**********************
      * Métodos de acceso **
      **********************/
+    public boolean isAsignadaDesc() {
+        return asignadaDesc;
+    }
+
+    public void setAsignadaDesc(boolean asignadaDesc) {
+        this.asignadaDesc = asignadaDesc;
+    }
+
     public String getProvincia() {
         return provincia;
     }
@@ -299,8 +317,8 @@ public class Autorizacion implements Serializable {
     }
 
     /**
-     * Devuelve las Personas vinculadas a la Autorización con el rol de Técnicos
-     * @return 
+     * Método que devuelve las Personas vinculadas a la Autorización con el rol de Técnicos
+     * @return List<Persona> listado de técnicos
      */
     public List<Persona> getLstTecnicos() {
         lstTecnicos = new ArrayList<>();
@@ -317,8 +335,8 @@ public class Autorizacion implements Serializable {
     }
 
     /**
-     * Devuelve las Personas vinculadas a la Autorización con el rol de Proponentes
-     * @return 
+     * Método que devuelve las Personas vinculadas a la Autorización con el rol de Proponentes
+     * @return List<Persona> listado de proponentes
      */    
     public List<Persona> getLstProponentes() {
         lstProponentes = new ArrayList<>();
@@ -335,8 +353,8 @@ public class Autorizacion implements Serializable {
     }
 
     /**
-     * Devuelve las Personas vinculadas a la Autorización con el rol de Apoderados
-     * @return 
+     * Método que devuelve las Personas vinculadas a la Autorización con el rol de Apoderados
+     * @return List<Persona> listado de Apoderados
      */    
     public List<Persona> getLstApoderados() {
         lstApoderados = new ArrayList<>();

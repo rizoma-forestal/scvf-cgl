@@ -48,17 +48,34 @@
                                      filteredValue="#{mbParamGuia.lstCopiasFilters}"
                              var="copia"
                              id="dtCopias"
-                             widgetVar="copiasTable">
-                            <p:column headerText="id" style="width:50px">
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="copiasTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15" >
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('copiasTable').clearFilters()" update="dtCopias"/>
+                            </f:facet>
+                            <p:column headerText="id" style="width:50px" >
                                 <p:outputLabel value="#{copia.id}"/>
                             </p:column>
-                            <p:column headerText="Tipo" >
+                            <p:column headerText="Tipo" 
+                                filterMatchMode="contains"
+                                sortBy="#{copia.tipoGuia.nombre}" 
+                                filterBy="#{copia.tipoGuia.nombre}" >
                                 <p:outputLabel value="#{copia.tipoGuia.nombre}"/>
                             </p:column>
-                            <p:column headerText="Nombre" >
+                            <p:column headerText="Nombre" 
+                                filterMatchMode="contains"
+                                sortBy="#{copia.nombre}" 
+                                filterBy="#{copia.nombre}" >
                                 <p:outputLabel value="#{copia.nombre}"/>
                             </p:column>
-                            <p:column headerText="Destino" >
+                            <p:column headerText="Destino" 
+                                filterMatchMode="contains"
+                                sortBy="#{copia.destino}" 
+                                filterBy="#{copia.destino}" >
                                 <p:outputLabel value="#{copia.destino}"/>
                             </p:column>
                             <p:column filterBy="#{copia.habilitado}" headerText="Estado" filterMatchMode="equals" >

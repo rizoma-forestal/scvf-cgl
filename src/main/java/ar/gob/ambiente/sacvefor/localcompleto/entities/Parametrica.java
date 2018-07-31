@@ -28,20 +28,33 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Parametrica implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    /**
+     * Variable privada: tipo de paramétrica
+     */
     @ManyToOne
     @JoinColumn(name="tipo_id", nullable=false)
     @NotNull(message = "Debe existir un Tipo de parámetro")
     private TipoParam tipo;
     
+    /**
+     * Variable privada: nombre de la paramétrica
+     */
     @Column (nullable=false, length=100)
     @NotNull(message = "El campo nombre no puede ser nulo")
     @Size(message = "El campo nombre no puede tener más de 100 caracteres", min = 1, max = 100)    
     private String nombre;
     
+    /**
+     * Variable privada: condición de habilitado
+     */
     private boolean habilitado;
 
     public Long getId() {

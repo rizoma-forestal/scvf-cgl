@@ -13,7 +13,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 
 /**
- * Bean de respaldo para la gestión de Estados de una Autorización
+ * Bean de respaldo para la gestión de Estados de una Autorización. Utilizado en la vista /aut/estados/estado.xhtml
  * Bloqueado
  * Carga Inicial
  * Habilitado
@@ -23,21 +23,46 @@ import javax.faces.convert.FacesConverter;
  */
 public class MbEstadoAut {
 
+    /**
+     * Variable privada: objeto principal a gestinoar
+     */
     private EstadoAutorizacion estadoAut;
+    
+    /**
+     * Variable privada: listado de Estados de autorizaciones existentes
+     */
     private List<EstadoAutorizacion> lstEstadosAut;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de estados
+     */
     private List<EstadoAutorizacion> lstFilters;
+    
+    /**
+     * Variable privada: flag que indica si se está ejecutando una vista detalle
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica si se está ejecutando una vista de edición
+     */
     private boolean edit;
     
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de EstadoAutorizacion
+     */  
     @EJB
     private EstadoAutorizacionFacade estadoFacade;
     
+    /**
+     * Cosntructor
+     */
     public MbEstadoAut() {
     }
 
-    /**********************
-     * Métodos de acceso **
-     **********************/      
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////     
     public EstadoAutorizacion getEstadoAut() {
         return estadoAut;
     }
@@ -46,6 +71,10 @@ public class MbEstadoAut {
         this.estadoAut = estadoAut;
     }
 
+    /**
+     * Método que completa el listado de Estados de autorización
+     * @return List<EstadoAutorizacion> listado de los Estados existentes ordenados por nombre
+     */
     public List<EstadoAutorizacion> getLstEstadosAut() {
         lstEstadosAut = estadoFacade.findAll();
         return lstEstadosAut;
@@ -79,9 +108,12 @@ public class MbEstadoAut {
         this.edit = edit;
     }
     
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
+    /**
+     * Método que se ejecuta luego de instanciada la clase
+     */
     @PostConstruct
     public void init(){
         limpiarForm();
@@ -199,17 +231,22 @@ public class MbEstadoAut {
 
     
     
-    /*********************
-     * Métodos privados **
-     *********************/     
-    private Object getSubZona(Long key) {
+    //////////////////////
+    // Métodos privados //
+    //////////////////////    
+    /**
+     * Método que obtiene un Estado según su id
+     * @param key Long identificador único del Estado de Autorización
+     * @return Object Estado obtenido
+     */
+    private Object getEstado(Long key) {
         return estadoFacade.find(key);
     }
     
     
-    /**********************************
-    ** Converter EstadoAutorizacion  **
-    ***********************************/ 
+    ///////////////////////////////////
+    // Converter EstadoAutorizacion  //
+    ///////////////////////////////////
     @FacesConverter(forClass = EstadoAutorizacion.class)
     public static class EstadoAutorizacionConverter implements Converter {
 
@@ -220,7 +257,7 @@ public class MbEstadoAut {
             }
             MbEstadoAut controller = (MbEstadoAut) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "mbEstadoAut");
-            return controller.getSubZona(getKey(value));
+            return controller.getEstado(getKey(value));
         }
 
         

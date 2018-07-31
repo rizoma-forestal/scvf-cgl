@@ -11,14 +11,29 @@ import java.io.Serializable;
  */
 public class EntidadServicio implements Serializable{
     
+    /**
+     * Variable privada: Long identificador de la entidad
+     */
     private Long id;
+    
+    /**
+     * Variable privada: String nombre de la entidad
+     */
     private String nombre;
     
+    /**
+     * Constructor con parámetros
+     * @param id Long identificador de la entidad
+     * @param nombre String nombre de la entidad
+     */
     public EntidadServicio(Long id, String nombre) {
         this.id = id;
         this.nombre = nombre;
     }    
     
+    /**
+     * Constructor
+     */
     public EntidadServicio() {
         
     }       

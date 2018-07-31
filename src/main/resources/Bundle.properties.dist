@@ -25,3 +25,4 @@ VerGuias=faces/guia/list
 GestionarGuias=faces/guia/gestion
 Transporte=faces/guia/transporte
 PersonasGuias=faces/guia/personas
+Reportes=faces/rep

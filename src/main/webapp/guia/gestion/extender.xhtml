@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/file-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="Extender fecha de vencimiento" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frExtension">
+            <p:growl id="messagesExtend" showDetail="false" />
+            <p:panel id="pnExtension" styleClass="centro" header="Actualizar datos" >
+                <p:outputLabel value="Para extender el plazo de vencimiento de la guía deberá ingresar una nueva fecha de vencimiento 
+                               y los motivos por los cuales se extiende. Ambos campos son obligatorios. Una vez modificado el plazo de vencimiento 
+                               podrá volver a generar un archivo pdf de la guía actualizada." 
+                                   style="font-style: italic; font-size: small" />
+                <h:panelGrid columns="2" cellpadding="5">
+                    <p:outputLabel value="Nuevo vencimiento: " />
+                    <p:calendar value="#{mbGuia.guia.fechaVencimiento}" pattern="dd/MM/yyyy HH:mm:ss"
+                                required="true" requiredMessage="Debe indicar el nuevo vencimiento para la guía." />
+                    <p:outputLabel value="Motivos: " for="obs"/>
+                    <p:inputTextarea  id="obs" rows="5" cols="50" counter="display" maxlength="250" 
+                                      value="#{mbGuia.guia.obs}" counterTemplate="Restan {0} caracteres." 
+                                      autoResize="false" required="true" requiredMessage="Debe especificar los motivos de la extensión." />
+                    <h:outputText value="" />
+                    <h:outputText id="display" style="font-size: 12px" />
+                </h:panelGrid>
+                <h:panelGrid id="pgBotones" columns="3" >
+                    <p:commandButton title="Extender la fecha de vencimiento para la guía" value="Aceptar" icon="fa fa-fw fa-save" 
+                                     action="#{mbGuia.extenderVenc()}" update="frExtension,messagesExtend"/>
+                    <p:commandButton title="Limpiar los motivos de la extensión" value="Limpiar" icon="fa fa-fw fa-refresh" 
+                                     action="#{mbGuia.limpiarFormExtend()}" resetValues="true" update="frExtension"/>
+                    <p:commandButton title="Emitir la guia con el nuevo vencimiento" value="Generar pdf" icon="fa fa-fw fa-file-pdf-o" 
+                                     action="#{mbGuia.emitirExtend()}" ajax="false" update="messagesExtend"/>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>   

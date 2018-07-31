@@ -10,6 +10,7 @@
             <h:outputText value="#{bundle.Aplicacion}" />
         </ui:define>
         <ui:define name="content"  >
+            <p:growl id="messages" showDetail="false" />
             <p:panel id="pnGral" styleClass="abmparam" >
                 <h:panelGrid columns="2" cellpadding="10" >
                     <img src="#{request.contextPath}/resources/img/newspaper.png" width="50" height="50" style="float: left; margin-left: 15px" />
@@ -17,6 +18,25 @@
                 </h:panelGrid>
                 
                 <h:form prependId="false" id="frListAut">
+                    <!-- Formulario de búsqueda -->
+                    <p:panel id="pnFrmBusqueda" header="Búsqueda" rendered="#{not mbAutorizacion.view}">
+                        <p:outputLabel value="Ingresando los datos de un Proponente podrá obtener un listado con las Autorizaciones vinculadas. 
+                                       Con el CUIT se obtendrán las Autorizaciones vinculadas a un único Proponente, con un nombre, se obtendrán las vinculadas 
+                                       a todos los Proponentes cuyo nombre y apellido contenga la palabra ingresada. Si se ingresa un valor para cada campo se priorizará el CUIT." style="font-style: italic; font-size: small" />
+                        <h:panelGrid id="pgBusqueda" columns="2" >
+                            <p:outputLabel value="CUIT: " for="fr_cuit"/>
+                            <p:inputNumber id="fr_cuit" value="#{mbAutorizacion.cuitPropBus}" thousandSeparator="" 
+                                           decimalPlaces="0" maxValue="99999999999" />
+                            <p:outputLabel value="Nombre: " for="fr_nombre"/>
+                            <p:inputText id="fr_nombre" value="#{mbAutorizacion.nombrePropBus}" />  
+                            <p:commandButton title="Buscar las Autorizaciones vinculadas" styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Buscar" action="#{mbAutorizacion.buscarXProponente()}" update="frListAut,messages"/>
+                            <p:commandButton title="Limpiar formulario" action="#{mbAutorizacion.resetList()}" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                                <p:ajax update="frListAut" resetValues="true" />
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </p:panel>
+                    
                     <!-- Vista detalle -->
                     <p:panel id="pnFrmView" header="Detalle" rendered="#{mbAutorizacion.view}" >
                         <h:panelGrid id="pgDatosGrales" columns="2" >
@@ -180,7 +200,7 @@
                         </h:panelGrid>
                     </p:panel>
                     
-                    <!-- Diálogo para ver las Guáis vinculadas a la Autorización -->
+                    <!-- Diálogo para ver las Guías vinculadas a la Autorización -->
                     <p:dialog header="Guías emitidas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
                         <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
                             <h:panelGrid columns="2" >
@@ -234,6 +254,10 @@
                             <f:facet name="header">
                                 <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
                                          onclick="PF('autTable').clearFilters()" update="dtAut"/>
+                                <h:commandLink>
+                                    <p:outputLabel value="Exportar listado" />
+                                    <p:dataExporter type="xls" target="dtAut" fileName="Autorizaciones" />
+                                </h:commandLink>                                
                             </f:facet>
                             <p:column headerText="id" style="width:50px">
                                 <p:outputLabel value="#{aut.id}"/>
@@ -284,7 +308,7 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy" />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column style="width:30px">
+                            <p:column style="width:30px" exportable="false">
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
                                                  update="@form" action="#{mbAutorizacion.prepareViewDetalle()}" >
                                     <f:setPropertyActionListener value="#{aut}" target="#{mbAutorizacion.autorizacion}" /> 

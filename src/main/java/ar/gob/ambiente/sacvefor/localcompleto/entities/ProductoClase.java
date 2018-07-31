@@ -11,7 +11,7 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 /**
- * Gestiona las clases de los productos:
+ * Entidad que gestiona las clases de los productos:
  * Rollo
  * Carbón
  * Poste
@@ -22,21 +22,29 @@ import javax.validation.constraints.NotNull;
 public class ProductoClase implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
     
     /**
-     * Guarda la Unidad de medida correspondiente a la Clase
+     * Variable privada: Guarda la Unidad de medida correspondiente a la Clase
      */
     @ManyToOne
     @JoinColumn(name="unidad_id", nullable=false)
     @NotNull(message = "Debe existir una unidad")
     private ProductoUnidadMedida unidad;
     
+    /**
+     * Variable privada: condición de habilitado de la clase de producto
+     */
     private boolean habilitado;
 
+    // métodos de acceso
     public String getNombre() {
         return nombre;
     }

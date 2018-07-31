@@ -5,9 +5,10 @@ import java.util.ResourceBundle;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
- * Jersey REST client generated for REST resource:GeneroFacadeSvfREST
+ * Cliente REST Jersey generado para el recurso GeneroFacadeSvfREST de la API de Taxonomías
  * [svf_generos]<br>
  * USAGE:
  * <pre>
@@ -22,11 +23,26 @@ import javax.ws.rs.client.WebTarget;
  */
 public class GeneroClient {
 
+    /**
+     * Variable privada: WebTarget path de acceso a la API de Control y Verificación
+     */
     private WebTarget webTarget;
+    
+    /**
+     * Variable privada: Client cliente a setear a partir de webTarget
+     */
     private Client client;
-    private static final String BASE_URI = ResourceBundle.getBundle("/Config").getString("ServerServicios") + "/"
+    
+    /**
+     * Variable privada estática y final: String url general de acceso al servicio.
+     * A partir de datos configurados en archivo de propiedades
+     */
+    private static final String BASE_URI = ResourceBundle.getBundle("/Config").getString("ServerServiciosLectura") + "/"
             + "" + ResourceBundle.getBundle("/Config").getString("UrlEspecies");
 
+    /**
+     * Constructor que instancia el cliente y WebTarget
+     */
     public GeneroClient() {
         client = javax.ws.rs.client.ClientBuilder.newClient();
         webTarget = client.target(BASE_URI).path("svf_generos");
@@ -38,16 +54,42 @@ public class GeneroClient {
         return resource.request(javax.ws.rs.core.MediaType.TEXT_PLAIN).get(String.class);
     }
 
-    public <T> T find_XML(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método que obtiene un Género registrado habilitado según su id en formato XML
+     * GET /svf_generos/:id
+     * @param <T> Tipo genérico
+     * @param responseType Entidad en la que se setearán los datos serializados obtenidos, en este caso será Genero
+     * @param id String id del Género a obtener
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> Genero genero obtenida según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T find_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T find_JSON(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método que obtiene un Género registrado habilitado según su id en formato JSON
+     * GET /svf_generos/:id
+     * @param <T> Tipo genérico
+     * @param responseType Entidad en la que se setearán los datos serializados obtenidos, en este caso será Genero
+     * @param id String id del Género a obtener
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> Genero genero obtenida según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T find_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
     public <T> T findRange_XML(Class<T> responseType, String from, String to) throws ClientErrorException {
@@ -62,30 +104,82 @@ public class GeneroClient {
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
     }
 
-    public <T> T findByGenero_XML(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método para obtener las especies según el id del género. En formato XML.
+     * GET /svf_generos/:id/especies
+     * @param <T> Tipo genérico
+     * @param responseType Entidad en la que se setearán los datos serializados obtenidos, en este caso será Especie
+     * @param id String id del Género a obtener sus especies
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> Especie especies obtenidas según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findByGenero_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/especies", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findByGenero_JSON(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método para obtener las especies según el id del género. En formato JSON.
+     * GET /svf_generos/:id/especies
+     * @param <T> Tipo genérico
+     * @param responseType Entidad en la que se setearán los datos serializados obtenidos, en este caso será Especie
+     * @param id String id del Género a obtener sus especies
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> Especie especies obtenidas según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findByGenero_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/especies", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findAll_XML(Class<T> responseType) throws ClientErrorException {
+    /**
+     * Método que obtiene todos los géneros registrados en formato XML
+     * GET /svf_generos
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findAll_XML(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findAll_JSON(Class<T> responseType) throws ClientErrorException {
+    /**
+     * Método que obtiene todos los géneros registrados en formato JSON
+     * GET /svf_generos
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findAll_JSON(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
+    /**
+     * Método para cerrar el cliente
+     */ 
     public void close() {
         client.close();
     }
-    
 }

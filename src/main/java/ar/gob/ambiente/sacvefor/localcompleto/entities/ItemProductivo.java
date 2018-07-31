@@ -34,12 +34,16 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 public class ItemProductivo implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Nombre Científico cacheado del Producto
+     * Variable privada: Nombre Científico cacheado del Producto
      * Se incluye en el código del producto tazable
      */
     @Column (nullable=false, length=100)
@@ -48,7 +52,7 @@ public class ItemProductivo implements Serializable {
     private String nombreCientifico;
     
     /**
-     * Nombre vulgar cacheado del Producto
+     * Variable privada: Nombre vulgar cacheado del Producto
      * Se incluye en el código del producto tazable
      */
     @Column (nullable=false, length=50)
@@ -57,7 +61,7 @@ public class ItemProductivo implements Serializable {
     private String nombreVulgar;
     
     /**
-     * Clase cacheada del Producto
+     * Variable privada: Clase cacheada del Producto
      * Se incluye en el código del producto tazable
      */
     @Column (nullable=false, length=30)
@@ -66,7 +70,7 @@ public class ItemProductivo implements Serializable {
     private String clase;
     
     /**
-     * Unidad de medida cacheada del Producto
+     * Variable privada: Unidad de medida cacheada del Producto
      * Se incluye en el código del producto tazable
      */    
     @Column (nullable=false, length=30)
@@ -75,35 +79,35 @@ public class ItemProductivo implements Serializable {
     private String unidad;
     
     /**
-     * Id de la Especie de la que se constituye el Producto, 
+     * Variable privada: Id de la Especie de la que se constituye el Producto, 
      * registrado en el Registro de Taxonomía
      */
     @Column
     private Long idEspecieTax;
     
     /**
-     * Referencia al identificador del Producto en la base local,
+     * Variable privada: Referencia al identificador del Producto en la base local,
      * cacheado al momento de registrar el item
      */
     @Column 
     private Long idProd;
     
     /**
-     * Para los items de tipo Autorizado, el campo guarda la Autorización correspondiente
+     * Variable privada: Para los items de tipo Autorizado, el campo guarda la Autorización correspondiente
      */
     @ManyToOne
     @JoinColumn(name="autorizacion_id")
     private Autorizacion autorizacion;
     
     /**
-     * Para los items de tipo Extraído, el campo guarda la Guía correspondiente
+     * Variable privada: Para los items de tipo Extraído, el campo guarda la Guía correspondiente
      */
     @ManyToOne
     @JoinColumn(name="guia_id")
     private Guia guia;    
     
     /**
-     * Paramétrica cuyo tipo es "Tipos de ïtems" que indica el tipo de ítem actual
+     * Variable privada: Paramétrica cuyo tipo es "Tipos de ïtems" que indica el tipo de ítem actual
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -112,14 +116,14 @@ public class ItemProductivo implements Serializable {
     private Parametrica tipoActual;
     
     /**
-     * Referencia del ítem del cual se originó el actual
+     * Variable privada: Referencia del ítem del cual se originó el actual
      * Para los items de tipo "Autorización" no habrá itemOrigen
      */
     @Column 
     private Long itemOrigen;
     
     /**
-     * Paramétrica cuyo tipo es "Tipos de items" que indica el tipo de ítem que originó al acutal
+     * Variable privada: Paramétrica cuyo tipo es "Tipos de items" que indica el tipo de ítem que originó al acutal
      * Para los items de tipo "Autorización" no habrá tipoOrigen
      */
     @Audited(targetAuditMode = NOT_AUDITED)
@@ -128,47 +132,45 @@ public class ItemProductivo implements Serializable {
     private Parametrica tipoOrigen;
     
     /**
-     * Equivalencia en Kg por unidad de medida del Producto.
+     * Variable privada: Equivalencia en Kg por unidad de medida del Producto.
      * Cacheado del Producto
      */
     @Column
     private float kilosXUnidad;
     
     /**
-     * Cantidad autorizada de Producto a extraer
-     * Cupo
+     * Variable privada: Cantidad autorizada de Producto a extraer cupo
      */
     @Column
     private float total;
     
     /**
-     * Equivalencia del total autorizado en Kg.
+     * Variable privada: Equivalencia del total autorizado en Kg.
      */
     @Column
     private float totalKg;
     
     /**
-     * Campo temporal que guarda el total asignado al item origen.
-     * Empleado durante la operatoria, no se persiste
+     * Variable privada no persistida: Campo temporal que guarda el total asignado al item origen.
+     * Empleado durante la operatoria
      */
     @Transient
     private float totalOrigen;     
     
     /**
-     * Saldo dispobible del Producto para ser descontado
-     * Cupo
+     * Variable privadaSaldo dispobible del Producto para ser descontado cupo
      */
     @Column
     private float saldo;  
     
     /**
-     * Equivalencia en Kg. del saldo disponible
+     * Variable privada: Equivalencia en Kg. del saldo disponible
      */
     @Column
     private float saldoKg;  
     
     /**
-     * El código de producto es una cadena de elementos separados por '|' en este orden
+     * Variable privada: El código de producto es una cadena de elementos separados por '|' en este orden
      * nombreCientifico: nombre científico de la Especie constituido por 'Género/Especie'
      * nombreVulgar: nombre vulgar de la Especie definido de manera local
      * clase: clase en la que se comercializa el Producto definido de manera local
@@ -183,34 +185,33 @@ public class ItemProductivo implements Serializable {
     private String codigoProducto;
     
     /**
-     * Campo temporal que guarda el saldo disponible del item origen.
+     * Variable privada: Campo temporal que guarda el saldo disponible del item origen.
      * Empleado durante la operatoria, no se persiste
      */
     @Transient
     private float saldoOrigen;      
     
     /**
-     * Campo temporal que guarda el saldo del item mientras se va realizando la operatoria
-     * No se persiste
+     * Variable privada no persistida: Campo temporal que guarda el saldo del item mientras se va realizando la operatoria
      */
     @Transient
     private float saldoTemp; 
 
     /**
-     * Observaciones que pudieran corresponder
+     * Variable privada: Observaciones que pudieran corresponder
      */
     @Column (length=500)
     @Size(message = "El campo obs no puede tener más de 500 caracteres", max = 500)     
     private String obs;
     
     /**
-     * Fecha de registro de la Autorización
+     * Variable privada: Fecha de registro de la Autorización
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaAlta;
     
     /**
-     * Usuario que gestiona la Autorización
+     * Variable privada: Usuario que gestiona la Autorización
      */
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
@@ -218,19 +219,21 @@ public class ItemProductivo implements Serializable {
     @NotNull(message = "Debe existir un usuario")       
     private Usuario usuario;
 
+    /**
+     * Variable privada: condición de habilitado del ítem
+     */
     @Column 
     private boolean habilitado;
     
     /**
-     * Campo que mostrará la fecha de las revisiones
-     * No se persiste
+     * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
     private Date fechaRevision;
     
     /**
-     * Flag temporal que indica que el item ya ha sido descontado.
-     * Para usar durante la operatoria, no se persiste
+     * Variable privada no persistida: Flag temporal que indica que el item ya ha sido descontado.
+     * Para usar durante la operatoria
      */
     @Transient
     private boolean descontado;    
@@ -278,6 +281,10 @@ public class ItemProductivo implements Serializable {
         this.saldoKg = saldoKg;
     }
 
+    /**
+     * Método que retorna la condición de descontado del ítem, no incluido en la entidad de para la API Rest
+     * @return String nombre de la provincia
+     */
     @XmlTransient
     public boolean isDescontado() {
         return descontado;
@@ -287,6 +294,11 @@ public class ItemProductivo implements Serializable {
         this.descontado = descontado;
     }
 
+    /**
+     * Método que retorna el total del producto asingando orginalmente, solo para la gestión de cupos, 
+     * no incluido en la entidad de para la API Rest
+     * @return float total correspondiente
+     */    
     @XmlTransient
     public float getTotalOrigen() {
         return totalOrigen;
@@ -296,6 +308,11 @@ public class ItemProductivo implements Serializable {
         this.totalOrigen = totalOrigen;
     }
 
+    /**
+     * Método que retorna el saldo original del producto, solo para la gestión de cupos, 
+     * no incluido en la entidad de para la API Rest
+     * @return flat saldo correspondiente
+     */    
     @XmlTransient
     public float getSaldoOrigen() {
         return saldoOrigen;
@@ -305,6 +322,11 @@ public class ItemProductivo implements Serializable {
         this.saldoOrigen = saldoOrigen;
     }
 
+    /**
+     * Método que retorna el saldo temporal del producto, solo para la gestión de cupos, 
+     * no incluido en la entidad de para la API Rest
+     * @return flat saldo correspondiente
+     */  
     @XmlTransient
     public float getSaldoTemp() {
         return saldoTemp;
@@ -354,6 +376,10 @@ public class ItemProductivo implements Serializable {
         this.unidad = unidad;
     }
 
+    /**
+     * Método que retorna la guía que conforma el ítem, si corresponde, no incluido en la entidad de para la API Rest
+     * @return Guía guía que contiene el ítem
+     */
     @XmlTransient
     public Guia getGuia() {
         return guia;
@@ -363,6 +389,10 @@ public class ItemProductivo implements Serializable {
         this.guia = guia;
     }
 
+    /**
+     * Método que retorna la Autorizaión que conforma el ítem, si corresponde, no incluido en la entidad de para la API Rest
+     * @return Autorizacion autorización que contiene el ítem
+     */
     @XmlTransient
     public Autorizacion getAutorizacion() {
         return autorizacion;
@@ -372,6 +402,10 @@ public class ItemProductivo implements Serializable {
         this.autorizacion = autorizacion;
     }
 
+    /**
+     * Método que retorna el identificador del producto que conforma el ítem, no incluido en la entidad de para la API Rest
+     * @return Long identificador del producto
+     */
     @XmlTransient
     public Long getIdProd() {
         return idProd;
@@ -382,19 +416,9 @@ public class ItemProductivo implements Serializable {
     }
 
     /**
-
-     * @return 
+     * Método que retorna una Parametrica que indica el tipo del item, no incluido en la entidad de para la API Rest
+     * @return Parametrica tipo de ítem
      */
-//    public String getCodigoProducto() {
-//        return String.valueOf(this.id) + "|"
-//                + this.nombreCientifico + "|"
-//                + this.nombreVulgar + "|"
-//                + this.clase + "|"
-//                + this.unidad + "|"
-//                + this.autorizacion.getNumero() + "|"
-//                + this.autorizacion.getProvincia() + "|";
-//    }
-
     @XmlTransient
     public Parametrica getTipoActual() {
         return tipoActual;
@@ -404,6 +428,11 @@ public class ItemProductivo implements Serializable {
         this.tipoActual = tipoActual;
     }
 
+    /**
+     * Método que retorna el identificador del ítem
+     * del cual se descontaron los productos para la generación del presente, no incluido en la entidad de para la API Rest
+     * @return 
+     */
     @XmlTransient
     public Long getItemOrigen() {
         return itemOrigen;
@@ -413,6 +442,10 @@ public class ItemProductivo implements Serializable {
         this.itemOrigen = itemOrigen;
     }
 
+    /**
+     * Método que retorna una Parametrica que indica el tipo del item de origen, no incluido en la entidad de para la API Rest
+     * @return Parametrica tipo de ítem de orígen
+     */
     @XmlTransient
     public Parametrica getTipoOrigen() {
         return tipoOrigen;
@@ -438,6 +471,10 @@ public class ItemProductivo implements Serializable {
         this.obs = obs;
     }
 
+    /**
+     * Método que retorna la fecha de alta del ítem, no incluido en la entidad de para la API Rest
+     * @return Date fecha de alta del ítem
+     */
     @XmlTransient
     public Date getFechaAlta() {
         return fechaAlta;
@@ -447,6 +484,10 @@ public class ItemProductivo implements Serializable {
         this.fechaAlta = fechaAlta;
     }
 
+    /**
+     * Método que retorna el usuario que registró o modificó el ítem, no incluido en la entidad de para la API Rest
+     * @return Usuario usuario correspondiente
+     */
     @XmlTransient
     public Usuario getUsuario() {
         return usuario;
@@ -456,6 +497,10 @@ public class ItemProductivo implements Serializable {
         this.usuario = usuario;
     }
 
+    /**
+     * Método que retorna la condición de habilitado del ítem, no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */
     @XmlTransient
     public boolean isHabilitado() {
         return habilitado;
@@ -465,6 +510,11 @@ public class ItemProductivo implements Serializable {
         this.habilitado = habilitado;
     }
 
+    /**
+     * Método que retorna la fecha de revisión del ítem, para su auditoría,
+     * no incluido en la entidad de para la API Rest
+     * @return Date fecha de revisión
+     */
     @XmlTransient
     public Date getFechaRevision() {
         return fechaRevision;

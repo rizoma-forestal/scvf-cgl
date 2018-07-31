@@ -86,7 +86,7 @@
                 <h:panelGrid columns="2">
                     <p:commandButton title="Editar el contenido de los datos administrativos" styleClass="save" icon="fa fa-fw fa-pencil" 
                                      value="Editar" action="#{mbAutorizacion.prepareEdit()}" update="pMenuIndex,frame" 
-                                     rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                                     rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion and mbSesion.usuario.rol.nombre ne config.Consulta}" >
                     </p:commandButton>
                 </h:panelGrid>
             </p:panel>

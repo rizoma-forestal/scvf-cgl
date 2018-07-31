@@ -30,7 +30,7 @@
                                 <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Estado}"
                                             actionListener="#{mbAutorizacion.cargarFrame('estado.xhtml')}" />
                             </p:submenu>
-                            <p:submenu styleClass="hMenu" label="Auditorías" >
+                            <p:submenu styleClass="hMenu" label="Auditorías" rendered="false" >
 
                             </p:submenu>
                         </p:panelMenu>

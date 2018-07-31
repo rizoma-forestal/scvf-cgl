@@ -18,11 +18,14 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.EspecieClient;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.FamiliaClient;
 import ar.gob.ambiente.sacvefor.localcompleto.tax.client.GeneroClient;
+import ar.gob.ambiente.sacvefor.localcompleto.tax.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
 import ar.gob.ambiente.sacvefor.servicios.especies.Especie;
 import ar.gob.ambiente.sacvefor.servicios.especies.Familia;
 import ar.gob.ambiente.sacvefor.servicios.especies.Genero;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +42,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
@@ -47,67 +51,231 @@ import javax.ws.rs.core.Response;
  * ProductoClase
  * ProductoEspecieLocal
  * Producto
+ * Gestiona las vistas prod/
  * @author rincostante
  */
 public class MbProducto {
-
-    // campos para gestionar
+    ///////////////////////////
+    // campos para gestionar //
+    ///////////////////////////
+    
+    /**
+     * Variable privada: objeto a gestionar
+     */
     private Producto producto;
+    
+    /**
+     * Variable privada: especie local del producto
+     */
     private ProductoEspecieLocal prodEspecie;
+    
+    /**
+     * Variable privada: clase del producto
+     */
     private ProductoClase prodClase;
+    
+    /**
+     * Variable privada: tasa del prodcto
+     */
     private ProductoTasa prodTasa;
+    
+    /**
+     * Variable privada: unidad de medida del producto
+     */
     private ProductoUnidadMedida prodUnidad;
+    
+    /**
+     * Variable privada: listado de los productos registrados
+     */
     private List<Producto> lstProductos;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de Productos
+     */
     private List<Producto> lstProdFilters;
+    
+    /**
+     * Variable privada: listado de las especies locales
+     */
     private List<ProductoEspecieLocal> lstProdEspecie;
+    
+    /**
+     * Variable privada: listado para el filtrado de las especies locales
+     */
     private List<ProductoEspecieLocal> lstProdEspFilters;
+    
+    /**
+     * Variable privada: listado de las clases de productos
+     */
     private List<ProductoClase> lstProdClases;
+    
+    /**
+     * Variable privada: listado para el filtrado de las clases de los productos
+     */
     private List<ProductoClase> lstProdClsFilters;
+    
+    /**
+     * Variable privada: listado de los tipos de tasas a asignar al producto
+     */
     private List<Parametrica> lstTiposTasas;
+    
+    /**
+     * Variable privada: listado de las unidades de medida de los productos
+     */
     private List<ProductoUnidadMedida> lstProdUnidades;
+    
+    /**
+     * Variable privada: litado para el filtrado de las unidades de medida
+     */
     private List<ProductoUnidadMedida> lstProdUnidFilters;
+    
+    /**
+     * Variable privada: listado de los tipos numéricos
+     */
     private List<Parametrica> lstTipoNumerico; 
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando no está editable
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica que el objeto que se está gestionando es existente
+     */
     private boolean edit;
+    
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */ 
     private static final Logger logger = Logger.getLogger(MbProducto.class.getName());
-    private List<Producto> lstRevisions;   
+    
+    /**
+     * Variable privada: listado de las revisiones de la Persona
+     */
+    private List<Producto> lstRevisions; 
+    
+    /**
+     * Variable privada: MbSesion para gestionar las variables de sesión del usuario
+     */  
     private MbSesion sesion;
+    
+    /**
+     * Variable privada: Usuario de sesión
+     */
     private Usuario usLogueado;
     
-    // inyección de recursos
+    ///////////////////////////////////////////////////
+    // acceso a datos mediante inyección de recursos //
+    ///////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Producto
+     */  
     @EJB
     private ProductoFacade prodFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ProductoEspecieLocal
+     */  
     @EJB
     private ProductoEspecieLocalFacade prodEspFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ProductoClase
+     */  
     @EJB
     private ProductoClaseFacade prodClsFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ProductoUnidadMedida
+     */  
     @EJB
     private ProductoUnidadMedidaFacade prodUnidadFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica
+     */  
     @EJB
-    private ParametricaFacade paramFacade;  
+    private ParametricaFacade paramFacade; 
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */  
     @EJB
     private TipoParamFacade tipoParamFacade;        
+    ////////////////////////////////////////////////////////////////////
+    // Clientes REST para la gestión del API de taxonomía de especies //
+    ////////////////////////////////////////////////////////////////////
     
-    // Clientes REST para la gestión del API de taxonomía de especies
-    private EspecieClient especieClient;    
+    /**
+     * Variable privada: Cliente para la API Rest de Especie en el Taxonomías
+     */
+    private EspecieClient especieClient; 
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Familias en el Taxonomías
+     */    
     private FamiliaClient familiaClient;
+    
+    /**
+     * Variable privada: Cliente para la API Rest de Géneros en el Taxonomías
+     */        
     private GeneroClient generoClient;
     
     /**
-     * Campos para la gestión de los elementos forestales provenientes de la API 
-     * de taxonomía en los combos del formulario.
-     * Las Entidades de servicio se componen de un par {id | nombre}
-     */   
+     * Variable privada: Cliente para la API Rest de Usuarios en Taxonomías
+     */
+    private UsuarioClient usuarioClient;
+    
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API de Taxonomías
+     */
+    private Token token;
+    
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API de Taxonomías
+     */
+    private String strToken;
+    
+    ///////////////////////////////////////////////////////////////////////////////
+    // Campos para la gestión de los elementos forestales provenientes de la API //
+    // de taxonomía en los combos del formulario. /////////////////////////////////
+    // Las Entidades de servicio se componen de un par {id | nombre} //////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Familias
+     */      
     private List<EntidadServicio> listFamilias;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Familia seleccionada del combo
+     */    
     private EntidadServicio familiaSelected;
+    
+    /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para los Géneros
+     */     
     private List<EntidadServicio> listGeneros;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos del Génerop seleccionado del combo
+     */       
     private EntidadServicio generoSelected;
+    
+     /**
+     * Variable privada: List<EntidadServicio> Listado de entidades de servicio con el id y nombre para las Especies
+     */     
     private List<EntidadServicio> listEspecies;
+    
+    /**
+     * Variable privada: EntidadServicio Entidad de servicio para setear los datos de la Especie seleccionada del combo
+     */       
     private EntidadServicio especieSelected;
 
-    /**********************
-     * Métodos de acceso **
-     **********************/  
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////
     public Producto getProducto() {
         return producto;
     }
@@ -310,11 +478,14 @@ public class MbProducto {
     public MbProducto() {
     }
     
-    
-    /**********************
-     * Métodos de inicio **
-     * ********************/
+    ///////////////////////
+    // Métodos de inicio //
+    ///////////////////////
 
+    /**
+     * Método que se ejecuta luego de instanciada la clase e inicializa las entidades a gestionar
+     * y el bean de sesión y el usuario
+     */  
     @PostConstruct
     public void init(){
         prodUnidad = new ProductoUnidadMedida();
@@ -333,9 +504,9 @@ public class MbProducto {
         usLogueado = sesion.getUsuario();
     }    
 
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Métodos operativos //
+    ////////////////////////
     
     /**
      * Método para actualizar el listado de Géneros según la Familia seleccionada
@@ -747,9 +918,9 @@ public class MbProducto {
         producto = new Producto();
     }   
 
-    /*************************************
-     * Métodos para la gestión de Tasas **
-     *************************************/
+    //////////////////////////////////////
+    // Métodos para la gestión de Tasas //
+    //////////////////////////////////////
     /**
      * Método para agregar una Tasa al producto.
      * Primero valida que ya no esté agregada
@@ -799,22 +970,34 @@ public class MbProducto {
     }
 
     
-    /*********************
-     * Métodos privados **
-     *********************/    
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
     /**
      * Método para obtener las Familias de Especies forestales del servicio de Taxonomía
+     * Utilizado en init() y  cargarEntidadesSrv(Long idTax) 
      */
     private void cargarFamilias() {
         EntidadServicio familia;
         List<Familia> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la selección de las provincias
             familiaClient = new FamiliaClient();
             // obtengo el listado de provincias 
             GenericType<List<Familia>> gType = new GenericType<List<Familia>>() {};
-            Response response = familiaClient.findAll_JSON(Response.class);
+            Response response = familiaClient.findAll_JSON(Response.class, token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el list con las provincias como un objeto Entidad Servicio
             listFamilias = new ArrayList<>();
@@ -837,8 +1020,8 @@ public class MbProducto {
 
     /**
      * Método para obtener el Producto por id, para el converter
-     * @param key
-     * @return 
+     * @param key Long identificación del Producto
+     * @return Object producto solicitado
      */
     private Object getProducto(Long key) {
         return prodFacade.find(key);
@@ -846,8 +1029,8 @@ public class MbProducto {
 
     /**
      * Método para obtener la Especie por id, para el converter
-     * @param key
-     * @return 
+     * @param key Long identificación de la Especie local
+     * @return Object especie local solicitada
      */
     private Object getProductoEspecieLocal(Long key) {
         return prodEspFacade.find(key);
@@ -855,8 +1038,8 @@ public class MbProducto {
 
     /**
      * Método para obtener la Clase por id, para el converter
-     * @param key
-     * @return 
+     * @param key Long identificación de la clase del producto
+     * @return Object clase del producto solicitada
      */
     private Object getProductoClase(Long key) {
         return prodClsFacade.find(key);
@@ -864,26 +1047,38 @@ public class MbProducto {
 
     /**
      * Método para obtener la Unidad de medida por id, para el converter
-     * @param key
-     * @return 
+     * @param key Long identificación de la unidad de medida del producto
+     * @return Object unidad de medida del producto solicitada
      */
     private Object getProductoUnidadMedida(Long key) {
         return prodUnidadFacade.find(key);
     }
 
     /**
-     * Método para poblar el listado de Génerps según la Familia seleccionada del servicio REST de Taxonomía
+     * Método para poblar el listado de Génerps según la Familia seleccionada del servicio REST de Taxonomía.
+     * Utilizada en cargarEntidadesSrv(Long idTax), getGenerosSrv(Long idFamilia) y familiaChangeListener()
      */       
     private void getGenerosSrv(Long idFamilia) {
         EntidadServicio genero;
         List<Genero> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la selección de las provincias
             familiaClient = new FamiliaClient();
             // obtengo el listado
             GenericType<List<Genero>> gType = new GenericType<List<Genero>>() {};
-            Response response = familiaClient.findByFamilia_JSON(Response.class, String.valueOf(idFamilia));
+            Response response = familiaClient.findByFamilia_JSON(Response.class, String.valueOf(idFamilia), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listGeneros = new ArrayList<>();
@@ -902,18 +1097,30 @@ public class MbProducto {
     }
 
     /**
-     * Método para poblar el listado de Especies según el Género seleccionado del servicio REST de Taxonomía
+     * Método para poblar el listado de Especies según el Género seleccionado del servicio REST de Taxonomía.
+     * Utilizado en generoChangeListener(), cargarEntidadesSrv(Long idTax) y getEspeciesSrv(Long idGenero)
      */    
     private void getEspeciesSrv(Long idGenero) {
         EntidadServicio especie;
         List<Especie> listSrv;
         
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la selección de las provincias
             generoClient = new GeneroClient();
             // obtngo el listado
             GenericType<List<Especie>> gType = new GenericType<List<Especie>>() {};
-            Response response = generoClient.findByGenero_JSON(Response.class, String.valueOf(idGenero));
+            Response response = generoClient.findByGenero_JSON(Response.class, String.valueOf(idGenero), token.getStrToken());
             listSrv = response.readEntity(gType);
             // lleno el listado de los combos
             listEspecies = new ArrayList<>();
@@ -933,15 +1140,26 @@ public class MbProducto {
 
     /**
      * Método para cargar entidades de servicio de Taxonomía y los listados, 
-     * para actualizar la Especie local
+     * para actualizar la Especie local. Utilizado en prepareEditSrv()
      */    
     private void cargarEntidadesSrv(Long idTax) {
          Especie espLocal;
          
         try{
+            // obtengo el token si no está seteado o está vencido
+            if(token == null){
+                getTokenTax();
+            }else try {
+                if(!token.isVigente()){
+                    getTokenTax();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
+            }
+            
             // instancio el cliente para la obtención de la Especie
             especieClient = new EspecieClient();
-            espLocal = especieClient.find_JSON(Especie.class, String.valueOf(idTax));
+            espLocal = especieClient.find_JSON(Especie.class, String.valueOf(idTax), token.getStrToken());
             // cierro el cliente
             especieClient.close();
             // instancio las Entidades servicio
@@ -962,10 +1180,29 @@ public class MbProducto {
                     + "servicio REST de Taxonomía", ex.getMessage()});
         }
     }
+    
+    /**
+     * Método privado que obtiene y setea el token para autentificarse ante la API rest de Taxonomías
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en cargarEntidadesSrv(Long idTax), getEspeciesSrv(Long idGenero), getGenerosSrv(Long idFamilia) y cargarFamilias()
+     */
+    private void getTokenTax(){
+        try{
+            usuarioClient = new UsuarioClient();
+            Response responseUs = usuarioClient.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTax"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strToken = (String)lstHeaders.get(0); 
+            token = new Token(strToken, System.currentTimeMillis());
+            usuarioClient.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token: " + ex.getMessage());
+        }
+    }    
 
-    /*****************************
-    ** Converter para Producto  **
-    ******************************/ 
+    //////////////////////////////
+    // Converter para Producto  //
+    //////////////////////////////
     @FacesConverter(forClass = Producto.class)
     public static class ProductoConverter implements Converter {
 
@@ -1011,9 +1248,9 @@ public class MbProducto {
         }
     }       
     
-    /*****************************************
-    ** Converter para ProductoEspecieLocal  **
-    ******************************************/    
+    /////////////////////////////////////////
+    // Converter para ProductoEspecieLocal //
+    /////////////////////////////////////////    
     @FacesConverter(forClass = ProductoEspecieLocal.class)
     public static class ProductoEspecieLocalConverter implements Converter {
 
@@ -1059,9 +1296,9 @@ public class MbProducto {
         }
     }   
     
-    /**********************************
-    ** Converter para ProductoClase  **
-    ***********************************/ 
+    ///////////////////////////////////
+    // Converter para ProductoClase  //
+    ///////////////////////////////////
     @FacesConverter(forClass = ProductoClase.class)
     public static class ProductoClaseConverter implements Converter {
 
@@ -1107,9 +1344,9 @@ public class MbProducto {
         }
     }    
     
-    /*****************************************
-    ** Converter para ProductoUnidadMedida  **
-    ******************************************/ 
+    /////////////////////////////////////////
+    // Converter para ProductoUnidadMedida //
+    /////////////////////////////////////////
     @FacesConverter(forClass = ProductoUnidadMedida.class)
     public static class ProductoUnidadMedidaConverter implements Converter {
 

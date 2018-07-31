@@ -138,24 +138,21 @@
                                     <p:inputText id="depto" value="#{mbPersona.rueDepto}" size="10" />
 
                                     <p:outputLabel value="Provincia " for="cmbProv"/>   
-                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Provincia" id="cmbProv" 
-                                                     value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbProv" value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter" >
                                         <f:selectItem itemLabel="Seleccione la Provincia" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listProvincias}" 
                                                        var="prov" itemLabel="#{prov.nombre}" itemValue="#{prov}"/>
                                         <p:ajax listener="#{mbPersona.provinciaChangeListener()}" update="cmbDepto,cmbLocalidades" />
                                     </p:selectOneMenu> 
                                     <p:outputLabel value="Departamento" for="cmbDepto"/>   
-                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Departamiento"  id="cmbDepto" 
-                                                     value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbDepto" value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter" >
                                         <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listDepartamentos}" 
                                                        var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
                                         <p:ajax listener="#{mbPersona.deptoChangeListener()}" update="cmbLocalidades" />
                                     </p:selectOneMenu>  
                                     <p:outputLabel value="Localidad" for="cmbLocalidades"/>   
-                                    <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Localidad"  id="cmbLocalidades" 
-                                                     value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbLocalidades" value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter" >
                                         <f:selectItem itemLabel="Seleccione la Localidad" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listLocalidades}" 
                                                        var="loc" itemLabel="#{loc.nombre}" itemValue="#{loc}"/>
@@ -317,13 +314,71 @@
                     </p:panel>
                 </p:dialog>
                 
+                <!-- Diálogo para crear y editar domicilios locales -->
+                <p:dialog header="Agregar/Editar domicilio" widgetVar="dlgDomLocal" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frEditDomLocal">
+                        <p:panel id="pnDlgEditDomLocal" style="margin-bottom:10px; width: 600px" >
+                            <p:growl id="messagesEditDomLoc" showDetail="false" />
+                            <h:panelGrid id="pgDlgEditDomLocal" columns="2" >
+                                <p:outputLabel value="Calle" for="calleLoc"/>
+                                <p:inputText id="calleLoc" value="#{mbPersona.domicilioLocal.calle}" 
+                                             style="text-transform: uppercase" size="50" required="true" 
+                                             requiredMessage="Debe ingresar un nombre de calle" />
+                                <p:outputLabel value="N°" for="numeroLoc"/>
+                                <p:inputText id="numeroLoc" value="#{mbPersona.domicilioLocal.numero}" size="10" 
+                                             required="true" requiredMessage="Debe ingresar un número de puerta" />
+                                <p:outputLabel value="Piso" for="pisoLoc"/>
+                                <p:inputText id="pisoLoc" value="#{mbPersona.domicilioLocal.piso}" size="10" />
+                                <p:outputLabel value="Depto." for="deptoLoc"/>
+                                <p:inputText id="deptoLoc" value="#{mbPersona.domicilioLocal.depto}" size="10" />
+                                <p:outputLabel value="Cod. postal" for="codPostalLoc"/>
+                                <p:inputText id="codPostalLoc" value="#{mbPersona.domicilioLocal.codPostal}" size="10" />
+                                <p:outputLabel value="Provincia " for="cmbProvLoc"/>   
+                                <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Provincia" id="cmbProvLoc" 
+                                                 value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <f:selectItem itemLabel="Seleccione la Provincia" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.listProvincias}" 
+                                                   var="provLoc" itemLabel="#{provLoc.nombre}" itemValue="#{provLoc}"/>
+                                    <p:ajax listener="#{mbPersona.provinciaChangeListener()}" update="cmbDeptoLoc,cmbLocalLoc" />
+                                </p:selectOneMenu> 
+                                <p:outputLabel value="Departamento" for="cmbDeptoLoc"/>   
+                                <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Departamiento"  id="cmbDeptoLoc" 
+                                                 value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.listDepartamentos}" 
+                                                   var="deptoLoc" itemLabel="#{deptoLoc.nombre}" itemValue="#{deptoLoc}"/>
+                                    <p:ajax listener="#{mbPersona.deptoChangeListener()}" update="cmbLocalLoc" />
+                                </p:selectOneMenu>  
+                                <p:outputLabel value="Localidad" for="cmbLocalLoc"/>   
+                                <p:selectOneMenu required="true" requiredMessage="Debe ingresar la Localidad"  id="cmbLocalLoc" 
+                                                 value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <f:selectItem itemLabel="Seleccione la Localidad" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbPersona.listLocalidades}" 
+                                                   var="locLoc" itemLabel="#{locLoc.nombre}" itemValue="#{locLoc}"/>
+                                </p:selectOneMenu>
+                            </h:panelGrid>
+                            <h:panelGrid id="pgBotonesEditDomLoc" columns="2" >
+                                <p:commandButton title="Guardar el domicilio" value="Guardar" icon="fa fa-fw fa-save" update="frDestinatarios,frEditDomLocal,pnDlgEditDomLocal,messagesEditDomLoc" 
+                                                 action="#{mbPersona.addDomLocal()}" oncomplete="PF('dlgDomLocal').hide();"/>
+                                <p:commandButton title="Limpiar el formulario" value="Limpiar" icon="fa fa-fw fa-refresh" update="frEditDomLocal,pnDlgEditDomLocal" 
+                                                 action="#{mbPersona.limpiarFormDomLoc()}" resetValues="true" />
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgDomLocal').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
                 <h:form prependId="false" id="frDestinatarios">
                     <!-- Formulario new y edit -->
                     <p:panel id="pnFrmNew" header="Agregar/Crear/Editar" rendered="#{not mbPersona.view}" collapsed="#{not mbPersona.edit}" toggleable="true" >
                         <p:growl id="messagesLocal" showDetail="false" />
                         <p:outputLabel value="Si el Destinatario que desea registrar localmente ya estuviera registrado en el Registro Unico de Entidades (RUE) del sistema, 
                                        podrá seleccionarlo mediante el botón 'Buscar por CUIT' ingresando el CUIT correspondiente. Si desea registrarlo por primera vez en el RUE, 
-                                       deberá hacerlo mediante el botón 'Agregar Nuevo'. Recuerde que se validará la existencia del CUIT del Destinatario que desea registrar." 
+                                       deberá hacerlo mediante el botón 'Agregar Nuevo', se podrá consignar un domicilio legal en el RUE pero no será tenido en cuenta para su 
+                                       seleccion al momento de asingarlo al destino de una guía. Recuerde que se validará la existencia del CUIT del Destinatario que desea registrar. 
+                                       Dado que se trata de destinatarios de guías, se validará que al menos se consigne un domicilio." 
                                    style="font-style: italic; font-size: small" />
                         <h:panelGrid columns="2">  
                             <p:commandButton value="Buscar por CUIT" icon="fa fa-fw fa-external-link" process="@this" 
@@ -352,6 +407,41 @@
                             <p:outputLabel value="#{mbPersona.persona.tipo}" style="color: #0F4C20; font-weight: bold"/>
                             <p:outputLabel value="E-Mail" />  
                             <p:outputLabel value="#{mbPersona.persona.email}" style="color: #0F4C20; font-weight: bold"/>
+                            <p:outputLabel value="Domicilios: " />
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-plus" value="Agregar" action="#{mbPersona.prepareDomDest()}" 
+                                             oncomplete="PF('dlgDomLocal').show();" update="cmbProvLoc"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="1" id="pgDomLoc" rendered="#{mbPersona.persona.idRue ne null}" >
+                            <p:dataTable id="dtDomiciliosLoc" value="#{mbPersona.persona.domicilios}" var="domLoc" 
+                                         styleClass="table" style="width: 800px" >
+                                <p:column headerText="Calle" >
+                                    <p:outputLabel value="#{domLoc.calle}"/>
+                                </p:column>
+                                <p:column headerText="N°" style="width: 35px">
+                                    <p:outputLabel value="#{domLoc.numero}"/>
+                                </p:column>
+                                <p:column headerText="Piso" style="width: 35px">
+                                    <p:outputLabel value="#{domLoc.piso}"/>
+                                </p:column>
+                                <p:column headerText="Dto." style="width: 35px">
+                                    <p:outputLabel value="#{domLoc.depto}"/>
+                                </p:column>
+                                <p:column headerText="Loc." >
+                                    <p:outputLabel value="#{domLoc.localidad}"/>
+                                </p:column>
+                                <p:column headerText="Depto." >
+                                    <p:outputLabel value="#{domLoc.departamento}"/>
+                                </p:column>
+                                <p:column headerText="Provincia" >
+                                    <p:outputLabel value="#{domLoc.provincia}"/>
+                                </p:column>
+                                <p:column style="width:30px" >
+                                    <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Quitar domicilio" process="@this" 
+                                                     update="@form,messagesLocal" action="#{mbPersona.deleteDomLocal()}" >
+                                        <f:setPropertyActionListener value="#{domLoc}" target="#{mbPersona.domicilioLocal}" /> 
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
                         </h:panelGrid>
                         <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveDestinatario()}" 
@@ -376,6 +466,33 @@
                             <p:outputLabel id="v_tipo" value="#{mbPersona.persona.tipo}"/>
                             <p:outputLabel value="E-mail: " for="v_email"/>
                             <p:outputLabel id="v_email" value="#{mbPersona.persona.email}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="1" id="pgDomLocView" rendered="#{mbPersona.view}" >
+                            <p:outputLabel value="Domicilios: "/>
+                            <p:dataTable id="dtDomiciliosLocView" value="#{mbPersona.persona.domicilios}" var="domLoc" 
+                                         styleClass="table" style="width: 800px" >
+                                <p:column headerText="Calle" >
+                                    <p:outputLabel value="#{domLoc.calle}"/>
+                                </p:column>
+                                <p:column headerText="N°" style="width: 35px">
+                                    <p:outputLabel value="#{domLoc.numero}"/>
+                                </p:column>
+                                <p:column headerText="Piso" style="width: 35px">
+                                    <p:outputLabel value="#{domLoc.piso}"/>
+                                </p:column>
+                                <p:column headerText="Dto." style="width: 35px">
+                                    <p:outputLabel value="#{domLoc.depto}"/>
+                                </p:column>
+                                <p:column headerText="Loc." >
+                                    <p:outputLabel value="#{domLoc.localidad}"/>
+                                </p:column>
+                                <p:column headerText="Depto." >
+                                    <p:outputLabel value="#{domLoc.departamento}"/>
+                                </p:column>
+                                <p:column headerText="Provincia" >
+                                    <p:outputLabel value="#{domLoc.provincia}"/>
+                                </p:column>
+                            </p:dataTable>
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgBtn" columns="2" rendered="#{mbPersona.view}" >

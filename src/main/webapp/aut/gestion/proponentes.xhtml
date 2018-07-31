@@ -12,7 +12,9 @@
         <h:form prependId="false" id="frProponentes">
             <!-- Formulario de búsqueda -->
             <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
-                     rendered="#{mbAutorizacion.persona eq null and mbAutorizacion.autorizacion.estado.habilitaEdicion}" >
+                     rendered="#{mbAutorizacion.persona eq null 
+                                 and mbAutorizacion.autorizacion.estado.habilitaEdicion 
+                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" >
                 <h:panelGrid columns="5">
                     <p:outputLabel value="CUIT" for="cuitBuscar"/>
                     <p:inputText id="cuitBuscar" value="#{mbAutorizacion.cuitBuscar}" 
@@ -34,8 +36,6 @@
                     <p:outputLabel value="#{mbAutorizacion.persona.cuit}" style=" font-weight: bold" />
                     <p:outputLabel value="Tipo de Persona: " />
                     <p:outputLabel value="#{mbAutorizacion.persona.tipo}" style=" font-weight: bold" />
-                    <p:outputLabel value="Martillo: " />
-                    <img src="#{config.UrlMartillos}#{mbAutorizacion.persona.nombreArchivo}" width="150" />
                 </h:panelGrid>
                 <h:panelGrid columns="2">
                     <p:commandButton title="Agregar el #{config.Proponente} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
@@ -48,12 +48,15 @@
                     </p:commandButton>
                     <p:commandButton title="Guardar #{config.Proponente}" styleClass="save" icon="fa fa-fw fa-save" 
                                      value="Guardar" action="#{mbAutorizacion.limpiarViewPersona()}" 
-                                     rendered="#{mbAutorizacion.viewPersona or not mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     rendered="#{(mbAutorizacion.viewPersona or not mbAutorizacion.autorizacion.estado.habilitaEdicion) 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form" >
                     </p:commandButton>
                     <p:commandButton title="Desasociar #{config.Proponente}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
                                      value="Quitar" action="#{mbAutorizacion.deletePersona(config.Proponente)}" 
-                                     rendered="#{mbAutorizacion.viewPersona and mbAutorizacion.autorizacion.estado.habilitaEdicion}" 
+                                     rendered="#{mbAutorizacion.viewPersona 
+                                                 and mbAutorizacion.autorizacion.estado.habilitaEdicion 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form,messages" >
                     </p:commandButton>
                 </h:panelGrid>

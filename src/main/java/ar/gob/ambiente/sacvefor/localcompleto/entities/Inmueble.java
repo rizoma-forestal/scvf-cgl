@@ -12,8 +12,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Encapsula los datos correspondientes a los inmuebles que solicitan 
@@ -24,12 +26,16 @@ import javax.validation.constraints.Size;
 public class Inmueble implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Nombre por el cual se lo puede reconocer al Inmueble
+     * Variable privada: Nombre por el cual se lo puede reconocer al Inmueble
      */
     @Column (nullable=false, length=100)
     @NotNull(message = "El campo nombre no puede ser nulo")
@@ -37,12 +43,12 @@ public class Inmueble implements Serializable {
     private String nombre;
     
     /**
-     * Referencia al id de la Localidad en el Servicio Gestión Territorial
+     * Variable privada: Referencia al id de la Localidad en el Servicio Gestión Territorial
      */
     private Long idLocGt;
     
     /**
-     * Nombre de la Localidad, cacheado del Servicio
+     * Variable privada: Nombre de la Localidad, cacheado del Servicio
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo localidad no puede ser nulo")
@@ -50,7 +56,7 @@ public class Inmueble implements Serializable {
     private String localidad;
     
     /**
-     * Nombre del Departamente, cacheado del Servicio
+     * Variable privada: Nombre del Departamente, cacheado del Servicio
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo departamento no puede ser nulo")
@@ -58,7 +64,7 @@ public class Inmueble implements Serializable {
     private String departamento;
     
     /**
-     * Nombre de la Provincia, cacheado del Servicio
+     * Variable privada: Nombre de la Provincia, cacheado del Servicio
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo provincia no puede ser nulo")
@@ -66,7 +72,7 @@ public class Inmueble implements Serializable {
     private String provincia;
     
     /**
-     * Si el Inmueble hubiera surgido a partir de la subdivisión de otro Inmueble,
+     * Variable privada: Si el Inmueble hubiera surgido a partir de la subdivisión de otro Inmueble,
      * se guarda el inmueble origina.
      */
     @ManyToOne
@@ -74,45 +80,110 @@ public class Inmueble implements Serializable {
     private Inmueble inmOrigen;
     
     /**
-     * Si existiera, la identificación catastral
+     * Variable privada: Si existiera, la identificación catastral
      */
     @Column (length=20)
     @Size(message = "El campo idCatastral no puede tener más de 20 caracteres", max = 20) 
     private String idCatastral;
     
     /**
-     * Cadena con calle, número, y lo que corresponda, si corresponde
+     * Variable privada: Cadena con calle, número, y lo que corresponda, si corresponde
      */
     @Column (length=50)
     @Size(message = "El campo domicilio no puede tener más de 50 caracteres", max = 50)       
     private String domicilio;
     
     /**
-     * Superficie total del inmueble
+     * Variable privada: Superficie total del inmueble
      */
     private double superficie;
     
     /**
-     * Si existiera, coordenada de latitud para la ubicación puntual del inmueble
+     * Variable privada: Si existiera, coordenada de latitud para la ubicación puntual del inmueble
      */
     private double latitud;
     
     /**
-     * Si existiera, coordenada de longitud para la ubicación puntual del inmueble
+     * Variable privada: Si existiera, coordenada de longitud para la ubicación puntual del inmueble
      */
     private double longitud;
     
-    
+    /**
+     * Variable privada: Condición de habilitado del inmueble
+     */
     private boolean habilitado;
     
     /**
-     * Si el inmueble hubiera sido subdividido, muestra a los hijos
+     * Variable privada: Si el inmueble hubiera sido subdividido, muestra a los hijos
      */
     @OneToMany (mappedBy="inmOrigen")
     private List<Inmueble> inmHijos;
     
+    /**
+     * Variable privada: Para los Proponentes, ruta del martillo
+     */
+    private String rutaArchivo;
+    
+    /**
+     * Variable privada: Para los Proponentes, nombre del archivo
+     */
+    private String nombreArchivo;    
+    
+    /**
+     * Variable privada no persistida: Campo que indica si la ruta a la imagen del martillo es temporal o definitiva
+     * no incluido en la entidad de para la API Rest
+     */
+    @Transient
+    private boolean rutaTemporal;    
+    
+    /**
+     * Constructor, instancia el listado de subdivisiones que el inmueble pudiera tener
+     */
     public Inmueble(){
         inmHijos = new ArrayList<>();
+    }
+    
+    // métodos de acceso    
+    /**
+     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
+     * no incluido en la entidad de para la API Rest
+     * @return boolean verdadero o falso según el caso
+     */
+    @XmlTransient    
+    public boolean isRutaTemporal() {
+        return rutaTemporal;
+    }
+
+    public void setRutaTemporal(boolean rutaTemporal) {
+        this.rutaTemporal = rutaTemporal;
+    }
+
+    /**
+     * Método que retorna la ruta del archivo de la imagen del martillo del productor
+     * no incluido en la entidad de para la API Rest
+     * @return String ruta del archivo
+     */      
+    @XmlTransient    
+    public String getRutaArchivo() {
+        return rutaArchivo;
+    }
+
+    public void setRutaArchivo(String rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
+    }
+
+    /**
+     * Método que retorna la condición de temporal de la ruta de la imagen del martillo
+     * no incluido en la entidad de para la API Rest
+     * @return String nombre del archivo
+     */    
+    @XmlTransient    
+    public String getNombreArchivo() {
+        return nombreArchivo;
+    }
+
+    public void setNombreArchivo(String nombreArchivo) {
+        this.nombreArchivo = nombreArchivo;
     }
 
     public String getNombre() {

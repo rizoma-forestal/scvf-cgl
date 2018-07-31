@@ -17,7 +17,8 @@
                     <p:outputLabel value="#{mbAutorizacion.autorizacion.estado.nombre}" style=" font-weight: bold" />
                     <p:commandButton title="Modificar el Estado de la Autorización" styleClass="save" icon="fa fa-fw fa-pencil" 
                                      action="#{mbAutorizacion.prepareEditEstado()}" update="frEstado,messages" 
-                                     rendered="#{not mbAutorizacion.editEstado}"/>
+                                     rendered="#{not mbAutorizacion.editEstado 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                 </h:panelGrid>
                 <h:panelGrid columns="2" rendered="#{mbAutorizacion.editEstado}" >
                     <p:outputLabel value="Cambiar Estado" for="cmbEstados"/>   

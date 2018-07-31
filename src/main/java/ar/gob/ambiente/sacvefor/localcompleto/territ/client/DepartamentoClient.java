@@ -5,9 +5,10 @@ import java.util.ResourceBundle;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
- * Jersey REST client generated for REST resource:DepartamentoFacadeREST
+ * Cliente REST Jersey generado para el recurso DepartamentoFacadeREST de la API Territorial
  * [departamentos]<br>
  * USAGE:
  * <pre>
@@ -20,12 +21,27 @@ import javax.ws.rs.client.WebTarget;
  * @author rincostante
  */
 public class DepartamentoClient {
-
+    
+    /**
+     * Variable privada: WebTarget path de acceso a la API específica de Departamentos
+     */
     private WebTarget webTarget;
+    
+    /**
+     * Variable privada: Client cliente a setear a partir de webTarget
+     */
     private Client client;
-    private static final String BASE_URI = ResourceBundle.getBundle("/Config").getString("ServerServicios") + "/"
+    
+    /**
+     * Variable privada estática y final: String url general de acceso al servicio.
+     * A partir de datos configurados en archivo de propiedades
+     */
+    private static final String BASE_URI = ResourceBundle.getBundle("/Config").getString("ServerServiciosLectura") + "/"
             + "" + ResourceBundle.getBundle("/Config").getString("UrlTerritorial");
 
+    /**
+     * Constructor que instancia el cliente y el webTarget
+     */
     public DepartamentoClient() {
         client = javax.ws.rs.client.ClientBuilder.newClient();
         webTarget = client.target(BASE_URI).path("departamentos");
@@ -37,28 +53,80 @@ public class DepartamentoClient {
         return resource.request(javax.ws.rs.core.MediaType.TEXT_PLAIN).get(String.class);
     }
 
-    public <T> T findByDepto_XML(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método que obtiene los Centros poblados de un departamento según su id en formato XML
+     * GET /departamentos/:id/centrospoblados
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param id String id del Departamento
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findByDepto_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/centrospoblados", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findByDepto_JSON(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método que obtiene los Centros poblados de un departamento según su id en formato JSON
+     * GET /departamentos/:id/centrospoblados
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param id String id del Departamento
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findByDepto_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}/centrospoblados", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T find_XML(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método que obtiene un Departamento registrado habilitado según su id en formato XML
+     * GET /departamentos/:id
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será Departamento
+     * @param id Long id del Departamento a obtener
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> Departamento Departamento obtenido según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T find_XML(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T find_JSON(Class<T> responseType, String id) throws ClientErrorException {
+    /**
+     * Método que obtiene un Departamento registrado habilitado según su id en formato JSON
+     * GET /departamentos/:id
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será Departamento
+     * @param id Long id del Departamento a obtener
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return <T> Departamento Departamento obtenido según el id remitido
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T find_JSON(Class<T> responseType, String id, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
         resource = resource.path(java.text.MessageFormat.format("{0}", new Object[]{id}));
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
     public <T> T findRange_XML(Class<T> responseType, String from, String to) throws ClientErrorException {
@@ -73,18 +141,44 @@ public class DepartamentoClient {
         return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
     }
 
-    public <T> T findAll_XML(Class<T> responseType) throws ClientErrorException {
+    /**
+     * Método que obtiene todos los Departamentos registrados habilitados en formato XML
+     * GET /centrospoblados
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findAll_XML(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
-    public <T> T findAll_JSON(Class<T> responseType) throws ClientErrorException {
+    /**
+     * Método que obtiene todos los Departamentos registrados habilitados en formato JSON
+     * GET /centrospoblados
+     * @param <T> Tipo genérico
+     * @param responseType javax.ws.rs.core.Response
+     * @param token String token recibido previamente al validar el usuario en la API. Irá en el header.
+     * @return javax.ws.rs.core.Response resultados de la consulta
+     * @throws ClientErrorException Excepcion a ejecutar
+     */
+    public <T> T findAll_JSON(Class<T> responseType, String token) throws ClientErrorException {
         WebTarget resource = webTarget;
-        return resource.request(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
     }
 
+    /**
+     * Método para cerrar el cliente
+     */
     public void close() {
         client.close();
     }
-    
 }

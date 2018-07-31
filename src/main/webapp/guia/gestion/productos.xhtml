@@ -5,9 +5,10 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body >
-        <h:panelGrid columns="2" cellpadding="10">
+        <h:panelGrid columns="3" cellpadding="10">
             <img src="#{request.contextPath}/resources/img/parque.png" width="50" height="50" style="float: left; margin-left: 15px" />
             <p:outputLabel styleClass="titPanel" value="#{config.Productos}" />
+            <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
         <h:form prependId="false" id="frProductos">
             <!-- Formulario de configuración del Producto -->
@@ -30,7 +31,7 @@
                         <f:convertNumber type="currency"  currencySymbol=""/>
                     </p:outputLabel>
                     <p:outputLabel value="Cantidad a descontar: " for="cantidad"/>
-                    <p:inputNumber decimalSeparator="," thousandSeparator="." id="cantidad" value="#{mbGuia.itemAsignado.total}" decimalPlaces="4" minValue="1"  
+                    <p:inputNumber decimalSeparator="," thousandSeparator="." id="cantidad" value="#{mbGuia.itemAsignado.total}" decimalPlaces="4" minValue="0"  
                                  required="true" requiredMessage="Debe ingresar la cantidad a descontar." />
                 </h:panelGrid>
                 <h:panelGrid columns="3">
@@ -54,17 +55,21 @@
             </p:panel>
             
             <!-- Listado de Productos disponibles -->
-            <p:panel id="pnTableDisp" header="Listado de #{config.Productos} disponibles" style="margin-bottom:10px;" rendered="#{not mbGuia.descontandoProd and not mbGuia.editandoItem}" >
+            <p:panel id="pnTableDisp" header="Listado de #{config.Productos} disponibles" style="margin-bottom:10px;" 
+                     rendered="#{not mbGuia.descontandoProd and not mbGuia.editandoItem and mbGuia.guia.estado.nombre ne config.GuiaCancelada}" >
                 <p:dataTable styleClass="table" value="#{mbGuia.lstItemsAutorizados}"
                              var="itemOrigen"
                              id="dtItemsOrigen" >
-                    <p:column headerText="id" style="width:50px">
+                    <p:column headerText="id" style="width:30px">
                         <p:outputLabel value="#{itemOrigen.id}"/>
+                    </p:column>
+                    <p:column headerText="Guía origen" rendered="#{not mbGuia.guia.tipo.descuentaAutoriz}" style="width: 100px">
+                        <p:outputLabel value="#{itemOrigen.guia.codigo}"/>
                     </p:column>
                     <p:column headerText="Especie local" >
                         <p:outputLabel value="#{itemOrigen.nombreVulgar}"/>
                     </p:column>
-                    <p:column headerText="Nombre científico" >
+                    <p:column headerText="Nombre científico" style="width:130px" >
                         <p:outputLabel value="#{itemOrigen.nombreCientifico}"/>
                     </p:column>
                     <p:column headerText="Clase" >
@@ -93,7 +98,7 @@
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column style="width:30px" rendered="#{mbGuia.guia.estado.habilitaEdicionComp}">
+                    <p:column style="width:30px" rendered="#{mbGuia.guia.estado.habilitaEdicionComp and mbSesion.usuario.rol.nombre ne config.Consulta}">
                         <p:commandButton styleClass="fa" icon="fa fa-fw fa-arrow-circle-down" title="Descontar Productos" process="@this" 
                                          update="@form" action="#{mbGuia.descontarProducto()}" disabled="#{itemOrigen.descontado}" >
                             <f:setPropertyActionListener value="#{itemOrigen}" target="#{mbGuia.itemFuente}" /> 
@@ -108,7 +113,7 @@
                 <p:dataTable styleClass="table" value="#{mbGuia.lstItemsAsignados}"
                              var="itemAsignado"
                              id="dtItemsAsignados" >
-                    <p:column headerText="id" style="width:50px">
+                    <p:column headerText="id" style="width:30px">
                         <p:outputLabel value="#{itemAsignado.id}"/>
                     </p:column>
                     <p:column headerText="Especie local" >
@@ -133,7 +138,7 @@
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column style="width:30px" rendered="#{mbGuia.guia.estado.habilitaEdicionComp}">
+                    <p:column style="width:30px" rendered="#{mbGuia.guia.estado.habilitaEdicionComp and mbSesion.usuario.rol.nombre ne config.Consulta}">
                         <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Descontar el Item asignado" process="@this" 
                                          update="@form" action="#{mbGuia.prepareEditItem()}" >
                             <f:setPropertyActionListener value="#{itemAsignado}" target="#{mbGuia.itemAsignado}" /> 

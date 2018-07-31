@@ -20,7 +20,7 @@ import org.hibernate.envers.Audited;
 import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 
 /**
- * Gestiona los productos que se podrán seleccionar como autorizados para la extracción.
+ * Entidad que gestiona los productos que se podrán seleccionar como autorizados para la extracción o como movidos mediante una guía.
  * Será auditada.
  * @author rincostante
  */
@@ -29,12 +29,16 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 public class Producto implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Especie local a la que pertenece el Producto
+     * Variable privada: Especie local a la que pertenece el Producto
      * No será auditada
      */
     @Audited(targetAuditMode = NOT_AUDITED)
@@ -44,7 +48,7 @@ public class Producto implements Serializable {
     private ProductoEspecieLocal especieLocal;
     
     /**
-     * Clase en la que se comercializa el Producto
+     * Variable privada: Clase en la que se comercializa el Producto
      * No será auditada
      */
     @Audited(targetAuditMode = NOT_AUDITED)
@@ -54,15 +58,18 @@ public class Producto implements Serializable {
     private ProductoClase clase;
     
     /**
-     * Equivalencia en Kg. de la Unidad de medida de la Clase del Producto
+     * Variable privada: Equivalencia en Kg. de la Unidad de medida de la Clase del Producto
      */
     private float equivalKg;
     
+    /**
+     * Variable privada: fecha de alta del producto
+     */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fechaAlta;
     
     /**
-     * Usuario que registró el Producto, también registrado en las auditorías.
+     * Variable privada: Usuario que registró el Producto, también registrado en las auditorías.
      * No será auditado
      */
     @Audited(targetAuditMode = NOT_AUDITED)
@@ -72,7 +79,7 @@ public class Producto implements Serializable {
     private Usuario usuario;
     
     /**
-     * Tasas que deberá pagar el producto por unidad de medida
+     * Variable privada: Tasas que deberá pagar el producto por unidad de medida
      * Podrá ser una, varias o ninguna
      */
     @Audited(targetAuditMode = NOT_AUDITED)
@@ -80,6 +87,9 @@ public class Producto implements Serializable {
     @JoinColumn(name = "producto_id", referencedColumnName = "id")
     private List<ProductoTasa> tasas;     
     
+    /**
+     * Variable privada: condición de habilitado del producto
+     */
     private boolean habilitado;
     
     /**
@@ -90,7 +100,7 @@ public class Producto implements Serializable {
     private Date fechaRevision;      
     
     /**
-     * Constructor
+     * Constructor que instancia el listado de tasas
      */
     public Producto(){
         tasas = new ArrayList<>();

@@ -1,11 +1,25 @@
-# Parámetros dinámicos
+# Parámetros dinámicos de acceso a servicios
 Server=http://localhost:8080
-ServerServicios=http://localhost:8080
+ServerEntidades=http://localhost:8080
+ServerTrazabilidad=http://localhost:8080
+ServerCtrlVerif=http://localhost:8080
+ServerServiciosLectura=http://localhost:8080
 UrlTerritorial=/gestionTerritorial/rest
 UrlEspecies=/especiesVegetales/rest
 UrlEntidades=/rue/rest
 UrlTrazabilidad=/trazabilidad/rest
 UrlCtrlVerif=/ctrlVerif/rest
+
+# Usuarios de acceso a API's REST:
+# UsRestTax y UsRestTerr => sacvefor (para los servicios de taxonomías y territorial)
+# UsRestRue => admin [Provincia] para el estándar y admin_[provincia] (admin_jujuy, admin santiago, admin salta) para los locales (para el RUE)
+# UsRestSvf => cgl-[provincia] para las provincias y gestionLocal para el estándar (para TRAZ y CTRL)
+UsRestTax=sacvefor
+UsRestTerr=sacvefor
+UsRestRue=admin [Provincia]
+UsRestSvf=gestionLocal
+# Tiempo de vigencia del token recibido
+TimeToken=3600000
 
 # Parámetros de Gestión de Trazabilidad
 TrazServer=http://localhost:8080
@@ -41,6 +55,15 @@ Apoderado=APODERADO
 Destinatario=DESTINATARIO
 Transportista=TRANSPORTISTA
 
+# Mensajes de impresión de formularios
+ImprimeFormularios=si
+MsgImpFormVencida=Solo se podrían imprimir formularios provisorios para guías que se encuentren dentro de su período de vigencia.
+MsgImpFormVigente=Podrá emitir los los formularios provisorios que considere necesarios, el productor podrá completar los datos en papel. Cada formulario provisorio amparará el movimiento de productos desde el predio hasta la Delegación forestal en la cual se emitirá la guía. Dicha guía no podrá contener más productos, en tipo y cantidad, que los indicados en el formulario. Se deberá consignar la Delegación forestal destinataria, la cantidad de horas de vigencia a partir de la fecha de salida que será registrada en papel por el productor.
+
+# Mensajes de cancelación de guías
+MsgCancelVencida=Solo se podrán cancelar las guías durante su período de vigencia.
+MsgCancelVigente=Ingrese las razones por las cuales va a cancelar la guía. Recuerde que una vez cancelada los movimientos de productos quedarán sin efecto y los saldos descontados serán reintegrados a las fuentes de descuento. Finalmente podrá completar la acción mediante el botón 'Aceptar' o limpiar el campo de texto mediante el botón 'Limpiar'. Una vez cancelada la guía, la operación no podrá volverse atrás.
+
 
 # Tipos de Items productivos
 Autorizados=AUTORIZADOS
@@ -59,6 +82,24 @@ GuiaMadre=GUIA MADRE
 TegFuente=ORIGEN
 TegDestino=DESTINO
 
+# Tipos de tasas según la intervención autorizada. Si DiscTasaTipoInterv va en 'si' se setea el resto, si no, no es necesario
+DiscTasaTipoInterv=si
+IntervPCUS=CAMBIO USO DEL SUELO
+IntervPM=PLAN MANEJO SOSTENIBLE
+TasaPCUS=RENTAS-PCUS
+TasaPM=RENTAS-PM
+
+# Permitir emisión de guías con tasas sin la acreditación del pago
+EmiteSinPagos=si
+CantEmitSinPago=1
+
+# ------------------------------------------------------------ #
+# Tipos de Parámetros y estados de Cotrol y Verificación (CCV) #
+# ------------------------------------------------------------ #
+
+CtrlTipoParamEstGuia=EST_GUIAS
+CtrlGuiaCancelada=CANCELADA
+
 # ------------- #
 # Títulos Menús #
 # ------------- #
@@ -66,12 +107,14 @@ TegDestino=DESTINO
 Inicio=Inicio
 # Administración
 Administracion=Administración
+InformacionGeneral=Información general
 EntidadesParametricas=Entidades Paramétricas
 TiposParametros=Tipos de Parámetros
 ProdUnidadesMedida=Unidades de medida
 ProdClases=Clases
 ProdEspeciesLocal=Especies locales
 Productos=Productos forestales
+Delegaciones=Delegaciones forestales
 
 # Autorizaciones
 Instrumento=Resolución
@@ -101,6 +144,12 @@ Marcas=Marcas
 Modelos=Modelos
 Tasas=Tasas
 Emision=Emisión
+
+# Reportes
+Reportes=Reportes
+RepProductosMovidos=Productos removidos
+RepProductosAutorizados=Productos autorizados
+RepSuperficiesAutorizaciones=Superficies autorizadas
 
 # Seguridad
 Usuarios=Usuarios
@@ -132,6 +181,16 @@ TipoTasa=TIPO_TASA
 TipoFuente=TIPO_FUENTE
 TipoEntidadGuia=TIPO_ENT_GUIA
 
+# ----------------------- #
+# Roles de usuarios local #
+# ----------------------- #
+
+Administrador=ADMINISTRADOR
+RegAut=REGISTRADOR DE AUTORIZACIONES
+RegGuias=REGISTRADOR DE GUIAS
+Consulta=CONSULTA
+Pruebas=PRUEBAS
+
 # --------------------------------- #
 # Roles de Usuarios de Trazabilidad #
 # --------------------------------- #
@@ -149,6 +208,7 @@ AutSuspendido=SUS
 # --------------------------- #
 # Códigos de estados de Guías #
 # --------------------------- #
+GuiaCancelada=CANCELADA
 GuiaInicial=CARGA INICIAL
 GuiaConProductos=CON PRODUCTOS
 GuiaLiquidada=LIQUIDADA
@@ -161,6 +221,7 @@ GuiaExtraviada=EXTRAVIADA
 GuiaConTransporte=CON TRANSP. Y PROD.
 GuiaSinTransporte=GUIA CON PROD. SIN TRANSP.
 GuiaConDestino=CON DEST. Y PROD.
+GuiaConProdAEmitir=CON PROD. A EMITIR
 
 # -------- #
 # Máscaras #

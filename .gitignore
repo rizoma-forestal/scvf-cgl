@@ -2,6 +2,11 @@
 build/
 bin/
 target/
+doc/
+template/
+
+# ignoro el apidoc
+apidoc.json
 
  
 # OS Files #
@@ -31,6 +36,8 @@ src/main/webapp/resources/reportes/guiaAcopio.jrxml
 src/main/webapp/resources/reportes/guiaAcopio.jasper
 src/main/webapp/resources/reportes/volante.jrxml
 src/main/webapp/resources/reportes/volante.jasper
+src/main/webapp/resources/reportes/form.jrxml
+src/main/webapp/resources/reportes/form.jasper
 src/main/webapp/resources/reportes/logo.jpg
 src/main/webapp/resources/reportes/logo.gif
 src/main/webapp/resources/reportes/pie.jpg

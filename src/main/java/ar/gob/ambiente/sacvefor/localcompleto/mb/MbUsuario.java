@@ -23,38 +23,92 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 /**
- * Bean de respaldo para la administración de Usuarios
+ * Bean de respaldo para la administración de Usuarios.
+ * Gestiona la vista seg/usuario.xhtml
  * @author rincostante
  */
 public class MbUsuario {
-
-    // campos para gestionar
+    ///////////////////////////
+    // campos para gestionar //
+    ///////////////////////////
+    
+    /**
+     * Variable privada: usuario gestionado
+     */
     private Usuario usuario;
+    
+    /**
+     * Variable privada: listado de los usuarios registrados
+     */
     private List<Usuario> lstUsuarios;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de los usuarios registrados
+     */
     private List<Usuario> lstFilters;
-    private List<Parametrica> lstRoles;    
+    
+    /**
+     * Variable privada: Listado de entidades combo que en este caso guardarán los roles de los usuarios
+     */
+    private List<Parametrica> lstRoles;   
+    
+    /**
+     * Variable privada: asociada al usuario generada automáticamente.
+     */
     private String pass;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de vista detalle
+     */
     private boolean view;
+    
+    /**
+     * Variable privada: flag que indica si el formulario es de edición
+     */
     private boolean edit;
     
-    // inyección de recursos
+    //////////////////////////////////////////////////
+    // inyección de recursos para el acceso a datos //
+    //////////////////////////////////////////////////
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Usuario
+     */  
     @EJB
     private UsuarioFacade usuarioFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica
+     */  
     @EJB
-    private ParametricaFacade rolFacade;     
+    private ParametricaFacade rolFacade;    
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */  
     @EJB
     private TipoParamFacade tipoParamFacade;
- 
+    
+    /**
+     * Variable privada: sesión de mail del servidor
+     */
     @Resource(mappedName ="java:/mail/ambientePrueba")
     private Session mailSesion;
+    
+    /**
+     * Variable privada: String mensajeValidar a enviar por correo electrónico
+     */ 
     private Message mensaje;    
     
+    /**
+     * Constructor
+     */
     public MbUsuario() {
     }
 
-    /**********************
-     * Métodos de acceso **
-     **********************/       
+    ///////////////////////
+    // Métodos de acceso //
+    ///////////////////////      
     public Usuario getUsuario() {
         return usuario;
     }
@@ -104,9 +158,9 @@ public class MbUsuario {
         this.edit = edit;
     }
     
-    /***********************
-     * Mátodos operativos **
-     ***********************/
+    ////////////////////////
+    // Mátodos operativos //
+    ////////////////////////
     @PostConstruct
     public void init(){
         usuario = new Usuario();
@@ -269,9 +323,19 @@ public class MbUsuario {
         }
     }    
     
-    /*********************
-     * Métodos privados **
-     *********************/
+    //////////////////////
+    // Métodos privados //
+    //////////////////////
+    
+    /**
+     * Método privado para notificar novedades al usuario.
+     * Envía un correo electrónico al usuario con las credenciales de acceso.
+     * mediante el objeto de sesión para el envío de mails "mailSesion".
+     * @param correo String dirección de correo electrónico del usuario
+     * @param motivo String cadena con el motívo de la notificación.
+     * Utilizado en cambiarPass() y save()
+     * @return boolean true o false según el correo se haya enviado correctamente o no
+     */
     private boolean enviarCorreo(String correo, String motivo){  
         boolean result;
         String bodyMessage;

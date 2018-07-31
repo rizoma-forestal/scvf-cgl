@@ -25,12 +25,16 @@ import javax.validation.constraints.Size;
 public class CopiaGuia implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Variable privada: Identificador único
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     /**
-     * Nombre que llevará la copia, ej: Original, Duplicado, etc.
+     * Variable privada: Nombre que llevará la copia, ej: Original, Duplicado, etc.
      */
     @Column (nullable=false, length=30)
     @NotNull(message = "El campo nombre no puede ser nulo")
@@ -38,7 +42,7 @@ public class CopiaGuia implements Serializable {
     private String nombre;
     
     /**
-     * Destino de la impresión, ej: Productor, Delegación Forestal, Destinatario, etc.
+     * Variable privada: Destino de la impresión, ej: Productor, Delegación Forestal, Destinatario, etc.
      */
     @Column (nullable=false, length=50)
     @NotNull(message = "El campo destino no puede ser nulo")
@@ -46,7 +50,7 @@ public class CopiaGuia implements Serializable {
     private String destino;
     
     /**
-     * El tipo de Guía a la que corresponda la CopiaGuia
+     * Variable privada: El tipo de Guía a la que corresponda la CopiaGuia
      */
     @ManyToOne
     @JoinColumn(name="tipoguia_id")

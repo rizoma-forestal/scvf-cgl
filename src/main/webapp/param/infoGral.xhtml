@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.InformacionGeneral}" />
+                </h:panelGrid>
+                <h:form prependId="false" id="frEntParam">
+                    <p:panel id="pnFrm" header="Editar"  >
+                        <p:growl id="messages" showDetail="false" />
+                        <h:panelGrid columns="2">
+                            <p:outputLabel value="Información a mostrar" for="contenido"/>
+                            <p:inputTextarea  id="contenido" rows="5" cols="50" counter="display" maxlength="500" 
+                                              value="#{mbInfoGral.info}" counterTemplate="Restan {0} caracteres." 
+                                              autoResize="false" />
+                            <h:outputText id="display" style="font-size: 12px" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2">
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbInfoGral.save()}" update="frEntParam"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Cancelar" action="#{mbInfoGral.cancelar()}" update="pnFrm"/>
+                        </h:panelGrid>
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>

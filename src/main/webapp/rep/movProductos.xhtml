@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/indexTemplate.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.Aplicacion}" />
+        </ui:define>
+        <ui:define name="content"  >
+            <p:growl id="messages" showDetail="false" />
+            <p:panel id="pnGral" styleClass="abmparam" >
+                <h:panelGrid columns="2" cellpadding="10" >
+                    <img src="#{request.contextPath}/resources/img/file-1.png" width="50" height="50" style="float: left; margin-left: 15px" />
+                    <p:outputLabel styleClass="titPanel" value="Listado de #{config.RepProductosMovidos}" />
+                </h:panelGrid>
+                
+                <h:form prependId="false" id="frListMovProd">
+                    <!-- Formulario de parámetros a consultar -->
+                    <p:panel id="pnFrmBusqueda" header="Búsqueda por período" >
+                        <p:outputLabel value="Desde aquí se podrá generar un listado con los productos removidos, indicando el Departamento 
+                                       de origen o dejandolo en blanco para obtener los datos de toda la Provincia. 
+                                       Deberá especificar el inicio y fin del período a consultar." style="font-style: italic; font-size: small" />
+                        <h:panelGrid id="pgBusqueda" columns="2" >
+                            <p:outputLabel value="Departamento" for="cmbDepto"/>   
+                            <p:selectOneMenu id="cmbDepto" value="#{mbReporte.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbReporte.lstDepartamentos}" 
+                                               var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
+                            </p:selectOneMenu>  
+                            <p:outputLabel value="Inicio: " for="per_inicio"/>
+                            <p:calendar id="per_inicio" value="#{mbReporte.inicioPeriodo}" 
+                                        required="true" requiredMessage="Debe indicar el inicio del período a consultar" />
+                            <p:outputLabel value="Fin: " for="per_fin"/>
+                            <p:calendar id="per_fin" value="#{mbReporte.finPeriodo}" 
+                                        required="true" requiredMessage="Debe indicar el fin del período a consultar" />
+                            <p:commandButton title="Buscar los productos movidos durante el período configurado" styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Buscar" action="#{mbReporte.listarProdMovidos()}" update="frListMovProd,messages"/>
+                            <p:commandButton title="Limpiar formulario" action="#{mbReporte.limpiarPeriodo()}" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                                <p:ajax update="frListMovProd" resetValues="true" />
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Listado -->
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;" 
+                             rendered="#{not empty mbReporte.lstProdMovidos}">
+                        <p:dataTable id="dtProd" var="prod" styleClass="table"
+                                     value="#{mbReporte.lstProdMovidos}"
+                                     filteredValue="#{mbReporte.lstProdFilter}"
+                                     rows="5"
+                                     paginator="true"   
+                                     widgetVar="prodTable"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15" >
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('prodTable').clearFilters()" update="dtProd"/>
+                                <h:commandLink>
+                                    <p:outputLabel value="Exportar listado" />
+                                    <p:dataExporter type="xls" target="dtProd" fileName="Productos removidos" />
+                                </h:commandLink>    
+                            </f:facet>
+                            <p:column headerText="Especie" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.nombreVulgar}" 
+                                filterBy="#{prod.nombreVulgar}" >
+                                <p:outputLabel value="#{prod.nombreVulgar}"/>
+                            </p:column>
+                            <p:column headerText="Clase" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.clase}" 
+                                filterBy="#{prod.clase}" >
+                                <p:outputLabel value="#{prod.clase}"/>
+                            </p:column>
+                            <p:column headerText="Unidad" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.unidad}" 
+                                filterBy="#{prod.unidad}" >
+                                <p:outputLabel value="#{prod.unidad}"/>
+                            </p:column>
+                            <p:column headerText="Total movido" style="text-align: right !important;"
+                                filterMatchMode="contains"
+                                sortBy="#{prod.total}" 
+                                filterBy="#{prod.total}" >
+                                <p:outputLabel value="#{prod.total}" >
+                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    
+                    <!-- Mensaje -->
+                    <p:panel id="pnMsg" header="Sin resultado" style="margin-bottom:10px;" 
+                             rendered="#{mbReporte.sinResultados}">
+                        <p:outputLabel value="No hay resultados para la consulta realizada" style="font-size: 20px !important; color: #8A0829" />
+                    </p:panel>
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</html>        
+

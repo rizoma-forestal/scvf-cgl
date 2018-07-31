@@ -14,15 +14,18 @@ import javax.persistence.Query;
 @Stateless
 public class ProductoTasaFacade extends AbstractFacade<ProductoTasa> {
 
+    /**
+     * Constructor
+     */
     public ProductoTasaFacade() {
         super(ProductoTasa.class);
     }
     
     /**
      * Metodo para validar un ProductoTasa existente según su nombre para un tipo determinado
-     * @param nombre : Nombre a validar
-     * @param tipo : Tipo de Tasa a validar junto con el CUIT
-     * @return 
+     * @param nombre String Nombre a validar
+     * @param tipo Parametrica Tipo de Tasa a validar junto con el CUIT
+     * @return ProductoTasa tasa existente
      */
     public ProductoTasa getExistente(String nombre, Parametrica tipo) {
         List<ProductoTasa> lstTasas;
@@ -42,7 +45,7 @@ public class ProductoTasaFacade extends AbstractFacade<ProductoTasa> {
     
     /**
      * Método sobreescrito que lista las ProductoTasa ordenados por nombre
-     * @return 
+     * @return List<ProductoTasa> listado de las tasas ordenadas por nombre
      */
     @Override
     public List<ProductoTasa> findAll(){
@@ -55,7 +58,7 @@ public class ProductoTasaFacade extends AbstractFacade<ProductoTasa> {
     /**
      * Mátodo que solo devuelve los ProductoTasa habilitados.
      * Para poblar combos de selección.
-     * @return 
+     * @return List<ProductoTasa> listado de las tasas habilitadas
      */
     public List<ProductoTasa> getHabilitados(){
         String queryString = "SELECT tasa FROM ProductoTasa tasa "

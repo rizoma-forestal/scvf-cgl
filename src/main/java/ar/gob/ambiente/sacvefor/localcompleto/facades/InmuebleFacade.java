@@ -13,14 +13,17 @@ import javax.persistence.Query;
 @Stateless
 public class InmuebleFacade extends AbstractFacade<Inmueble> {
 
+    /**
+     * Constructor
+     */
     public InmuebleFacade() {
         super(Inmueble.class);
     }
     
     /**
      * Método para validar la existencia de un Inmmueble en función de su identificación catastral
-     * @param idCatastral : Identificación catastral del inmueble que se quiere validar
-     * @return 
+     * @param idCatastral String Identificación catastral del inmueble que se quiere validar
+     * @return Inmueble inmueble correspondiente
      */
     public Inmueble getExistenteByCatastro(String idCatastral) {
         List<Inmueble> lstInmuebles;
@@ -38,7 +41,7 @@ public class InmuebleFacade extends AbstractFacade<Inmueble> {
 
     /**
      * Método sobreescrito que lista los Inmuebles ordenadas por nombre
-     * @return 
+     * @return List<Inmueble> listado de todos los inmuebles ordenados por nombre
      */
     @Override
     public List<Inmueble> findAll(){
@@ -51,8 +54,8 @@ public class InmuebleFacade extends AbstractFacade<Inmueble> {
     /**
      * Método para seleccionar Inmuebles según contengan en su nombre
      * el parámetro recibido. Solo serán habilitados
-     * @param param : Cadena que deberá contener el nombre del Inmueble para ser seleccionado
-     * @return 
+     * @param param String Cadena que deberá contener el nombre del Inmueble para ser seleccionado
+     * @return List<Inmueble> listado de todos los inmuebles cuyo nombre contenga la cadena remitida
      */
     public List<Inmueble> findByNombre(String param){
         String queryString = "SELECT inm FROM Inmueble inm "
@@ -66,7 +69,7 @@ public class InmuebleFacade extends AbstractFacade<Inmueble> {
     
     /**
      * Método para obtener todos los inmuebles habilitados ordenados por nombre
-     * @return 
+     * @return List<Inmueble> listado de todos los inmuebles habiltiados
      */
     public List<Inmueble> getHabilitados(){
         String queryString = "SELECT inm FROM Inmueble inm "
