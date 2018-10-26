@@ -50,7 +50,7 @@ public class UsuarioApiFacade extends AbstractFacade<UsuarioApi> {
         em = getEntityManager();
         String queryString = "SELECT usApi FROM UsuarioApi usApi "
                 + "WHERE usApi.nombre = :nombre "
-                + "AND (usApi.rol.nombre = 'CLIENTE_CTRL' OR usApi.rol.nombre = 'CLIENTE_TRAZ')";
+                + "AND (usApi.rol.nombre = 'CLIENTE_CTRL' OR usApi.rol.nombre = 'CLIENTE_TRAZ' OR usApi.rol.nombre = 'CLIENTE_PROV')";
         Query q = em.createQuery(queryString)
                 .setParameter("nombre", nombre);
         return !q.getResultList().isEmpty();

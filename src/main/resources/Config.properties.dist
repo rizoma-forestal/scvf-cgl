@@ -1,9 +1,15 @@
 # Parámetros dinámicos de acceso a servicios
 Server=http://localhost:8080
+#Server=http://sacvefor.test.bosquesnativos.net.ar
+## Servidor del RUE, en desa y prod es 8080, en pruebas es 8180 ##
 ServerEntidades=http://localhost:8080
+## Servidor del TRAZ, en todos los casos es 8080 si comparte server ##
 ServerTrazabilidad=http://localhost:8080
+## Servidor del CTRL, en todos los casos es 8080 si comparte server ##
 ServerCtrlVerif=http://localhost:8080
+## Servidor de TERR y TAX, en desa es 8080, en prod y pruebas es 8280 ##
 ServerServiciosLectura=http://localhost:8080
+## uri realitivas ##
 UrlTerritorial=/gestionTerritorial/rest
 UrlEspecies=/especiesVegetales/rest
 UrlEntidades=/rue/rest
@@ -20,6 +26,9 @@ UsRestRue=admin [Provincia]
 UsRestSvf=gestionLocal
 # Tiempo de vigencia del token recibido
 TimeToken=3600000
+
+# Define si registra y emite guías desde un sistema local
+emiteRemota=si
 
 # Parámetros de Gestión de Trazabilidad
 TrazServer=http://localhost:8080

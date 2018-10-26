@@ -67,9 +67,10 @@
                                 </p:submenu>
                             </p:submenu>                         
                             <p:submenu label="#{config.Autorizaciones}" 
-                                       rendered="#{mbSesion.usuario.rol.nombre eq config.RegAut 
+                                       rendered="#{(mbSesion.usuario.rol.nombre eq config.RegAut 
                                                    or mbSesion.usuario.rol.nombre eq config.Pruebas 
-                                                   or mbSesion.usuario.rol.nombre eq config.Consulta}" >
+                                                   or mbSesion.usuario.rol.nombre eq config.Consulta)
+                                                   and config.emiteRemota ne 'si'}" >
                                 <p:menuitem value="#{config.Ver}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.VerAut}/listado.xhtml" />
                                 <p:menuitem value="#{config.Gestionar}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.GestionarAut}/index.xhtml" />
                                 <p:menuitem value="#{config.ZonasIntervencion}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ZonasIntervencion}/zona.xhtml" 
@@ -92,13 +93,14 @@
                                                    or mbSesion.usuario.rol.nombre eq config.Pruebas 
                                                    or mbSesion.usuario.rol.nombre eq config.Consulta}" >
                                 <p:menuitem value="#{config.Ver}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.VerGuias}/listado.xhtml" />
-                                <p:menuitem value="#{config.Gestionar}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.GestionarGuias}/index.xhtml" />
+                                <p:menuitem value="#{config.Gestionar}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.GestionarGuias}/index.xhtml" 
+                                            rendered="#{config.emiteRemota ne 'si'}" />
                                 <p:menuitem value="#{config.EstadosGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/estado.xhtml" 
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                                 <p:menuitem value="#{config.TiposGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/tipo.xhtml" 
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                                 <p:menuitem value="#{config.Copias}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/copia.xhtml" 
-                                            rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
+                                            rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta and config.emiteRemota ne 'si'}"/>
                                 <p:menuitem value="#{config.Destinatarios}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/destinatario.xhtml" 
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                                 <p:menuitem value="#{config.Transportistas}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/transportista.xhtml" 
@@ -108,17 +110,19 @@
                             </p:submenu>
                             <p:submenu label="#{config.Reportes}" rendered="#{mbSesion.usuario.rol.nombre ne config.Administrador}" >
                                 <p:menuitem value="#{config.RepProductosAutorizados}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Reportes}/autProductos.xhtml" 
-                                            rendered="#{mbSesion.usuario.rol.nombre eq config.RegAut 
+                                            rendered="#{(mbSesion.usuario.rol.nombre eq config.RegAut 
                                                         or mbSesion.usuario.rol.nombre eq config.Pruebas 
-                                                        or mbSesion.usuario.rol.nombre eq config.Consulta}" />
+                                                        or mbSesion.usuario.rol.nombre eq config.Consulta)
+                                                        and config.emiteRemota ne 'si'}" />
                                 <p:menuitem value="#{config.RepProductosMovidos}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Reportes}/movProductos.xhtml" 
                                             rendered="#{mbSesion.usuario.rol.nombre eq config.RegGuias 
                                                         or mbSesion.usuario.rol.nombre eq config.Pruebas 
                                                         or mbSesion.usuario.rol.nombre eq config.Consulta}" />
                                 <p:menuitem value="#{config.RepSuperficiesAutorizaciones}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Reportes}/autSuperficies.xhtml" 
-                                            rendered="#{mbSesion.usuario.rol.nombre eq config.RegAut 
+                                            rendered="#{(mbSesion.usuario.rol.nombre eq config.RegAut 
                                                         or mbSesion.usuario.rol.nombre eq config.Pruebas 
-                                                        or mbSesion.usuario.rol.nombre eq config.Consulta}" />
+                                                        or mbSesion.usuario.rol.nombre eq config.Consulta)
+                                                        and config.emiteRemota ne 'si'}" />
                             </p:submenu>
                             <p:menuitem value="#{config.Usuarios}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Seguridad}/usuario.xhtml" 
                                         rendered="#{mbSesion.usuario.rol.nombre eq config.Administrador 
