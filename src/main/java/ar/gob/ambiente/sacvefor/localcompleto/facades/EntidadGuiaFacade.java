@@ -49,6 +49,29 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
     }    
     
     /**
+     * Metodo para validar una EntidadGuia origen existente según su cuit y el número de la Autorización.
+     * Creado para el servicio requerido para la integración con SICMA
+     * @param cuit Long Cuit a validar
+     * @param numAut String Nombre número de la Autorización que permite la extracción del predio
+     * @return EntidadGuia entidad guía correspondiente a los parámetros indicados
+     */
+    public EntidadGuia getOrigenCuitAut(Long cuit, String numAut) {
+        List<EntidadGuia> lstEntidadGuia;
+        String queryString = "SELECT entidad FROM EntidadGuia entidad "
+                + "WHERE entidad.cuit = :cuit "
+                + "AND entidad.numAutorizacion = :numAut";
+        Query q = em.createQuery(queryString)
+                .setParameter("cuit", cuit)
+                .setParameter("numAut", numAut);
+        lstEntidadGuia = q.getResultList();
+        if(lstEntidadGuia.isEmpty()){
+            return null;
+        }else{
+            return lstEntidadGuia.get(0);
+        }
+    }
+    
+    /**
      * Metodo para validar una EntidadGuia destino existente según su cuit, tipo y domicilio
      * @param cuit Long Cuit a validar
      * @param tipoEntidadGuia Parametrica Tipo entidad correspondiente al tipo de EntidadGuia, en este caso: Destino
@@ -64,6 +87,32 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
                 + "AND entidad.inmDomicilio = :domTexto";
         Query q = em.createQuery(queryString)
                 .setParameter("domIdLoc", dom.getIdLoc())
+                .setParameter("domTexto", dom.getCalle() + "-" + dom.getNumero())
+                .setParameter("cuit", cuit)
+                .setParameter("tipoEntidadGuia", tipoEntidadGuia);
+        lstEntidadGuia = q.getResultList();
+        if(lstEntidadGuia.isEmpty()){
+            return null;
+        }else{
+            return lstEntidadGuia.get(0);
+        }
+    }
+    
+    /**
+     * Metodo para validar una EntidadGuia destino existente según su cuit, tipo y domicilio
+     * para la primera etapa de la integración SICMA porque no hay "idLocGT"
+     * @param cuit Long Cuit a validar
+     * @param tipoEntidadGuia Parametrica Tipo entidad correspondiente al tipo de EntidadGuia, en este caso: Destino
+     * @param dom domicilio seleccionado del destinatario.
+     * @return EntidadGuia entidad guía crrespondiente a los parámetros indicados
+     */
+    public EntidadGuia getDestinoExistenteSICMA(Long cuit, Parametrica tipoEntidadGuia, Domicilio dom) {    
+        List<EntidadGuia> lstEntidadGuia;
+        String queryString = "SELECT entidad FROM EntidadGuia entidad "
+                + "WHERE entidad.cuit = :cuit "
+                + "AND entidad.tipoEntidadGuia = :tipoEntidadGuia "
+                + "AND entidad.inmDomicilio = :domTexto";
+        Query q = em.createQuery(queryString)
                 .setParameter("domTexto", dom.getCalle() + "-" + dom.getNumero())
                 .setParameter("cuit", cuit)
                 .setParameter("tipoEntidadGuia", tipoEntidadGuia);

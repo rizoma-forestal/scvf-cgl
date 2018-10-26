@@ -3074,14 +3074,16 @@ public class MbGuia {
     /**
      * Método para inicializar la vista detalle de la Guía.
      * Instancia las posibles guías que toman productos de la presente.
-     * y el o los inmueble/s de origen
+     * Si las guías no se emiten de forma remota instanciará los inmuebles a partir de la Autorización
      */
     public void prepareViewDetalle(){
         if(guia.getTipo().isHabilitaDesc()){
             lstGuiasHijas = guiaFacade.findHijas(guia);
         }
-        // Busco los inmuebles 
-        setearInmueblesOrigen();
+        // Busco los inmuebles si la guía no se emite de forma remota
+        if(!ResourceBundle.getBundle("/Config").getString("emiteRemota").equals("si")){
+            setearInmueblesOrigen();
+        }
         view = true;
     }    
     
