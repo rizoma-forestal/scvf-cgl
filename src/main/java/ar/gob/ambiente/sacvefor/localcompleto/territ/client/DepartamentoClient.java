@@ -174,6 +174,54 @@ public class DepartamentoClient {
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .get(responseType);
     }
+    
+    /**
+     * Método para obtener un Departamento a partir de su nombre y el id de la Provincia a la que pertence, en formato XML
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será Departamento
+     * @param nombre String nombre del Departamento a buscar
+     * @param id_prov String identificador de la Provincia a la cual pertenece el Departamento
+     * @param token String token recibido al validar el usuario en la API
+     * @return Departamento departamento obtenido según el nombre y el id de la Provincia enviados
+     */
+    public <T> T findByQuery_XML(Class<T> responseType, String nombre, String id_prov, String token){
+        WebTarget resource = webTarget;
+        if (nombre != null) {
+            resource = resource.queryParam("nombre", nombre);
+        }
+        if (id_prov != null){
+            resource = resource.queryParam("id_prov", nombre);
+        }
+        resource = resource.path("query");
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
+    }
+    
+    /**
+     * Método para obtener un Departamento a partir de su nombre y el id de la Provincia a la que pertence, en formato JSON
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será Departamento
+     * @param nombre String nombre del Departamento a buscar
+     * @param id_prov String identificador de la Provincia a la cual pertenece el Departamento
+     * @param token String token recibido al validar el usuario en la API
+     * @return Departamento departamento obtenido según el nombre y el id de la Provincia enviados
+     */    
+    public <T> T findByQuery_JSON(Class<T> responseType, String nombre, String id_prov, String token){
+        WebTarget resource = webTarget;
+        if (nombre != null) {
+            resource = resource.queryParam("nombre", nombre);
+        }
+        if (id_prov != null){
+            resource = resource.queryParam("id_prov", id_prov);
+        }
+        resource = resource.path("query");
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
+    }    
 
     /**
      * Método para cerrar el cliente

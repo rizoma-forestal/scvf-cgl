@@ -136,6 +136,54 @@ public class LocalidadClient {
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .get(responseType);
     }
+    
+    /**
+     * Método para obtener una Localidad a partir de su nombre y el id del Departamento al que pertence, en formato XML
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será CentroPoblado
+     * @param nombre String nombre de la Localidad a buscar
+     * @param id_depto String identificador del Departamento al cual pertenece la Localidad
+     * @param token String token recibido al validar el usuario en la API
+     * @return CentroPoblado localidad obtenida según el nombre y el id del Departamento enviados
+     */
+    public <T> T findByQuery_XML(Class<T> responseType, String nombre, String id_depto, String token){
+        WebTarget resource = webTarget;
+        if (nombre != null) {
+            resource = resource.queryParam("nombre", nombre);
+        }
+        if (id_depto != null){
+            resource = resource.queryParam("id_depto", nombre);
+        }
+        resource = resource.path("query");
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
+    }
+    
+    /**
+     * Método para obtener una Localidad a partir de su nombre y el id del Departamento al que pertence, en formato JSON
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será CentroPoblado
+     * @param nombre String nombre de la Localidad a buscar
+     * @param id_depto String identificador del Departamento al cual pertenece la Localidad
+     * @param token String token recibido al validar el usuario en la API
+     * @return CentroPoblado localidad obtenida según el nombre y el id del Departamento enviados
+     */    
+    public <T> T findByQuery_JSON(Class<T> responseType, String nombre, String id_depto, String token){
+        WebTarget resource = webTarget;
+        if (nombre != null) {
+            resource = resource.queryParam("nombre", nombre);
+        }
+        if (id_depto != null){
+            resource = resource.queryParam("id_depto", id_depto);
+        }
+        resource = resource.path("query");
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
+    }    
 
     /**
      * Método para cerrar el cliente

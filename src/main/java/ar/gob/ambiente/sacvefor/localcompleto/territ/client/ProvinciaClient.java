@@ -174,6 +174,46 @@ public class ProvinciaClient {
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .get(responseType);
     }
+    
+    /**
+     * Método para obtener una Provincia a partir de su nombre en formato XML
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será Provincia
+     * @param nombre String nombre de la Provincia a buscar
+     * @param token String token recibido al validar el usuario en la API
+     * @return Provincia provincia obtenida según el nombre enviado
+     */
+    public <T> T findByQuery_XML(Class<T> responseType, String nombre, String token){
+        WebTarget resource = webTarget;
+        if (nombre != null) {
+            resource = resource.queryParam("nombre", nombre);
+        }
+        resource = resource.path("query");
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
+    }
+    
+    /**
+     * Método para obtener una Provincia a partir de su nombre en formato JSON
+     * @param <T> Tipo genérico
+     * @param responseType Tipo que en el que se setearán los datos serializados obtenidos, en este caso será Provincia
+     * @param nombre String nombre de la Provincia a buscar
+     * @param token String token recibido al validar el usuario en la API
+     * @return Provincia provincia obtenida según el nombre enviado
+     */    
+    public <T> T findByQuery_JSON(Class<T> responseType, String nombre, String token){
+        WebTarget resource = webTarget;
+        if (nombre != null) {
+            resource = resource.queryParam("nombre", nombre);
+        }
+        resource = resource.path("query");
+        return resource
+                .request(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .get(responseType);
+    }    
 
     /**
      * Método para cerrar el cliente
