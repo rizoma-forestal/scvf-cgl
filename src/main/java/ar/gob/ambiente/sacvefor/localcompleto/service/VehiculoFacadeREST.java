@@ -373,7 +373,7 @@ public class VehiculoFacadeREST {
      *                          "tipo": ""Persona Jurídica""
      *                      }
      *                  }
-     * @apiError VehiculoNotFound No existe estado Vehiculo registrado con ese nombre.
+     * @apiError VehiculoNotFound No existe Vehiculo registrado con ese nombre.
      * @apiErrorExample Respuesta de error:
      *     HTTP/1.1 400 Not Found
      *     {
@@ -410,8 +410,8 @@ public class VehiculoFacadeREST {
      * @apiSuccessExample Respuesta exitosa:
      *     HTTP/1.1 200 OK
      *     {
-     *       "estadosguia": [
-     *                  "vehiculo": {
+     *       "vehiculos": [
+     *                  {
      *                      "id": "8",
      *                      "matricula": "ABC-128",
      *                      "idRue": "10",
