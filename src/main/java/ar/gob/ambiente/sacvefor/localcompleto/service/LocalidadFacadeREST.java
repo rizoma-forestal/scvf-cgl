@@ -97,6 +97,7 @@ public class LocalidadFacadeREST {
      *                                  "id":"6",
      *                                  "nombre":"CHACO"
      *                              }
+     *                      }
      *              }
      * @apiError PersonaNotFound No existe Localidad registrada con ese nombre para el Departamento y Provincia solicitados.
      * @apiErrorExample Respuesta de error:
