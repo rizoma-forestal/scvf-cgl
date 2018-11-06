@@ -61,6 +61,50 @@ public class LocalidadFacadeREST {
      */
     private LocalidadClient localidadClient;
     
+    /**
+     * @api {get} /localidades/query?nom_prov=:nom_prov&nom_depto=:nom_depto&nom_loc=:nom_loc Ver Localidades según su nombre, 
+     * el del Departamento y el de la Provincia.
+     * @apiExample {curl} Ejemplo de uso:
+     *     curl -X GET -d [PATH_SERVER]/:cgl-prov/rest/localidades/query?nom_prov=CHACO&nom_depto=LIBERTAD&nom_loc=PUERTO TIROL -H "authorization: xXyYvWzZ"
+     * @apiVersion 1.0.0
+     * @apiName GetLocalidadesQuery
+     * @apiGroup Localidad
+     * @apiHeader {String} Authorization Token recibido al autenticar el usuario
+     * @apiHeaderExample {json} Ejemplo de header:
+     *     {
+     *       "Authorization": "xXyYvWzZ"
+     *     }
+     * @apiParam {String} nom_prov nombre de la Provincia que incluye la Localidad solicitada
+     * @apiParam {String} nom_depto nombre del Departamento que incluye la Localidad solicitada
+     * @apiParam {String} nom_loc nombre de la Localidad solicitada 
+     * @apiDescription Método para obtener una Localidad según su nombre, el del Departamento y el de la Provincia que la contienen.
+     * Obtiene la Provincia a partir del nombre, luego el Departamento a partir de su nombre y el id de la Provincia y,
+     * finalmente, la Localidad a partir de su nombre y el id del Departamento que la contien.
+     * @apiSuccess {ar.gob.ambiente.sacvefor.servicios.territorial.CentroPoblado} CentroPoblado localidad obtenida.
+     * @apiSuccessExample Respuesta exitosa:
+     *     HTTP/1.1 200 OK
+     *              {
+     *                  "id":"1137",
+     *                  "nombre":"TACUARI",
+     *                  "centropobladotipo":{
+     *                              "id":"9",
+     *                              "nombre":"PARAJE"
+     *                          }
+     *                  "departamento":{
+     *                      "id":"172",
+     *                      "nombre":"BERMEJO",
+     *                          "provincia":{
+     *                                  "id":"6",
+     *                                  "nombre":"CHACO"
+     *                              }
+     *              }
+     * @apiError PersonaNotFound No existe Localidad registrada con ese nombre para el Departamento y Provincia solicitados.
+     * @apiErrorExample Respuesta de error:
+     *     HTTP/1.1 400 Not Found
+     *     {
+     *       "error": "No hay Localidad registrada con con ese nombre para el Departamento y Provincia solicitados."
+     *     }
+     */        
     @GET
     @Path("/query")
     @Secured
