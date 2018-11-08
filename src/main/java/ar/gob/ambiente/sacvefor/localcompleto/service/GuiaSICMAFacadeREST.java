@@ -343,7 +343,9 @@ public class GuiaSICMAFacadeREST {
             guiaCrtl.setCuitDestino(guiaCgl.getDestino().getCuit());
             guiaCrtl.setLocDestino(guiaCgl.getDestino().getLocalidad() + " - " + guiaCgl.getDestino().getProvincia());
             guiaCrtl.setMatVehiculo(guiaCgl.getTransporte().getVehiculo().getMatricula());
-            guiaCrtl.setMatAcoplado(entity.getTransporte().getAcoplado());
+            if(!entity.getTransporte().getAcoplado().equals("default")){
+                guiaCrtl.setMatAcoplado(entity.getTransporte().getAcoplado());
+            }
             guiaCrtl.setNombreConductor(entity.getTransporte().getCond_nombre());
             guiaCrtl.setDniConductor(entity.getTransporte().getCond_dni());
             guiaCrtl.setFechaEmision(guiaCgl.getFechaEmisionGuia());
