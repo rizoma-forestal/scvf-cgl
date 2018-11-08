@@ -110,20 +110,20 @@ public class EntidadGuiaFacadeREST {
         try{
             // instancio los datos generales de la entidad recibida
             entGuia.setCuit(entity.getCuit());
-            entGuia.setDepartamento(entity.getDepto());
+            entGuia.setDepartamento(entity.getDepto().toUpperCase());
             entGuia.setEmail(entity.getEmail());
             entGuia.setIdLocGT(entity.getId_loc());
             entGuia.setIdRue(entity.getId_rue());
-            entGuia.setLocalidad(entity.getLoc());
-            entGuia.setNombreCompleto(entity.getNom_persona());
-            entGuia.setProvincia(entity.getProv());
-            entGuia.setTipoPersona(entity.getTipo_persona());
+            entGuia.setLocalidad(entity.getLoc().toUpperCase());
+            entGuia.setNombreCompleto(entity.getNom_persona().toUpperCase());
+            entGuia.setProvincia(entity.getProv().toUpperCase());
+            entGuia.setTipoPersona(entity.getTipo_persona().toUpperCase());
             // instancio los datos de ubicación según sea ORIGEN o DESTINO y el tipo de EntidadGuia
             TipoParam tipoParam = tipoParamFacade.getExistente("TIPO_ENT_GUIA");
             if(entity.getTipo_ent().equals("ORIGEN")){
                 entGuia.setNumAutorizacion(entity.getNum_aut());
                 entGuia.setInmCatastro(entity.getId_catastral());
-                entGuia.setInmNombre(entity.getNom_predio());
+                entGuia.setInmNombre(entity.getNom_predio().toUpperCase());
                 entGuia.setTipoEntidadGuia(paramFacade.getExistente("ORIGEN", tipoParam));
             }else{
                 entGuia.setInmDomicilio(entity.getDom_calle() + "-" + entity.getDom_numero());       
