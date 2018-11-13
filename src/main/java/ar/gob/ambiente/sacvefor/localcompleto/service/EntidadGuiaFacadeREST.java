@@ -10,11 +10,19 @@ import ar.gob.ambiente.sacvefor.localcompleto.facades.EntidadGuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.UsuarioFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.rue.client.DomicilioClient;
+import ar.gob.ambiente.sacvefor.localcompleto.rue.client.PersonaClient;
+import ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient;
+import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
+import ar.gob.ambiente.sacvefor.servicios.rue.Persona;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,10 +32,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
+import org.apache.log4j.Logger;
+
 
 /**
  * Servicio que implementa los métodos expuestos por la API REST para la entidad EntidadGuia
@@ -37,6 +48,30 @@ import javax.ws.rs.core.UriInfo;
 @Stateless
 @Path("entidadesguia")
 public class EntidadGuiaFacadeREST {
+    /**
+     * Variable privada: Token en formato String del obtenido al validar el usuario de la API del RUE
+     */
+    private String strToken; 
+    /**
+     * Variable privada: Token obtenido al validar el usuario de la API del RUE
+     */       
+    private Token token;   
+    /**
+     * Variable privada: Logger para escribir en el log del server
+     */  
+    static final Logger LOG = Logger.getLogger(PersonaFacadeREST.class);       
+    /**
+     * Variable privada: Cliente para la API Rest de validación de usuarios en el RUE
+     */
+    private UsuarioClient usClientRue;   
+    /**
+     * Variable privada: Cleinte para la API Rest de Personas
+     */
+    private PersonaClient perClient;
+    /**
+     * Variable privada: Cleinte para la API Rest de Domicilios
+     */
+    private DomicilioClient domClient;
     
     @EJB
     private EntidadGuiaFacade entidadFacade;
@@ -107,38 +142,87 @@ public class EntidadGuiaFacadeREST {
     public Response create(ar.gob.ambiente.sacvefor.servicios.cglsicma.EntidadGuia entity) {
         // instancio la EntidadGuia a persistir
         EntidadGuia entGuia = new EntidadGuia();
+        boolean domCreado = true;
+        String msgError = "";
         try{
-            // instancio los datos generales de la entidad recibida
-            entGuia.setCuit(entity.getCuit());
-            entGuia.setDepartamento(entity.getDepto().toUpperCase());
-            entGuia.setEmail(entity.getEmail());
-            entGuia.setIdLocGT(entity.getId_loc());
-            entGuia.setIdRue(entity.getId_rue());
-            entGuia.setLocalidad(entity.getLoc().toUpperCase());
-            entGuia.setNombreCompleto(entity.getNom_persona().toUpperCase());
-            entGuia.setProvincia(entity.getProv().toUpperCase());
-            entGuia.setTipoPersona(entity.getTipo_persona().toUpperCase());
-            // instancio los datos de ubicación según sea ORIGEN o DESTINO y el tipo de EntidadGuia
-            TipoParam tipoParam = tipoParamFacade.getExistente("TIPO_ENT_GUIA");
-            if(entity.getTipo_ent().equals("ORIGEN")){
-                entGuia.setNumAutorizacion(entity.getNum_aut());
-                entGuia.setInmCatastro(entity.getId_catastral());
-                entGuia.setInmNombre(entity.getNom_predio().toUpperCase());
-                entGuia.setTipoEntidadGuia(paramFacade.getExistente("ORIGEN", tipoParam));
-            }else{
-                entGuia.setInmDomicilio(entity.getDom_calle() + "-" + entity.getDom_numero());       
-                entGuia.setTipoEntidadGuia(paramFacade.getExistente("DESTINO", tipoParam));
+            // si es un DESTINO y tiene asignado el id_rue previamente registro el domicilio y actualizo la persona en el RUE
+            if(entity.getTipo_ent().equals("DESTINO") && entity.getId_rue() > 0){
+                // creo el domicilio en el RUE
+                ar.gob.ambiente.sacvefor.servicios.rue.Domicilio domRue = new ar.gob.ambiente.sacvefor.servicios.rue.Domicilio();
+                domRue.setCalle(entity.getDom_calle().toUpperCase());
+                domRue.setDepartamento(entity.getDepto());
+                domRue.setIdLocalidadGt(entity.getId_loc());
+                domRue.setLocalidad(entity.getLoc());
+                domRue.setNumero(entity.getDom_numero());
+                domRue.setProvincia(entity.getProv());
+                // valido el token
+                validarTokenRue();
+                // instancio el cliente
+                domClient = new DomicilioClient();
+                Response resDom = domClient.create_JSON(domRue, token.getStrToken());
+                domClient.close();
+                if(resDom.getStatus() != 201){
+                    msgError = msgError + " Hubo un error registrando el Domicilio en el RUE.";
+                    domCreado = false;
+                }else{
+                    // si se registró el domicilio correctamente actualizo a la persona
+                    validarTokenRue();
+                    perClient = new PersonaClient();
+                    // obtengo la persona
+                    Persona perRue = perClient.find_JSON(Persona.class, entity.getId_rue().toString(), token.getStrToken());
+                    // le asigno el domicilio creado validando los campos opcionales
+                    if(domRue.getDepto().equals("default")){
+                        domRue.setDepto(null);
+                    }
+                    if(domRue.getPiso().equals("default")){
+                        domRue.setPiso(null);
+                    }
+                    perRue.setDomicilio(domRue);
+                    // actualizo la persona en el RUE
+                    Response resPer = perClient.edit_JSON(perRue, String.valueOf(perRue.getId()), token.getStrToken());
+                    perClient.close();
+                    if(resPer.getStatus() != 200){
+                        msgError = msgError + " Hubo un error actualizando la Persona en el RUE.";
+                        domCreado = false;
+                    }
+                }
             }
-            // instancio los datos de registro
-            entGuia.setUsuario(usFacade.find(entity.getId_usuario()));
-            entGuia.setFechaAlta(new Date(System.currentTimeMillis()));
-            entGuia.setHabilitado(true);     
-            // inserto la entidad guía
-            entidadFacade.create(entGuia);
-            // armo la respuesta exitosa
-            UriBuilder uriBuilder = uriInfo.getRequestUriBuilder();
-            URI uri = uriBuilder.path(entGuia.getId().toString()).build();
-            return Response.created(uri).build();
+            // continúo si no hubo errores
+            if(msgError.equals("") && domCreado){
+                // instancio los datos generales de la entidad recibida
+                entGuia.setCuit(entity.getCuit());
+                entGuia.setDepartamento(entity.getDepto().toUpperCase());
+                entGuia.setEmail(entity.getEmail());
+                entGuia.setIdLocGT(entity.getId_loc());
+                entGuia.setIdRue(entity.getId_rue());
+                entGuia.setLocalidad(entity.getLoc().toUpperCase());
+                entGuia.setNombreCompleto(entity.getNom_persona().toUpperCase());
+                entGuia.setProvincia(entity.getProv().toUpperCase());
+                entGuia.setTipoPersona(entity.getTipo_persona().toUpperCase());
+                // instancio los datos de ubicación según sea ORIGEN o DESTINO y el tipo de EntidadGuia
+                TipoParam tipoParam = tipoParamFacade.getExistente("TIPO_ENT_GUIA");
+                if(entity.getTipo_ent().equals("ORIGEN")){
+                    entGuia.setNumAutorizacion(entity.getNum_aut());
+                    entGuia.setInmCatastro(entity.getId_catastral());
+                    entGuia.setInmNombre(entity.getNom_predio().toUpperCase());
+                    entGuia.setTipoEntidadGuia(paramFacade.getExistente("ORIGEN", tipoParam));
+                }else{
+                    entGuia.setInmDomicilio(entity.getDom_calle() + "-" + entity.getDom_numero());       
+                    entGuia.setTipoEntidadGuia(paramFacade.getExistente("DESTINO", tipoParam));
+                }
+                // instancio los datos de registro
+                entGuia.setUsuario(usFacade.find(entity.getId_usuario()));
+                entGuia.setFechaAlta(new Date(System.currentTimeMillis()));
+                entGuia.setHabilitado(true);     
+                // inserto la entidad guía
+                entidadFacade.create(entGuia);
+                // armo la respuesta exitosa
+                UriBuilder uriBuilder = uriInfo.getRequestUriBuilder();
+                URI uri = uriBuilder.path(entGuia.getId().toString()).build();
+                return Response.created(uri).build();
+            }else{
+                return Response.status(400).entity("Hubo un error procesado la inserción de la EntidadGuia en el CGL. " + msgError).build();
+            }
         }catch(IllegalArgumentException | UriBuilderException ex){
             // armo la respuesta de error
             return Response.status(400).entity("Hubo un error procesado la inserción de la EntidadGuia en el CGL. " + ex.getMessage()).build();
@@ -371,4 +455,43 @@ public class EntidadGuiaFacadeREST {
     public String countREST() {
         return String.valueOf(entidadFacade.count());
     }
+    
+    /********************
+     * Métodos privados *
+     ********************/
+    
+    /**
+     * Método privado que valida la existencia y vigencia del token de acceso al RUE
+     * Utilizado en create()
+     */
+    private void validarTokenRue(){
+        if(token == null){
+            getTokenRue();
+        }else try {
+            if(!token.isVigente()){
+                getTokenRue();
+            }
+        } catch (IOException ex) {
+            LOG.fatal("Hubo un error obteniendo la vigencia del token RUE." + ex.getMessage());
+        }
+    }
+    
+    /**
+     * Método privado que obtiene y setea el tokenRue para autentificarse ante la API rest del RUE
+     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
+     * Utilizado en validarToken()
+     */
+    private void getTokenRue(){
+        try{
+            usClientRue = new ar.gob.ambiente.sacvefor.localcompleto.rue.client.UsuarioClient();
+            Response responseUs = usClientRue.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestRue"));
+            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
+            List<Object> lstHeaders = headers.get("Authorization");
+            strToken = (String)lstHeaders.get(0); 
+            token = new Token(strToken, System.currentTimeMillis());
+            usClientRue.close();
+        }catch(ClientErrorException ex){
+            System.out.println("Hubo un error obteniendo el token para la API RUE: " + ex.getMessage());
+        }
+    }       
 }
