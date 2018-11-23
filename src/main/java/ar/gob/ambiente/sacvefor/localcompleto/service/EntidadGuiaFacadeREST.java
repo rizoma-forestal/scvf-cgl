@@ -198,7 +198,13 @@ public class EntidadGuiaFacadeREST {
                 entGuia.setLocalidad(entity.getLoc().toUpperCase());
                 entGuia.setNombreCompleto(entity.getNom_persona().toUpperCase());
                 entGuia.setProvincia(entity.getProv().toUpperCase());
-                entGuia.setTipoPersona(entity.getTipo_persona().toUpperCase());
+                // seteo el tipo de persona
+                if(entity.getTipo_persona().equals("FISICA")){
+                    entGuia.setTipoPersona("Persona Física");
+                }else{
+                    entGuia.setTipoPersona("Persona Jurídica");
+                }
+                
                 // instancio los datos de ubicación según sea ORIGEN o DESTINO y el tipo de EntidadGuia
                 TipoParam tipoParam = tipoParamFacade.getExistente("TIPO_ENT_GUIA");
                 if(entity.getTipo_ent().equals("ORIGEN")){
@@ -207,7 +213,7 @@ public class EntidadGuiaFacadeREST {
                     entGuia.setInmNombre(entity.getNom_predio().toUpperCase());
                     entGuia.setTipoEntidadGuia(paramFacade.getExistente("ORIGEN", tipoParam));
                 }else{
-                    entGuia.setInmDomicilio(entity.getDom_calle() + "-" + entity.getDom_numero());       
+                    entGuia.setInmDomicilio(entity.getDom_calle().toUpperCase() + "-" + entity.getDom_numero());       
                     entGuia.setTipoEntidadGuia(paramFacade.getExistente("DESTINO", tipoParam));
                 }
                 // instancio los datos de registro

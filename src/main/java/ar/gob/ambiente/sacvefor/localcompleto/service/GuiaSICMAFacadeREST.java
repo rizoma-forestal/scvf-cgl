@@ -199,10 +199,12 @@ public class GuiaSICMAFacadeREST {
 
             // instancio el transporte
             Transporte transporte = new Transporte();
-            transporte.setCondNombre(entity.getTransporte().getCond_nombre());
+            transporte.setCondNombre(entity.getTransporte().getCond_nombre().toUpperCase());
             transporte.setCondDni(entity.getTransporte().getCond_dni());
-            if(entity.getTransporte().getAcoplado() != null){
+            if(!entity.getTransporte().getAcoplado().equals("default")){
                 transporte.setAcoplado(entity.getTransporte().getAcoplado());
+            }else{
+                transporte.setAcoplado("");
             }
             // seteo el vehículo al transporte
             transporte.setVehiculo(vehiculoFacade.find(entity.getTransporte().getId_veh()));
