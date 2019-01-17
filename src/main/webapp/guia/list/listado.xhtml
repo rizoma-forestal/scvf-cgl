@@ -20,7 +20,7 @@
                     <p:growl id="messages" showDetail="false" />
                     <!-- Vista detalle -->
                     <p:panel id="pnFrmView" header="Detalle" rendered="#{mbGuia.view}" >
-                        <h:panelGrid id="pgDatosGrales" columns="4" styleClass="panelColumns" >
+                        <h:panelGrid id="pgDatosGrales" columns="5" styleClass="panelColumns" >
                             <p:fieldset toggleable="true" legend="Identificación" style="margin-bottom:20px">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Tipo: " />
@@ -70,6 +70,12 @@
                                     <p:outputLabel value="AUTORIZACION" style=" font-weight: bold" />
                                     <p:outputLabel value="Número: " />
                                     <p:outputLabel value="#{mbGuia.guia.numFuente}" style=" font-weight: bold" />
+                                </h:panelGrid>
+                            </p:fieldset>
+                            <p:fieldset toggleable="true" legend="Productos extraídos" style="margin-bottom:20px" rendered="#{config.DiscTasaDestExt eq 'si' and not mbGuia.guia.tipo.habilitaTransp}">
+                                <h:panelGrid columns="2" cellpadding="1">
+                                    <p:outputLabel value="Con Destino externo: " />
+                                    <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guia.destinoExterno}" />
                                 </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>  
@@ -148,10 +154,33 @@
                             </p:fieldset>
                         </h:panelGrid>
                         
+                        <p:separator rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" />
+                        
+                        <h:panelGrid id="pgObrajeros" columns="1" rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" >
+                            <p:outputLabel value="#{config.Obrajeros}" style="font-weight: bold" />
+                            <p:dataTable styleClass="table" value="#{mbGuia.guia.obrajeros}"
+                                         var="obraj"
+                                         id="dtObrajeros" 
+                                         widgetVar="obrajTable" >
+                                <p:column headerText="Id" style="width:50px">
+                                    <p:outputLabel value="#{obraj.id}"/>
+                                </p:column>
+                                <p:column headerText="Nombre completo" >
+                                    <p:outputLabel value="#{obraj.nombreCompleto}"/>
+                                </p:column>
+                                <p:column headerText="CUIT" style="width:200px" >
+                                    <p:outputLabel value="#{obraj.cuit}"/>
+                                </p:column>
+                                <p:column headerText="Tipo" style="width:200px" >
+                                    <p:outputLabel value="#{obraj.tipo}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+
                         <p:separator rendered="#{mbGuia.view and config.emiteRemota ne 'si'}" />
                         
                         <h:panelGrid id="pgGuiaInmuebles" columns="1" rendered="#{config.emiteRemota ne 'si'}" >
-                            <p:outputLabel value="Inmuebles" style="font-weight: bold" />
+                            <p:outputLabel value="#{config.Inmuebles}" style="font-weight: bold" />
                             <p:dataTable styleClass="table" value="#{mbGuia.lstInmueblesOrigen}"
                                          var="inm"
                                          id="dtGuiaInms" >
@@ -191,7 +220,7 @@
                                 <p:column headerText="Nombre científico" >
                                     <p:outputLabel value="#{item.nombreCientifico}"/>
                                 </p:column>
-                                <p:column headerText="Clase" >
+                                <p:column headerText="#{config.Clase}" >
                                     <p:outputLabel value="#{item.clase}"/>
                                 </p:column>
                                 <p:column headerText="Unidad" >

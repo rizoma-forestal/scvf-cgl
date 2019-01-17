@@ -50,7 +50,7 @@
                     </h:panelGrid>
                 </p:fieldset>
                 <p:fieldset toggleable="true" legend="Autorización" style="margin-bottom:20px" >
-                    <p:outputLabel value="Seleccione el Tipo de Intervención autorizada y, si existiera, la fecha de vencimiento de la Autorización." style="font-style: italic; font-size: small" />
+                    <p:outputLabel value="Seleccione el Tipo de Intervención autorizada, la modalidad correspondiente y, si existiera, la fecha de vencimiento de la Autorización." style="font-style: italic; font-size: small" />
                     <h:panelGrid columns="4" cellpadding="5">
                         <p:outputLabel value="Tipo de intervención:" for="cmbTipoInterv"/>
                         <p:selectOneMenu id="cmbTipoInterv" value="#{mbAutorizacion.autorizacion.intervencion}" required="true" 
@@ -62,6 +62,13 @@
                         <p:outputLabel value="Fecha vencimiento:" for="fechaVenc" />
                         <p:calendar id="fechaVenc" value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" 
                                     required="true" requiredMessage="Debe especificar la fecha de vencimiento de la Autorización." />
+                        <p:outputLabel value="Modalidad:" for="cmbUsoSuelo"/>
+                        <p:selectOneMenu id="cmbUsoSuelo" value="#{mbAutorizacion.autorizacion.usoSuelo}" required="true" 
+                                         requiredMessage="Debe seleccionar el uso del suelo del predio." >
+                            <f:selectItem itemLabel="Seleccione la Modalidad" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{mbAutorizacion.lstUsosSuelo}" 
+                                           var="uso" itemLabel="#{uso.nombre}" itemValue="#{uso}"/>
+                        </p:selectOneMenu> 
                     </h:panelGrid>
                 </p:fieldset>
                 <p:fieldset toggleable="true" legend="Predio" style="margin-bottom:20px" >
@@ -79,15 +86,6 @@
                         <p:inputNumber id="supAut" value="#{mbAutorizacion.autorizacion.supAutorizada}" decimalPlaces="4" minValue="0"
                                        decimalSeparator="," thousandSeparator="." 
                                        required="true" requiredMessage="Debe ingresar la superficie autorizada" />
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" cellpadding="5">
-                        <p:outputLabel value="Uso del suelo:" for="cmbUsoSuelo"/>
-                        <p:selectOneMenu id="cmbUsoSuelo" value="#{mbAutorizacion.autorizacion.usoSuelo}" required="true" 
-                                         requiredMessage="Debe seleccionar el uso del suelo del predio." >
-                            <f:selectItem itemLabel="Seleccione el Uso del suelo" itemValue="" noSelectionOption="true"/>
-                            <f:selectItems value="#{mbAutorizacion.lstUsosSuelo}" 
-                                           var="uso" itemLabel="#{uso.nombre}" itemValue="#{uso}"/>
-                        </p:selectOneMenu> 
                     </h:panelGrid>
                     <p:outputLabel value="Seleccione la/s Zona/s a la/s que esté afectado el predio. En los casos que correspondan podrá seleccionar la/s sub Zona/s asociadas del listado contiguo. " style="font-style: italic; font-size: small" />
                     <h:panelGrid id="pgZonas" columns="3" cellpadding="5">

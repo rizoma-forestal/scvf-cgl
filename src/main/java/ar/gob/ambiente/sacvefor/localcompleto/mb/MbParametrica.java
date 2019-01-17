@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
@@ -174,15 +175,28 @@ public class MbParametrica implements Serializable{
      */
     public void saveParametrica(){
         boolean valida = true;
+        String msg = "";
         try{
+            // valida que no exista ya la paramétrica
             Parametrica paramExitente = paramFacade.getExistente(parametrica.getNombre().toUpperCase(), parametrica.getTipo());
             if(paramExitente != null){
                 if(parametrica.getId() != null){
                     // si edita, no habilito si no es el mismo
-                    if(!paramExitente.equals(parametrica)) valida = false;
+                    if(!paramExitente.equals(parametrica)){
+                        valida = false;
+                        msg = msg + "El Parámetro que está tratando de persisitir ya existe, por favor verifique los datos ingresados. ";
+                    }
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
+                    msg = msg + "El Parámetro que está tratando de persisitir ya existe, por favor verifique los datos ingresados. ";
+                }
+            }
+            // si es una tasa, valida que si lee configuración, tenga el valor de la variable correspóndiente seteado
+            if(parametrica.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TipoTasa"))){
+                if(parametrica.isLeeConf() && parametrica.getConf().equals("")){
+                    valida = false;
+                    msg = msg + "Si registra una tasa de liquidación discriminada, debe definir el contenido de dicha configuración.";
                 }
             }
             if(valida){
@@ -197,7 +211,7 @@ public class MbParametrica implements Serializable{
                     JsfUtil.addSuccessMessage("El Parámetro fue registrado con exito");
                 }   
             }else{
-                JsfUtil.addErrorMessage("El Parámetro que está tratando de persisitir ya existe, por favor verifique los datos ingresados.");
+                JsfUtil.addErrorMessage(msg);
             }
             limpiarFormParam();
         }catch(Exception ex){
@@ -346,6 +360,14 @@ public class MbParametrica implements Serializable{
         Map<String,Object> options = new HashMap<>();
         options.put("contentWidth", 250);
         RequestContext.getCurrentInstance().openDialog("dlgViewParam", options, null);
+    }
+    
+    /**
+     * Método para inicializar la vista detalle de la paramétrica
+     */
+    public void prepareViewEntParam(){
+        view = true;
+        edit = false;
     }
     
     //////////////////////

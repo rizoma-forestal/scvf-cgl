@@ -315,7 +315,9 @@
                             </p:dataTable>
                         </h:panelGrid>
                         <f:facet name="footer">
-                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerAut').hide();"/>
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" 
+                                             actionListener="#{mbPersona.limpiarLstAut()}"
+                                             onclick="PF('dlgVerAut').hide();"/>
                         </f:facet>
                     </p:panel>
                 </p:dialog>
@@ -363,7 +365,9 @@
                             </p:dataTable>
                         </h:panelGrid>
                         <f:facet name="footer">
-                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerGuias').hide();"/>
+                            <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" 
+                                             actionListener="#{mbPersona.limpiarLstGuias()}" 
+                                             onclick="PF('dlgVerGuias').hide();"/>
                         </f:facet>
                     </p:panel>
                 </p:dialog>

@@ -9,11 +9,11 @@
         <ui:define name="title">
             <h:outputText value="#{bundle.Aplicacion}" />
         </ui:define>
-        <ui:define name="content"  >
+        <ui:define name="content" >
             <p:panel id="pnGral" styleClass="abmparam" >
                 <h:panelGrid columns="2" cellpadding="10" >
                     <img src="#{request.contextPath}/resources/img/notepad-2.png" width="50" height="50" style="float: left; margin-left: 15px" />
-                    <p:outputLabel styleClass="titPanel" value="#{config.Apoderados}" />
+                    <p:outputLabel styleClass="titPanel" value="#{config.Obrajeros}" />
                 </h:panelGrid>
                 <!-- Diálogo para obtener los datos de la Persona desde el RUE -->
                 <p:dialog header="Datos provenientes del Registro Unico" widgetVar="dlgBuscarRue" minHeight="40" closable="false">
@@ -25,14 +25,13 @@
                                            style="font-style: italic; font-size: small" />
                             <h:panelGrid columns="5" rendered="#{not mbPersona.view}" >
                                 <p:outputLabel value="CUIT" for="dlg_cuit"/>
-                                <p:inputNumber id="dlg_cuit" value="#{mbPersona.cuitBusqRue}" thousandSeparator="" decimalPlaces="0" 
-                                   requiredMessage="Debe haber un CUIT para buscar" required="true" />
+                                <p:inputNumber id="dlg_cuit" value="#{mbPersona.cuitBusqRue}" thousandSeparator="" decimalPlaces="0" />
                                 <p:commandButton title="Buscar en el Registro Unico" value="Buscar" icon="fa fa-fw fa-search" 
                                                  action="#{mbPersona.buscarPersonaRue()}" update="frBuscarRue,pnContenido,messagesBusRue"/>
                                 <p:commandButton title="Limpiar el formulario de búsqueda" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                                  action="#{mbPersona.prepareBuscarCuit()}" update="frBuscarRue,pnContenido"/>
-                                <p:commandButton title="Obtener la Persona como Apoderado" value="Descargar" icon="fa fa-fw fa-cloud-download" 
-                                                 action="#{mbPersona.setearPersonaByRue(config.Apoderado)}" update="pnFrmNew" oncomplete="PF('dlgBuscarRue').hide();"
+                                <p:commandButton title="Obtener la Persona como #{config.Obrajero}" value="Descargar" icon="fa fa-fw fa-cloud-download" 
+                                                 action="#{mbPersona.setearPersonaByRue(config.Obrajero)}" update="pnFrmNew" oncomplete="PF('dlgBuscarRue').hide();"
                                                  rendered="#{mbPersona.personaRue.id ne 0 and mbPersona.personaRue ne null}"/>
                             </h:panelGrid>
                             <p:panel id="pnContenido" rendered="#{mbPersona.personaRue.id ne 0 and mbPersona.personaRue ne null}">
@@ -76,7 +75,7 @@
                 </p:dialog>
                 
                 <!-- Diálogo para registrar una Persona en el RUE -->
-                <p:dialog header="Ingrese los datos del #{config.Apoderado} en el Registro Unico" widgetVar="dlgInsertRue" minHeight="40" closable="false">
+                <p:dialog header="Ingrese los datos del #{config.Obrajero} en el Registro Unico" widgetVar="dlgInsertRue" minHeight="40" closable="false">
                     <h:form prependId="false" id="frInsertRue">
                         <p:panel id="pnDlgInsertar" style="margin-bottom:10px; width: 750px">
                             <p:growl id="messagesRegRue" showDetail="false" />
@@ -139,21 +138,21 @@
                                     <p:inputText id="depto" value="#{mbPersona.rueDepto}" size="10" />
 
                                     <p:outputLabel value="Provincia " for="cmbProv"/>   
-                                    <p:selectOneMenu id="cmbProv" value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbProv" value="#{mbPersona.provSelected}" converter="omnifaces.SelectItemsConverter" >
                                         <f:selectItem itemLabel="Seleccione la Provincia" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listProvincias}" 
                                                        var="prov" itemLabel="#{prov.nombre}" itemValue="#{prov}"/>
                                         <p:ajax listener="#{mbPersona.provinciaChangeListener()}" update="cmbDepto,cmbLocalidades" />
                                     </p:selectOneMenu> 
                                     <p:outputLabel value="Departamento" for="cmbDepto"/>   
-                                    <p:selectOneMenu id="cmbDepto" value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbDepto" value="#{mbPersona.deptoSelected}" converter="omnifaces.SelectItemsConverter" >
                                         <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listDepartamentos}" 
                                                        var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
                                         <p:ajax listener="#{mbPersona.deptoChangeListener()}" update="cmbLocalidades" />
                                     </p:selectOneMenu>  
                                     <p:outputLabel value="Localidad" for="cmbLocalidades"/>   
-                                    <p:selectOneMenu id="cmbLocalidades" value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                    <p:selectOneMenu id="cmbLocalidades" value="#{mbPersona.localSelected}" converter="omnifaces.SelectItemsConverter" >
                                         <f:selectItem itemLabel="Seleccione la Localidad" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems value="#{mbPersona.listLocalidades}" 
                                                        var="loc" itemLabel="#{loc.nombre}" itemValue="#{loc}"/>
@@ -163,7 +162,7 @@
                             <h:panelGrid id="pgBotonesRue" columns="2" 
                                          rendered="#{mbPersona.rueTipoPers.toString() eq 'Persona Jurídica' or mbPersona.rueTipoPers.toString() eq 'Persona Física'}" >
                                 <p:commandButton title="Guardar los datos en el RUE" value="Guardar" icon="fa fa-fw fa-cloud-upload" update="frInsertRue,messagesRegRue" 
-                                                 action="#{mbPersona.savePerRue(config.Apoderado)}" oncomplete="PF('dlgInsertRue').hide();"/>
+                                                 action="#{mbPersona.savePerRue(config.Obrajero)}" oncomplete="PF('dlgInsertRue').hide();"/>
                                 <p:commandButton title="Limpiar el formulario de persistencia en el RUE" value="Limpiar" icon="fa fa-fw fa-refresh" >
                                     <p:ajax listener="#{mbPersona.limpiarFormPerRue()}" update="pnDlgInsertar" resetValues="true" />
                                 </p:commandButton>
@@ -176,7 +175,7 @@
                 </p:dialog>
                 
                 <!-- Diálogo para editar los datos de una Persona en el RUE -->
-                <p:dialog header="Actualice los datos del #{config.Apoderado} en el Registro Unico" widgetVar="dlgEditRue" minHeight="40" closable="false">
+                <p:dialog header="Actualice los datos del #{config.Obrajero} en el Registro Unico" widgetVar="dlgEditRue" minHeight="40" closable="false">
                     <h:form prependId="false" id="frEditRue">
                         <p:panel id="pnDlgEditar" style="margin-bottom:10px; width: 750px" rendered="#{mbPersona.personaRue ne null and mbPersona.rueEditable}">
                             <p:growl id="messagesEditRue" showDetail="false" />
@@ -251,7 +250,7 @@
                             </p:panel>
                             <h:panelGrid id="pgBotonesRueEdit" columns="2" rendered="#{mbPersona.rueEditable}" >
                                 <p:commandButton title="Guardar los datos en el RUE" value="Guardar" icon="fa fa-fw fa-cloud-upload" update="frEditRue,pnFrmNew,messagesEditRue" 
-                                                 action="#{mbPersona.savePerRue(config.Apoderado)}" oncomplete="PF('dlgEditRue').hide();"/>
+                                                 action="#{mbPersona.savePerRue(config.Obrajero)}" oncomplete="PF('dlgEditRue').hide();"/>
                             </h:panelGrid>
                             <f:facet name="footer">
                                 <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgEditRue').hide();"/>
@@ -267,69 +266,63 @@
                     </h:form>
                 </p:dialog> 
                 
-                <!-- Diálogo para obtener las Autorizaciones vinculadas -->
-                <p:dialog header="Autorizaciones vinculadas" widgetVar="dlgVerAut" minHeight="40" closable="false">
-                    <p:panel id="pnViewAut" style="margin-bottom:10px; width: 800px">
+                <!-- Diálogo para obtener las Guías vinculadas -->
+                <p:dialog header="Guías vinculadas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
+                    <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
                         <h:panelGrid columns="2" >
-                            <p:dataTable styleClass="table" value="#{mbPersona.lstAut}"
-                                    var="aut"
-                                    id="dtViewAut"
+                            <p:dataTable styleClass="table" value="#{mbPersona.lstGuias}"
+                                    var="guia"
+                                    id="dtViewGuias"
                                     rows="5"
                                     paginator="true"      
-                                    widgetVar="autTable"
+                                    widgetVar="guiaTable"
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15">
                                 <f:facet name="header">
                                     <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
-                                             onclick="PF('autTable').clearFilters()" update="dtViewAut"/>
+                                             onclick="PF('guiaTable').clearFilters()" update="dtViewGuias"/>
                                 </f:facet>
+                                <p:column headerText="Tipo" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{guia.tipo.nombre}" 
+                                    filterBy="#{guia.tipo.nombre}" >
+                                    <p:outputLabel value="#{guia.tipo.nombre}"/>
+                                </p:column>
                                 <p:column headerText="Número" 
                                     filterMatchMode="contains"
-                                    sortBy="#{aut.numero}" 
-                                    filterBy="#{aut.numero}" >
-                                    <p:outputLabel value="#{aut.numero}"/>
+                                    sortBy="#{guia.codigo}" 
+                                    filterBy="#{guia.codigo}" >
+                                    <p:outputLabel value="#{guia.codigo}"/>
                                 </p:column>
-                                <p:column headerText="Expediente" 
+                                <p:column headerText="Fuente" 
                                     filterMatchMode="contains"
-                                    sortBy="#{aut.numExp}" 
-                                    filterBy="#{aut.numExp}" >
-                                    <p:outputLabel value="#{aut.numExp}"/>
+                                    sortBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" 
+                                    filterBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" >
+                                    <p:outputLabel value="#{guia.tipoFuente.nombre} - #{guia.numFuente}"/>
                                 </p:column>
-                                <p:column headerText="Intervencion" 
-                                    filterMatchMode="contains"
-                                    sortBy="#{aut.intervencion.nombre}" 
-                                    filterBy="#{aut.intervencion.nombre}" >
-                                    <p:outputLabel value="#{aut.intervencion.nombre}" />
-                                </p:column> 
-                                <p:column headerText="Uso Suelo" 
-                                    filterMatchMode="contains"
-                                    sortBy="#{aut.usoSuelo.nombre}" 
-                                    filterBy="#{aut.usoSuelo.nombre}" >
-                                    <p:outputLabel value="#{aut.usoSuelo.nombre}" />
-                                </p:column>  
                                 <p:column headerText="Estado" 
                                     filterMatchMode="contains"
-                                    sortBy="#{aut.estado.nombre}" 
-                                    filterBy="#{aut.estado.nombre}" >
-                                    <p:outputLabel value="#{aut.estado.nombre}" />
+                                    sortBy="#{guia.estado.nombre}" 
+                                    filterBy="#{guia.estado.nombre}" >
+                                    <p:outputLabel value="#{guia.estado.nombre}"/>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
                         <f:facet name="footer">
                             <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" 
-                                             actionListener="#{mbPersona.limpiarLstAut()}" 
-                                             onclick="PF('dlgVerAut').hide();"/>
+                                             actionListener="#{mbPersona.limpiarLstGuias()}" 
+                                             onclick="PF('dlgVerGuias').hide();"/>
                         </f:facet>
                     </p:panel>
                 </p:dialog>
                 
-                <h:form prependId="false" id="frApoderados">
+                <h:form prependId="false" id="frObrajeros">
                     <!-- Formulario new y edit -->
                     <p:panel id="pnFrmNew" header="Agregar/Crear/Editar" rendered="#{not mbPersona.view}" collapsed="#{not mbPersona.edit}" toggleable="true" >
                         <p:growl id="messagesLocal" showDetail="false" />
-                        <p:outputLabel value="Si el Apoderado que desea registrar localmente ya estuviera registrado en el Registro Unico de Entidades (RUE) del sistema, 
+                        <p:outputLabel value="Si el #{config.Obrajero} que desea registrar localmente ya estuviera registrado en el Registro Unico de Entidades (RUE) del sistema, 
                                        podrá seleccionarlo mediante el botón 'Buscar por CUIT' ingresando el CUIT correspondiente. Si desea registrarlo por primera vez en el RUE, 
-                                       deberá hacerlo mediante el botón 'Agregar Nuevo'. Recuerde que se validará la existencia del CUIT del Apoderado que desea registrar." 
+                                       deberá hacerlo mediante el botón 'Agregar Nuevo'. Recuerde que se validará la existencia del CUIT del #{config.Obrajero} que desea registrar." 
                                    style="font-style: italic; font-size: small" />
                         <h:panelGrid columns="2">  
                             <p:commandButton value="Buscar por CUIT" icon="fa fa-fw fa-external-link" process="@this" 
@@ -356,17 +349,23 @@
                             <p:outputLabel value="#{mbPersona.persona.nombreCompleto}" style="color: #0F4C20; font-weight: bold"/>
                             <p:outputLabel value="Tipo" />   
                             <p:outputLabel value="#{mbPersona.persona.tipo}" style="color: #0F4C20; font-weight: bold"/>
-                            <p:outputLabel value="E-mail" />   
+                            <p:outputLabel value="E-Mail" />  
                             <p:outputLabel value="#{mbPersona.persona.email}" style="color: #0F4C20; font-weight: bold"/>
-                            <p:outputLabel value="Inicio de vigencia" for="dtInicio" />
-                            <p:calendar id="dtInicio" value="#{mbPersona.persona.inicioVigencia}" 
-                                        required="true" requiredMessage="La fecha de inicio de vigencia es obligatoria" />
-                            <p:outputLabel value="Fin de vigencia" for="dtFin" />
-                            <p:calendar id="dtFin" value="#{mbPersona.persona.finVigencia}" />
+                            <p:outputLabel value="Agregar/Modificar Martillo" for="martillo"/> 
+                            <p:fileUpload uploadLabel="Subir" cancelLabel="Cancelar" id="martillo" 
+                                          fileUploadListener="#{mbPersona.subirMartilloTmp}" mode="advanced" dragDropSupport="false" 
+                                          update="messagesLocal,frObrajeros,pngMartilloDef,pngMartilloTemp,pnFrmView" 
+                                          sizeLimit="500000" fileLimit="3" allowTypes="/(\.|\/)(gif|jpe?g|png)$/" />
+                        </h:panelGrid>
+                        <h:panelGrid id="pngMartilloDef" columns="2" rendered="#{mbPersona.persona.rutaArchivo ne null and not mbPersona.persona.rutaTemporal}" >
+                            <img src="#{config.UrlMartillos}#{mbPersona.persona.nombreArchivo}" width="150" />
+                        </h:panelGrid>
+                        <h:panelGrid id="pngMartilloTemp" columns="2" rendered="#{mbPersona.persona.rutaArchivo ne null and mbPersona.persona.rutaTemporal}" >
+                            <img src="/TMP/#{mbPersona.persona.nombreArchivo}" width="150" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}">
-                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveApoderado()}" 
-                                             update="frApoderados,pnFrmView"/>
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveObrajero()}" 
+                                             update="frObrajeros,pngMartilloDef,pngMartilloTemp,pnFrmView"/>
                             <p:commandButton title="Hacer doble click para limpiar el formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
                                              process="@this" action="#{mbPersona.limpiarForm()}" update="messagesLocal" >
                                 <p:ajax update="pnFrmNew" resetValues="true" />
@@ -387,21 +386,15 @@
                             <p:outputLabel id="v_tipo" value="#{mbPersona.persona.tipo}"/>
                             <p:outputLabel value="E-mail: " for="v_email"/>
                             <p:outputLabel id="v_email" value="#{mbPersona.persona.email}"/>
-                            <p:outputLabel value="Inicio de vigencia" for="v_dtInicio" />
-                            <p:outputLabel id="v_dtInicio" value="#{mbPersona.persona.inicioVigencia}" >
-                                <f:convertDateTime pattern="dd-MM-yyyy" />
-                            </p:outputLabel>
-                            <p:outputLabel value="Fin de vigencia" for="v_dtFin" />
-                            <p:outputLabel id="v_dtFin" value="#{mbPersona.persona.finVigencia}" >
-                                <f:convertDateTime pattern="dd-MM-yyyy" />
-                            </p:outputLabel>
+                            <p:outputLabel value="Martillo: " />
+                            <img src="#{config.UrlMartillos}#{mbPersona.persona.nombreArchivo}" width="150" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgBtn" columns="2" rendered="#{mbPersona.view}" >
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
                                              actionListener="#{mbPersona.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
-                            <p:commandButton value="Ver Autorizaciones" icon="fa fa-fw fa-external-link" process="@this" update="pnViewAut" 
-                                             actionListener="#{mbPersona.prepareViewAut(config.Apoderado)}" oncomplete="PF('dlgVerAut').show();" />
+                            <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" update="pnViewGuias" 
+                                             actionListener="#{mbPersona.prepareViewObrjGuias()}" oncomplete="PF('dlgVerGuias').show();" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbPersona.view}" >
@@ -420,88 +413,80 @@
                     </p:panel>
 
                     <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;">
-                        <p:dataTable styleClass="table" value="#{mbPersona.lstApod}"
-                                     filteredValue="#{mbPersona.listApodFilter}"
-                             var="apod"
-                             id="dtApod" 
+                        <p:dataTable styleClass="table" value="#{mbPersona.lstObrajeros}"
+                                     filteredValue="#{mbPersona.lstObrajFilter}"
+                             var="obraj"
+                             id="dtObraj" 
                              rows="5"
                              paginator="true"      
-                             widgetVar="apodTable"
+                             widgetVar="obrajTable"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="5,10,15">
                             <f:facet name="header">
                                 <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
-                                         onclick="PF('apodTable').clearFilters()" update="dtApod"/>
+                                         onclick="PF('obrajTable').clearFilters()" update="dtObraj"/>
                             </f:facet>
                             <p:column headerText="id" style="width:50px">
-                                <p:outputLabel value="#{apod.id}"/>
+                                <p:outputLabel value="#{obraj.id}"/>
                             </p:column>
                             <p:column headerText="Nombre completo" 
                                 filterMatchMode="contains"
-                                sortBy="#{apod.nombreCompleto}" 
-                                filterBy="#{apod.nombreCompleto}" >
-                                <p:outputLabel value="#{apod.nombreCompleto}"/>
+                                sortBy="#{obraj.nombreCompleto}" 
+                                filterBy="#{obraj.nombreCompleto}" >
+                                <p:outputLabel value="#{obraj.nombreCompleto}"/>
                             </p:column>
                             <p:column headerText="CUIT" 
                                 filterMatchMode="contains"
-                                sortBy="#{apod.cuit}" 
-                                filterBy="#{apod.cuit}" >
-                                <p:outputLabel value="#{apod.cuit}"/>
+                                sortBy="#{obraj.cuit}" 
+                                filterBy="#{obraj.cuit}" >
+                                <p:outputLabel value="#{obraj.cuit}"/>
                             </p:column>
                             <p:column headerText="Tipo" 
                                 filterMatchMode="contains"
-                                sortBy="#{apod.tipo}" 
-                                filterBy="#{apod.tipo}" >
-                                <p:outputLabel value="#{apod.tipo}"/>
-                            </p:column>
-                            <p:column headerText="Fin vig." 
-                                filterMatchMode="contains"
-                                sortBy="#{apod.finVigencia}" 
-                                filterBy="#{apod.finVigencia}" >
-                                <p:outputLabel value="#{apod.finVigencia}" >
-                                    <f:convertDateTime pattern="dd-MM-yyyy" />
-                                </p:outputLabel>
+                                sortBy="#{obraj.tipo}" 
+                                filterBy="#{obraj.tipo}" >
+                                <p:outputLabel value="#{obraj.tipo}"/>
                             </p:column>
                             <p:column headerText="Fecha de alta" 
                                 filterMatchMode="contains"
-                                sortBy="#{apod.fechaAlta}" 
-                                filterBy="#{apod.fechaAlta}" >
-                                <p:outputLabel value="#{apod.fechaAlta}" >
+                                sortBy="#{obraj.fechaAlta}" 
+                                filterBy="#{obraj.fechaAlta}" >
+                                <p:outputLabel value="#{obraj.fechaAlta}" >
                                     <f:convertDateTime pattern="dd-MM-yyyy"/>  
                                 </p:outputLabel>
                             </p:column>                            
-                            <p:column filterBy="#{apod.habilitado}" headerText="Estado" filterMatchMode="equals" >
+                            <p:column filterBy="#{obraj.habilitado}" headerText="Estado" filterMatchMode="equals" >
                                 <f:facet name="filter">
-                                    <p:selectOneMenu onchange="PF('apodTable').filter()" >
+                                    <p:selectOneMenu onchange="PF('destinoTable').filter()" >
                                         <f:converter converterId="javax.faces.Boolean" />
                                         <f:selectItem itemLabel="Todos" itemValue="" />
                                         <f:selectItem itemLabel="Habilitados" itemValue="true" />
                                         <f:selectItem itemLabel="Deshabilitados" itemValue="false" />
                                     </p:selectOneMenu>
                                 </f:facet>
-                                <p:outputLabel value="#{apod.habilitado ? 'Habilitado': 'Deshabilitado'}" />
+                                <p:outputLabel value="#{obraj.habilitado ? 'Habilitado': 'Deshabilitado'}" />
                             </p:column>
                             <p:column headerText="Acciones" style="width:110px">
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
                                                  update="@form" action="#{mbPersona.prepareView()}" >
-                                    <f:setPropertyActionListener value="#{apod}" target="#{mbPersona.persona}" /> 
+                                    <f:setPropertyActionListener value="#{obraj}" target="#{mbPersona.persona}" /> 
                                 </p:commandButton>
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-pencil" title="Editar" process="@this" 
                                                  update="@form" action="#{mbPersona.prepareEdit()}" >
-                                    <f:setPropertyActionListener value="#{apod}" target="#{mbPersona.persona}" /> 
+                                    <f:setPropertyActionListener value="#{obraj}" target="#{mbPersona.persona}" /> 
                                 </p:commandButton>
-                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbPersona.deshabilitar()}" 
-                                                 process="@this" update="@form" rendered="#{apod.habilitado}" >
-                                    <f:setPropertyActionListener value="#{apod}" target="#{mbPersona.persona}" /> 
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbPersona.deshabilitar()}"
+                                                 process="@this" update="@form" rendered="#{obraj.habilitado}" >
+                                    <f:setPropertyActionListener value="#{obraj}" target="#{mbPersona.persona}" /> 
                                     <p:confirm header="Confirmar" 
-                                               message="¿Desea deshabilitar el #{config.Apoderado} seleccionado: #{apod.nombreCompleto}?" 
+                                               message="¿Desea deshabilitar el #{config.Obrajero} seleccionado: #{obraj.nombreCompleto}?" 
                                                icon="ui-icon-alert" />
                                 </p:commandButton>
                                 <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbPersona.habilitar()}" 
-                                                 process="@this" update="@form" rendered="#{not apod.habilitado}" >
-                                    <f:setPropertyActionListener value="#{apod}" target="#{mbPersona.persona}" /> 
+                                                 process="@this" update="@form" rendered="#{not obraj.habilitado}" >
+                                    <f:setPropertyActionListener value="#{obraj}" target="#{mbPersona.persona}" /> 
                                     <p:confirm header="Confirmar" 
-                                               message="¿Desea habilitar el #{config.Apoderado} seleccionado: #{apod.nombreCompleto}?" 
+                                               message="¿Desea habilitar el #{config.Obrajero} seleccionado: #{obraj.nombreCompleto}?" 
                                                icon="ui-icon-alert" />
                                 </p:commandButton>
                                 <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">

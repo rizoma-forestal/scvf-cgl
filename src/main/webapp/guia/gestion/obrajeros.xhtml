@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body >
+        <h:panelGrid columns="2" cellpadding="10">
+            <img src="#{request.contextPath}/resources/img/user-4.png" width="50" height="50" style="float: left; margin-left: 15px" />
+            <p:outputLabel styleClass="titPanel" value="#{config.Obrajeros}" />
+        </h:panelGrid>
+        <h:form prependId="false" id="frObrajeros">
+            <!-- Formulario de búsqueda -->
+            <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
+                     rendered="#{mbGuia.obrajero eq null and mbGuia.guia.obrajeros.size() eq 0 
+                                 and mbGuia.guia.estado.habilitaEdicionFuente
+                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" >
+                <h:panelGrid columns="5">
+                    <p:outputLabel value="CUIT" for="cuitObraj"/>
+                    <p:inputText id="cuitObraj" value="#{mbGuia.cuitObraj}" 
+                                     requiredMessage="Debe haber un CUIT para buscar" required="true"/>
+                    <p:commandButton title="Buscar #{config.Obrajero} existente" styleClass="save" icon="fa fa-fw fa-search" 
+                                     value="Buscar" action="#{mbGuia.buscarObrajero()}" update="frObrajeros,messages"/>
+                    <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
+                        <p:ajax update="pnBuscar" resetValues="true" />
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Vista de los datos del Obrajero -->
+            <p:panel id="pnForm" header="Datos del #{config.Obrajero} obtenido" style="margin-bottom:10px;" rendered="#{mbGuia.obrajero ne null}">
+                <h:panelGrid columns="2" cellpadding="1">
+                    <p:outputLabel value="Nombre completo/Razón Social: " />
+                    <p:outputLabel value="#{mbGuia.obrajero.nombreCompleto}" style=" font-weight: bold" />
+                    <p:outputLabel value="CUIT: " />
+                    <p:outputLabel value="#{mbGuia.obrajero.cuit}" style=" font-weight: bold" />
+                    <p:outputLabel value="Tipo de Persona: " />
+                    <p:outputLabel value="#{mbGuia.obrajero.tipo}" style=" font-weight: bold" />
+                </h:panelGrid>
+                <h:panelGrid columns="2">
+                    <p:commandButton title="Agregar el #{config.Obrajero} seleccionado" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Agregar" action="#{mbGuia.addObrajero()}" 
+                                     rendered="#{!mbGuia.viewObrajero}" update="@form,messages" >
+                    </p:commandButton>
+                    <p:commandButton title="Buscar otro #{config.Obrajero}" styleClass="save" icon="fa fa-fw fa-search-plus" 
+                                     rendered="#{!mbGuia.viewObrajero}" value="Buscar otro" 
+                                     action="#{mbGuia.limpiarViewObrajero()}" update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Guardar #{config.Obrajero}" styleClass="save" icon="fa fa-fw fa-save" 
+                                     value="Guardar" action="#{mbGuia.limpiarViewObrajero()}" 
+                                     rendered="#{(mbGuia.viewObrajero or not mbGuia.guia.estado.habilitaEdicionFuente) 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
+                                     update="@form" >
+                    </p:commandButton>
+                    <p:commandButton title="Desasociar #{config.Obrajero}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
+                                     value="Quitar" action="#{mbGuia.deleteObrajero()}" 
+                                     rendered="#{mbGuia.viewObrajero 
+                                                 and mbGuia.guia.estado.habilitaEdicionFuente 
+                                                 and mbSesion.usuario.rol.nombre ne config.Consulta}" 
+                                     update="@form,messages" >
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+            
+            <!-- Listado de Obrajeros vinculados -->
+            <p:panel id="pnTable" header="Listado de #{config.Obrajeros}" style="margin-bottom:10px;" >
+                <p:dataTable styleClass="table" value="#{mbGuia.guia.obrajeros}"
+                             var="obrj"
+                             id="dtObrj" 
+                             rows="5"
+                             paginator="true"      
+                             widgetVar="obrjTable"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+                    <p:column headerText="id" style="width:50px">
+                        <p:outputLabel value="#{obrj.id}"/>
+                    </p:column>
+                    <p:column headerText="Nombre completo" 
+                        filterMatchMode="contains"
+                        sortBy="#{obrj.nombreCompleto}" 
+                        filterBy="#{obrj.nombreCompleto}" >
+                        <p:outputLabel value="#{obrj.nombreCompleto}"/>
+                    </p:column>
+                    <p:column headerText="CUIT" 
+                        filterMatchMode="contains"
+                        sortBy="#{obrj.cuit}" 
+                        filterBy="#{obrj.cuit}" >
+                        <p:outputLabel value="#{obrj.cuit}"/>
+                    </p:column>
+                    <p:column headerText="Tipo" 
+                        filterMatchMode="contains"
+                        sortBy="#{obrj.tipo}" 
+                        filterBy="#{obrj.tipo}" >
+                        <p:outputLabel value="#{obrj.tipo}"/>
+                    </p:column>
+                    <p:column headerText="Fecha de alta" 
+                        filterMatchMode="contains"
+                        sortBy="#{obrj.fechaAlta}" 
+                        filterBy="#{obrj.fechaAlta}" >
+                        <p:outputLabel value="#{obrj.fechaAlta}" >
+                            <f:convertDateTime pattern="dd-MM-yyyy"/>  
+                        </p:outputLabel>
+                    </p:column>  
+                    <p:column style="width:30px">
+                        <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
+                                         update="@form" action="#{mbGuia.prepareViewObrajero()}" >
+                            <f:setPropertyActionListener value="#{obrj}" target="#{mbGuia.obrajero}" /> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

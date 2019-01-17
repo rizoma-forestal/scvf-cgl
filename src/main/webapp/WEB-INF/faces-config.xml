@@ -24,7 +24,7 @@
         <description>Bean de respaldo para gestionar las entidades Parametrica y TipoParam</description>
         <managed-bean-name>mbParametrica</managed-bean-name>
         <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbParametrica</managed-bean-class>
-        <managed-bean-scope>request</managed-bean-scope>
+        <managed-bean-scope>view</managed-bean-scope>
     </managed-bean>
     <managed-bean>
         <description>Bean de respaldo para gestionar las entidades ZonaIntervencion y SubZona</description>

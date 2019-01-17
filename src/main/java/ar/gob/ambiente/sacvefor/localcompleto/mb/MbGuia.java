@@ -282,6 +282,24 @@ public class MbGuia {
      */
     private EntidadGuia entOrigen;
     
+    ///////////////////////////////////////
+    // Obrajeros a solicitud de Misiones //
+    ///////////////////////////////////////
+    /**
+     * Variable privada: guarda el cuit para buscar una persona con el rol de obrajero y agregarla a la guía
+     */
+    private Long cuitObraj;
+    
+    /**
+     * Variable privada: persona a vincular a la guía con el rol de obrajero
+     */
+    private Persona obrajero;
+    
+    /**
+     * Variable privada: flag que indica que se está en una vista detalle de los datos del obrajero
+     */
+    private boolean viewObrajero;
+    
     /////////////
     // Destino //
     /////////////
@@ -338,7 +356,7 @@ public class MbGuia {
     private boolean editCuit;
     
     /**
-     * Variable privada: flag que indica que se está buscando el destino
+     * Variable privada: flag que indica que se está buscando el destino o un obrajero
      */
     private boolean cuitProcesado;
     
@@ -710,7 +728,31 @@ public class MbGuia {
     ///////////////////////
     // métodos de acceso //
     ///////////////////////    
-    public boolean isBusqSinResultados() {    
+    public Long getCuitObraj() {    
+        return cuitObraj;
+    }
+
+    public void setCuitObraj(Long cuitObraj) {
+        this.cuitObraj = cuitObraj;
+    }
+
+    public Persona getObrajero() {
+        return obrajero;
+    }
+
+    public void setObrajero(Persona obrajero) {
+        this.obrajero = obrajero;
+    }
+
+    public boolean isViewObrajero() {
+        return viewObrajero;
+    }
+
+    public void setViewObrajero(boolean viewObrajero) {    
+        this.viewObrajero = viewObrajero;
+    }
+
+    public boolean isBusqSinResultados() {
         return busqSinResultados;
     }
 
@@ -1411,6 +1453,7 @@ public class MbGuia {
      * @param strPage String vista a cargar recibida como parámetro
      */
     public void cargarFrame(String strPage){
+        obrajero = null;
         // renuevo el objeto guía
         Guia guiaAct = guiaFacade.find(guia.getId());
         // para la vista de Tasas preparo la liquidación
@@ -1938,11 +1981,20 @@ public class MbGuia {
     /////////////
     /**
      * Método para asignar un domicilio al destino de la guía.
-     * Ya se seleccionó un destinatario que puede tener varios domicilios,
+     * Ya se seleccionó un destinatario que puede tener varios domicilios.
+     * Si hay un condicionamiento para el destino de los productos, lo valido.
      * Con el domicilio asignado se obtiene la entidad destino
      */
     public void addDomDestino(){
-        entDestino = obtenerEntidadDestino(destinatario, domDestino);
+        boolean valida = true;
+        // si la guía descontó productos de guías de extracción valido la condición del destino de los productos
+        if(!guia.getGuiasfuentes().isEmpty() && ResourceBundle.getBundle("/Config").getString("DiscTasaDestExt").equals("si")){
+            valida = validarDomDestino();
+        }
+        if(valida){
+            entDestino = obtenerEntidadDestino(destinatario, domDestino);
+        }
+        
     }
     
     /**
@@ -1968,7 +2020,21 @@ public class MbGuia {
     }
     
     /**
-     * Método para limpiar el cuit seleccionado para buscar la persona
+     * Método para buscar un obrajero para asignarlo a la guía
+     * También setea el Obrajero (Persona) según el CUIT obtenido.
+     */
+    public void buscarObrajero(){
+        Parametrica rolPersona = obtenerParametro(ResourceBundle.getBundle("/Config").getString("RolPersonas"), ResourceBundle.getBundle("/Config").getString("Obrajero"));
+        obrajero = perFacade.findByCuitRol(cuitObraj, rolPersona);
+        if(obrajero != null){
+            cuitProcesado = true;
+        }else{
+            JsfUtil.addErrorMessage("No hay ningún Obrajero registrado con el CUIT ingresado.");
+        }
+    }
+    
+    /**
+     * Método para limpiar el cuit seleccionado para buscar el destinatario
      */
     public void limpiarCuitDest(){
         viewFuente = false;
@@ -1976,6 +2042,82 @@ public class MbGuia {
         cuitBuscar = null;
         destinatario = null;
         entDestino = null;
+    }
+    
+    /**
+     * Método para limpiar el cuit seleccionado para buscar el obrajero
+     */
+    public void limpiarCuitObraj(){
+        viewFuente = false;
+        viewGuia = false;
+        cuitObraj = null;
+        obrajero = null;
+    }
+    
+    /**
+     * Método para agregar un obrajero a la guía. Valida que el obrajero no esté ya vinculado a la Guía.
+     * Si no está vinculado, lo agrega al listado de la guía y actualiza la guía.
+     */
+    public void addObrajero(){
+        boolean valida = true;
+        
+        // valido que el obrajero no esté vinculado ya a la guía
+        for(Persona obrj : guia.getObrajeros()){
+            if(Objects.equals(obrj.getCuit(), obrajero.getCuit())){
+                valida = false;
+                JsfUtil.addErrorMessage("El " + ResourceBundle.getBundle("/Config").getString("Obrajero") + " que está tratando de asociar, ya está vinculado a la Guía.");
+            }
+        }
+        try{
+            if(valida){
+                // si valida guardo y limpio las variables
+                guia.getObrajeros().add(obrajero);
+                guiaFacade.edit(guia);
+                limpiarViewObrajero();
+                JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Obrajero") + " se agregó a la Guía");
+            }
+        }catch(NumberFormatException ex){
+            JsfUtil.addErrorMessage("Hubo un error asignando al " + ResourceBundle.getBundle("/Config").getString("Obrajero") + ". " + ex.getMessage());
+        }
+    }
+    
+    /**
+     * Método para desvincular un obrajero de una Guía.
+     * Quita el obrajero a eliminar del listado de la guía y
+     * la actualiza.
+     */
+    public void deleteObrajero(){
+        int i = 0, j = 0;
+        try{
+            for(Persona obrj : guia.getObrajeros()){
+                if(Objects.equals(obrj.getCuit(), obrajero.getCuit())){
+                    j = i;
+                }
+                i = i+= 1;
+            }
+            guia.getObrajeros().remove(j);
+            guiaFacade.edit(guia);
+            viewObrajero = false;
+            limpiarViewObrajero();
+        }catch(NumberFormatException ex){
+            JsfUtil.addErrorMessage("Hubo un error desvinculando al " + ResourceBundle.getBundle("/Config").getString("Obrajero") + ". " + ex.getMessage());
+        }
+    }
+ 
+    
+    /**
+     * Método para habilitar la vista detalle del obrajero
+     */
+    public void prepareViewObrajero(){
+        viewObrajero = true;
+    }
+    
+    /**
+     * Método para limpiar la vista detalle del Obrajero
+     */
+    public void limpiarViewObrajero(){
+        obrajero = null;
+        cuitObraj = null;
     }
     
     /**
@@ -4033,33 +4175,63 @@ public class MbGuia {
 
     /**
      * Método para liquidar todas las tasas de los productos de una guía para luego generar el volante de pago.
+     * Primero recorre las tasas configuradas para la guía. Por cada una verifica si discrimina valores según la configuración.
+     * Si discrimina, verifica por cada tasa con discriminación registrada que, además de estar en la base, deberán estar también en el properties.
+     * Al momento son 5:
+     *  1. Según el origen del predio: CondAforoFiscal=FISCAL CON AFORO. El valor de la variable configurada deberá ser el del origen del predio a validar, de las fuentes de productos.
+     *  2. Según el destino de los productos: CondDerInspExt=DESTINO EXTERNO y CondDerInspInt=DESTINO INTERNO
+     *  3. Según el tipo de intervención autorizado para la fuente de productos: IntervPCUS=CAMBIO USO DEL SUELO y IntervPM=PLAN MANEJO SOSTENIBLE.
+     *  El valor de cada variable configurada deberá ser el tipo de intervención que corresponda para cada caso.
+     * Según corresponda en cada caso se agregará o no al listado de tasas a liquidar.
+     * Si no discrimina, se agrega directamente.
+     * Luego, se recorren los ítems productivos y por cada uno se calcula el detalle correpondiente a cada tasa que integra el listado, 
+     * siempre que el ítem la tenga configurada.
+     * Finalmente se genera el listado de las liquidaciones que se mostrarán en pantalla y será luego mandado como datasource para el reporte.
      * Invocado por cargarFrame() al llamar a la vista tasas.xhtml
      * @param guiaAct Guia guía de la cual se liquidarán las tasas.
      */
     private void liquidarTasas(Guia guiaAct) {
         for(TipoGuiaTasa tgt : guiaAct.getTipo().getTasas()){
-            // valido si discrimina según el tipo de intervención autorizado
-            if("si".equals(ResourceBundle.getBundle("/Config").getString("DiscTasaTipoInterv"))){
-                // verifico si la tasa leída es alguna de las tasas a discriminar (PCUS o PM).
-                Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
-                if(tgt.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TasaPCUS"))){
-                    // si es tasa PCUS guardo el nombre de dicha tasa solo si la intervención es PCUS
+            // por cada tasa que tenga configurada la guía a liquidar, verifico si tiene discriminaciones
+            if(tgt.getTipo().isLeeConf()){
+                // si las tiene, respondo en cada caso
+                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("CondAforoFiscal"))){
+                    // si discrimina por origen del predio, verifico si el predio de la fuente de productos tiene un origen que corresponda a la discriminación
+                    Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
+                    if(aut.getInmuebles().get(0).getOrigen().getNombre().equals(ResourceBundle.getBundle("/Config").getString("CondAforoFiscal"))){
+                        // si el origen del predio amerita el pago, guardo la tasa en el listado
+                        lstNombresTasas.add(tgt.getTipo().getNombre());
+                    }
+                }
+                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("CondDerInspExt"))){
+                    // si discrimina por el destino externo de los productos se la agrega si el destino de la guía es externo
+                    if(guiaAct.isDestinoExterno()){
+                        lstNombresTasas.add(tgt.getTipo().getNombre());
+                    }
+                }
+                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("CondDerInspInt"))){
+                    // si discrimina por el destino interno de los productos se la agrega si el destino de la guía es interno
+                    if(!guiaAct.isDestinoExterno()){
+                        lstNombresTasas.add(tgt.getTipo().getNombre());
+                    }
+                }
+                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("IntervPCUS"))){
+                    // si discrimina por intervención PCUS de la fuente de productos, se la agrega si ese es el tipo de intervención
+                    Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
                     if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPCUS"))){
                         lstNombresTasas.add(tgt.getTipo().getNombre());
                     }
-                }else if(tgt.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TasaPM"))){
-                    // si es tasa PM guardo el nombre de dicha tasa solo si la intervención es PM
+                }
+                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("IntervPM"))){
+                    // si discrimina por intervención PM de la fuente de productos, se la agrega si ese es el tipo de intervención
+                    Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
                     if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPM"))){
                         lstNombresTasas.add(tgt.getTipo().getNombre());
                     }
-                }else{
-                    // si no es ninguna de las dos, la guardo directamente
-                    lstNombresTasas.add(tgt.getTipo().getNombre());
                 }
-
             }else{
-                // si no discrimina cargo el nombre directamente
-                lstNombresTasas.add(tgt.getTipo().getNombre());   
+                // si no las tiene, directamente agrego la tasa al listado
+                lstNombresTasas.add(tgt.getTipo().getNombre());
             }
         }
 
@@ -4267,5 +4439,32 @@ public class MbGuia {
         busqCodGuia = null;
         busqCuitTit = null;
         busqCuitDest = null;
+    }
+
+    /**
+     * Método privado para validar el domicilio seleccionado para el destino de la guía de transporte.
+     * Recorre cada guía fuente de productos y valida que la condición de externo o interno a la provincia del domicilio
+     * coicida con lo definido para la guía fuente (guia.destinoExterno)
+     * @return 
+     */
+    private boolean validarDomDestino() {
+        boolean result = true;
+        // recorro las guías fuentes de la guía y valido la correspondencia del domicilio a asignar como destino con el flag de cada una de ellas
+        for(Guia gf : guia.getGuiasfuentes()){
+            if(domDestino.getProvincia().toUpperCase().equals(ResourceBundle.getBundle("/Config").getString("Provincia").toUpperCase()) 
+                && gf.isDestinoExterno()){
+                // si el domicilio es interno y el flag indica destino externo no valida
+                JsfUtil.addErrorMessage("El domicilio destino seleccionado se encuentra en la provincia "
+                        + "y al menos una guía fuente de productos está seteada para generar guías de transporte con destino externo.");
+               result = false;
+            }else if(!domDestino.getProvincia().toUpperCase().equals(ResourceBundle.getBundle("/Config").getString("Provincia").toUpperCase()) 
+                && !gf.isDestinoExterno()){
+                // si el domicilio es externo y el flag indica destino interno no valida
+                JsfUtil.addErrorMessage("El domicilio destino seleccionado se encuentra fuera de la provincia "
+                        + "y al menos una guía fuente de productos está seteada para generar guías de transporte con destino interno.");
+                result = false;
+            }
+        }
+        return result;
     }
 }

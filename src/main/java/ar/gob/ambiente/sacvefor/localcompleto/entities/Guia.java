@@ -201,6 +201,27 @@ public class Guia implements Serializable {
     private EstadoGuia estado;
     
     /**
+     * Variable privada: Indica si la guía tiene un destino fuera de la provincia.
+     * Si la guía es madre, indica si los remitos serán con destino externo.
+     * Si la guía es un remito, indica si el destino es externo.
+     * A solicitud de Misiones.
+     */
+    @Column (nullable=true)
+    private boolean destinoExterno;
+    
+    /**
+     * Variable privada: listado de personas con el rol de obrajero que podrán estar vinculados
+     * a una guía. A pedido de Misiones.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "obrajerosXGuias",
+            joinColumns = @JoinColumn(name = "guia_fk"),
+            inverseJoinColumns = @JoinColumn(name = "obrajero_fk")
+    )
+    private List<Persona> obrajeros;    
+    
+    /**
      * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
@@ -289,6 +310,24 @@ public class Guia implements Serializable {
         items = new ArrayList<>();
         guiasfuentes = new ArrayList<>();
         formProvisorios = new ArrayList<>();
+    }
+
+    @XmlTransient
+    public boolean isDestinoExterno() {
+        return destinoExterno;
+    }
+
+    public void setDestinoExterno(boolean destinoExterno) {
+        this.destinoExterno = destinoExterno;
+    }
+
+    @XmlTransient
+    public List<Persona> getObrajeros() {
+        return obrajeros;
+    }
+
+    public void setObrajeros(List<Persona> obrajeros) {
+        this.obrajeros = obrajeros;
     }
 
     @XmlTransient

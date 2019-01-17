@@ -30,8 +30,12 @@ TimeToken=3600000
 # Define si registra y emite guías desde un sistema local
 emiteRemota=si
 
+# Define si trabaja o no con obrajeros
+TieneObrajeros=si
+
 # Parámetros de Gestión de Trazabilidad
 TrazServer=http://localhost:8080
+#TrazServer=http://sacvefor.test.bosquesnativos.net.ar
 TrazRutaAplicacion=/trazabilidad
 
 # Parámetros provinciales
@@ -54,6 +58,9 @@ ClaveDesencriptar=localcompleto
 # Definición Inmueble (o predio)
 Inmueble=Inmueble
 
+# Definición de clase o estado de productos
+Clase=Estado
+
 # Definición de Producto forestal para permitir su extracción
 Producto=Producto
 
@@ -63,6 +70,7 @@ Tecnico=TECNICO
 Apoderado=APODERADO
 Destinatario=DESTINATARIO
 Transportista=TRANSPORTISTA
+Obrajero=OBRAJERO
 
 # Mensajes de impresión de formularios
 ImprimeFormularios=si
@@ -72,7 +80,6 @@ MsgImpFormVigente=Podrá emitir los los formularios provisorios que considere ne
 # Mensajes de cancelación de guías
 MsgCancelVencida=Solo se podrán cancelar las guías durante su período de vigencia.
 MsgCancelVigente=Ingrese las razones por las cuales va a cancelar la guía. Recuerde que una vez cancelada los movimientos de productos quedarán sin efecto y los saldos descontados serán reintegrados a las fuentes de descuento. Finalmente podrá completar la acción mediante el botón 'Aceptar' o limpiar el campo de texto mediante el botón 'Limpiar'. Una vez cancelada la guía, la operación no podrá volverse atrás.
-
 
 # Tipos de Items productivos
 Autorizados=AUTORIZADOS
@@ -91,13 +98,20 @@ GuiaMadre=GUIA MADRE
 TegFuente=ORIGEN
 TegDestino=DESTINO
 
-# Tipos de tasas según la intervención autorizada. Si DiscTasaTipoInterv va en 'si' se setea el resto, si no, no es necesario
-DiscTasaTipoInterv=si
+# Tipos de discriminación para tasas. Cada tasa que lee de aquí la discriminación deberá tener seteado en el atributo 'conf' 
+# el contenido de la variable correspondiente.
+#################################################
+# Si al liquidar tasas discrimina según el origen del predio.
+CondAforoFiscal=FISCAL CON AFORO
+# Si al liquidar tasas discrimina según el destino de la guía sea interno o externo a la provincia
+CondDerInspExt=DESTINO EXTERNO
+CondDerInspInt=DESTINO INTERNO
+# Si al liquidar tasas discrimina según el tipo de intervención autorizada.
 IntervPCUS=CAMBIO USO DEL SUELO
 IntervPM=PLAN MANEJO SOSTENIBLE
-TasaPCUS=RENTAS-PCUS
-TasaPM=RENTAS-PM
 
+# Mostrar destino asignado a los productos en una guía de extracción
+DiscTasaDestExt=si
 # Permitir emisión de guías con tasas sin la acreditación del pago
 EmiteSinPagos=si
 CantEmitSinPago=1
@@ -146,6 +160,7 @@ Copias=Copias por Tipo de Guía
 Origen=Origen
 Destino=Destino
 Destinatarios=Destinatarios
+Obrajeros=Obrajeros
 Transporte=Transporte
 Transportistas=Transportistas
 Vehiculos=Vehículos
@@ -189,6 +204,7 @@ TipoItem=TIPO_ITEM
 TipoTasa=TIPO_TASA
 TipoFuente=TIPO_FUENTE
 TipoEntidadGuia=TIPO_ENT_GUIA
+OrigenPredio=ORIGEN_PREDIO
 
 # ----------------------- #
 # Roles de usuarios local #

@@ -39,7 +39,12 @@
                             <f:selectItem itemLabel="Seleccione un Tipo de Guía" itemValue="" noSelectionOption="true"/>
                             <f:selectItems value="#{mbGuia.lstTiposGuia}" 
                                            var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo}"/>
+                            <p:ajax update="pgDestino" />
                         </p:selectOneMenu>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgDestino" columns="2" cellpadding="5" rendered="#{config.DiscTasaDestExt eq 'si'}" >
+                        <p:outputLabel value="Productos extraídos para Destino externo" for="chkDestino" rendered="#{not mbGuia.guia.tipo.habilitaTransp and mbGuia.guia.tipo ne null}" />
+                        <p:selectBooleanCheckbox id="chkDestino" value="#{mbGuia.guia.destinoExterno}" rendered="#{not mbGuia.guia.tipo.habilitaTransp and mbGuia.guia.tipo ne null}" />
                     </h:panelGrid>
                 </p:fieldset>
                 <!-- Ingreso del cuit del productor -->

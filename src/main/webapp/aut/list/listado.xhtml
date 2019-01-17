@@ -52,7 +52,7 @@
                             </p:outputLabel>
                             <p:outputLabel value="Intervención: " for="interv"/>
                             <p:outputLabel id="interv" value="#{mbAutorizacion.autorizacion.intervencion.nombre}" style=" font-weight: bold"/>
-                            <p:outputLabel value="Uso del suelo: " for="uso"/>
+                            <p:outputLabel value="Modalidad: " for="uso"/>
                             <p:outputLabel id="uso" value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold"/>
                             <p:outputLabel value="Número Exp.: " for="numExp"/>
                             <p:outputLabel id="numExp" value="#{mbAutorizacion.autorizacion.numExp}" style=" font-weight: bold"/>
@@ -112,7 +112,7 @@
                         </h:panelGrid>
                         <p:separator rendered="#{mbAutorizacion.view}" />
                         <h:panelGrid id="pgInm" columns="1" >
-                            <p:outputLabel value="Inmuebles vinculados" style="font-weight: bold" />
+                            <p:outputLabel value="#{config.Inmuebles} vinculados" style="font-weight: bold" />
                             <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.inmuebles}"
                                          var="inm"
                                          id="dtInmuebles" 
@@ -153,7 +153,7 @@
                                 <p:column headerText="Nombre científico" >
                                     <p:outputLabel value="#{item.nombreCientifico}"/>
                                 </p:column>
-                                <p:column headerText="Clase" >
+                                <p:column headerText="#{config.Clase}" >
                                     <p:outputLabel value="#{item.clase}"/>
                                 </p:column>
                                 <p:column headerText="Unidad" >

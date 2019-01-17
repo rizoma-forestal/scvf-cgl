@@ -2,7 +2,12 @@
 package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Inmueble;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Rodal;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.InmuebleFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.DepartamentoClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.LocalidadClient;
@@ -62,6 +67,24 @@ public class MbInmueble {
     private List<Inmueble> lstInmOrigen;
     
     /**
+     * Variable privada: listado de las paramétricas que oficiarán de opciones para seleccionar el origen del inmueble.
+     * (Privado, Fiscal, etc.) A pedido de la Provincia de Misiones.
+     */
+    private List<Parametrica> lstOrigenInm;
+
+    /**
+     * Variable privada: rodal a asignar al inmueble
+     */
+    private Rodal rodal;
+    
+    /**
+     * Variable privada: listado de rodales en los que podrá estar subdividido un inmueble. 
+     * Los mismos podrán ser incuidos como atributo en el inmueble a registrar.
+     * A pedido de la Provincia de Misiones.
+     */
+    private List<Rodal> rodales;
+    
+    /**
      * Variable privada: flag que indica que el inmueble que se está gestionando no está editable
      */
     private boolean view;
@@ -89,6 +112,16 @@ public class MbInmueble {
      */ 
     @EJB
     private InmuebleFacade inmFacade;
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica.
+     */
+    @EJB
+    private ParametricaFacade paramFacade;
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */  
+    @EJB
+    private TipoParamFacade tipoParamFacade;    
     
     ////////////////////////////////////////////////////////////
     // Clientes REST para la selección de datos territoriales //
@@ -168,7 +201,32 @@ public class MbInmueble {
     ///////////////////////
     // Métodos de acceso //
     ///////////////////////  
-    public boolean isSubeMartillo() {        
+    public Rodal getRodal() {    
+        return rodal;
+    }    
+  
+    public void setRodal(Rodal rodal) {
+        this.rodal = rodal;
+    }
+
+    public List<Parametrica> getLstOrigenInm() {
+        TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("OrigenPredio"));
+        return paramFacade.getHabilitadas(tipoParam);
+    }    
+
+    public void setLstOrigenInm(List<Parametrica> lstOrigenInm) {
+        this.lstOrigenInm = lstOrigenInm;
+    }
+
+    public List<Rodal> getRodales() {
+        return rodales;
+    }
+
+    public void setRodales(List<Rodal> rodales) {        
+        this.rodales = rodales;
+    }
+
+    public boolean isSubeMartillo() {
         return subeMartillo;
     }    
     
@@ -177,7 +235,7 @@ public class MbInmueble {
     }
 
     public List<Inmueble> getLstInmOrigen() {
-        lstInmOrigen = inmFacade.getHabilitados();
+        lstInmOrigen = inmFacade.getHabilitados();  
         return lstInmOrigen;
     }
      
@@ -463,7 +521,54 @@ public class MbInmueble {
         }catch(IOException e){
             JsfUtil.addErrorMessage("Hubo un error subiendo la imagen del Martillo" + e.getLocalizedMessage());
         }
-    }      
+    }
+    
+    /**
+     * Método para instanciar el Rodal para asignarlo al inmueble
+     */
+    public void prepareAddRodal(){
+        rodal = new Rodal();
+    }
+    
+    /**
+     * Método para agregar un rodal al inmueble
+     * Valida que el número de orden del rodal a registrar no esté asignado ya al inmueble
+     */
+    public void agregarRodal(){
+        boolean valida = true;
+        // valido que el número de orden del rodal no esté ya incluido
+        for(Rodal rod : inmueble.getRodales()){
+            if(rodal.getNumOrden() == rod.getNumOrden()){
+                valida = false;
+                JsfUtil.addErrorMessage("El rodal que está queriendo agregar ya está asignado al " + ResourceBundle.getBundle("/Config").getString("Inmueble") + ".");
+            }
+        }
+        
+        try{
+            if(valida){
+                inmueble.getRodales().add(rodal);
+                prepareAddRodal();
+            }
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage(ex, "Hubo un error al agergar el Rodal al " + ResourceBundle.getBundle("/Config").getString("Inmueble") + ": " + ex.getMessage());
+        }   
+    }
+    
+    /**
+     * Método para desagregar un rodal ya asingado al inmueble
+     */
+    public void desagregarRodal(){
+        int i = 0, j = 0;
+        
+        for(Rodal rod : inmueble.getRodales()){
+            if(rodal.getNumOrden() == rod.getNumOrden()){
+                j = i;
+            }
+            i = i+= 1;
+        }
+        inmueble.getRodales().remove(j);
+        prepareAddRodal();      
+    }
     
     //////////////////////
     // Métodos privados //

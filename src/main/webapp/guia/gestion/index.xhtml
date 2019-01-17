@@ -17,6 +17,8 @@
                             <p:submenu styleClass="hMenu" label="Existentes" >
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Origen}" 
                                             actionListener="#{mbGuia.cargarFrame('generalView.xhtml')}" />
+                                <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Obrajeros}"
+                                            actionListener="#{mbGuia.cargarFrame('obrajeros.xhtml')}" rendered="#{not mbGuia.guia.tipo.habilitaTransp and config.TieneObrajeros eq 'si'}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Destino}"
                                             actionListener="#{mbGuia.cargarFrame('destino.xhtml')}" rendered="#{mbGuia.guia.tipo.habilitaTransp}" />
                                 <p:menuitem disabled="#{mbGuia.guia.id eq null or mbGuia.edit}" update="frame" ajax="true" value="#{config.Transporte}"

@@ -103,6 +103,8 @@
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta and config.emiteRemota ne 'si'}"/>
                                 <p:menuitem value="#{config.Destinatarios}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/destinatario.xhtml" 
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
+                                <p:menuitem value="#{config.Obrajeros}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/obrajero.xhtml" 
+                                            rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta and config.TieneObrajeros eq 'si'}"/>
                                 <p:menuitem value="#{config.Transportistas}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/transportista.xhtml" 
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                                 <p:menuitem value="#{config.Vehiculos}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Transporte}/vehiculo.xhtml" 

@@ -65,6 +65,12 @@
                             <p:outputLabel value="#{mbGuia.guia.numFuente}" style=" font-weight: bold" />
                         </h:panelGrid>
                     </p:fieldset>
+                    <p:fieldset toggleable="true" legend="Productos extraídos" style="margin-bottom:20px" rendered="#{config.DiscTasaDestExt eq 'si' and not mbGuia.guia.tipo.habilitaTransp}">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Con Destino externo: " />
+                            <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guia.destinoExterno}" />
+                        </h:panelGrid>
+                    </p:fieldset>
                 </h:panelGrid>
                 
                 <h:panelGrid columns="4" rendered="#{mbGuia.guia.tipo.habilitaTransp}" styleClass="panelColumns">
@@ -140,6 +146,29 @@
                 
                 <p:separator />
                 
+                <h:panelGrid id="pgObrajeros" columns="1" rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" >
+                    <p:outputLabel value="#{config.Obrajeros}" style="font-weight: bold" />
+                    <p:dataTable styleClass="table" value="#{mbGuia.guia.obrajeros}"
+                                 var="obraj"
+                                 id="dtObrajeros" 
+                                 widgetVar="obrajTable" >
+                        <p:column headerText="Id" style="width:50px">
+                            <p:outputLabel value="#{obraj.id}"/>
+                        </p:column>
+                        <p:column headerText="Nombre completo" >
+                            <p:outputLabel value="#{obraj.nombreCompleto}"/>
+                        </p:column>
+                        <p:column headerText="CUIT" style="width:200px" >
+                            <p:outputLabel value="#{obraj.cuit}"/>
+                        </p:column>
+                        <p:column headerText="Tipo" style="width:200px" >
+                            <p:outputLabel value="#{obraj.tipo}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+                
+                <p:separator rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" />
+                
                 <h:panelGrid id="pgGuiaProductos" columns="1" >
                     <p:outputLabel value="Productos disponibles para el descuento" style="font-weight: bold" />
                         <p:dataTable styleClass="table" value="#{mbGuia.lstItemsAutorizados}"
@@ -179,7 +208,7 @@
                 <p:separator />
 
                 <h:panelGrid id="pgGuiaInmuebles" columns="1" >
-                    <p:outputLabel value="Inmuebles" style="font-weight: bold" />
+                    <p:outputLabel value="#{config.Inmuebles}" style="font-weight: bold" />
                     <p:dataTable styleClass="table" value="#{mbGuia.lstInmueblesOrigen}"
                                  var="inm"
                                  id="dtGuiaInms" >

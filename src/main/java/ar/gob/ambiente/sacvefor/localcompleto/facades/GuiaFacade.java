@@ -3,6 +3,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProdConsulta;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoGuia;
 import java.math.BigInteger;
@@ -73,6 +74,20 @@ public class GuiaFacade extends AbstractFacade<Guia> {
                 .setParameter("cuit", cuit);
         return q.getResultList();
     } 
+    
+    /**
+     * Método para obtener las guías vinculadas a un obrajero
+     * @param obrj Persona obrajero cuyas guías se quieren obtener
+     * @return List<Guia> listado de las guías vinculadas al obrajero
+     */
+    public List<Guia> getByObrajero(Persona obrj){
+        String queryString = "SELECT guia FROM Guia guia "
+                + "INNER JOIN guia.obrajeros obrj "
+                + "WHERE obrj = :obrj";
+        Query q = em.createQuery(queryString)
+                .setParameter("obrj", obrj);
+        return q.getResultList(); 
+    }
 
     /**
      * Método para obtener las Guías según el id del Producto extraído
