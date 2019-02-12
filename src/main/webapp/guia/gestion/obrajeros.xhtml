@@ -13,7 +13,7 @@
             <!-- Formulario de búsqueda -->
             <p:panel id="pnBuscar" styleClass="centro" header="Seleccionar" 
                      rendered="#{mbGuia.obrajero eq null and mbGuia.guia.obrajeros.size() eq 0 
-                                 and mbGuia.guia.estado.habilitaEdicionFuente
+                                 and (not mbGuia.guia.estado.habilitaFuenteProductos or mbGuia.guia.estado.habilitaEdicionFuente)
                                  and mbSesion.usuario.rol.nombre ne config.Consulta}" >
                 <h:panelGrid columns="5">
                     <p:outputLabel value="CUIT" for="cuitObraj"/>
@@ -48,14 +48,14 @@
                     </p:commandButton>
                     <p:commandButton title="Guardar #{config.Obrajero}" styleClass="save" icon="fa fa-fw fa-save" 
                                      value="Guardar" action="#{mbGuia.limpiarViewObrajero()}" 
-                                     rendered="#{(mbGuia.viewObrajero or not mbGuia.guia.estado.habilitaEdicionFuente) 
+                                     rendered="#{(mbGuia.viewObrajero or mbGuia.guia.estado.habilitaFuenteProductos) 
                                                  and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form" >
                     </p:commandButton>
                     <p:commandButton title="Desasociar #{config.Obrajero}" styleClass="save" icon="fa fa-fw fa-minus-circle" 
                                      value="Quitar" action="#{mbGuia.deleteObrajero()}" 
                                      rendered="#{mbGuia.viewObrajero 
-                                                 and mbGuia.guia.estado.habilitaEdicionFuente 
+                                                 and not mbGuia.guia.estado.habilitaFuenteProductos 
                                                  and mbSesion.usuario.rol.nombre ne config.Consulta}" 
                                      update="@form,messages" >
                     </p:commandButton>

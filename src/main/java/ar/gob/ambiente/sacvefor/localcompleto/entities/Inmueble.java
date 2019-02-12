@@ -84,7 +84,7 @@ public class Inmueble implements Serializable {
      * Variable privada: Si existiera, la identificación catastral
      */
     @Column (length=30)
-    @Size(message = "El campo idCatastral no puede tener más de 20 caracteres", max = 30) 
+    @Size(message = "El campo idCatastral no puede tener más de 30 caracteres", max = 30) 
     private String idCatastral;
     
     /**

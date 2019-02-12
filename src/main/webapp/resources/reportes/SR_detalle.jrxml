@@ -20,7 +20,7 @@
 	<detail>
 		<band height="67" splitType="Stretch">
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="328" y="0" width="70" height="15" uuid="04b0b1ed-024b-44ae-adbb-621b33f9d6e2"/>
+				<reportElement x="357" y="0" width="55" height="15" uuid="04b0b1ed-024b-44ae-adbb-621b33f9d6e2"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -55,7 +55,7 @@
 				<subreportExpression><![CDATA["SR_detalleTasas.jasper"]]></subreportExpression>
 			</subreport>
 			<staticText>
-				<reportElement x="287" y="0" width="41" height="15" uuid="1c46a8a0-dad0-4dfe-859d-7c681212c3f0"/>
+				<reportElement x="321" y="0" width="36" height="15" uuid="1c46a8a0-dad0-4dfe-859d-7c681212c3f0"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -70,7 +70,7 @@
 				<text><![CDATA[Cant.:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="398" y="0" width="48" height="15" uuid="12ef94bd-651e-4a05-bcc3-63cd7e36859f"/>
+				<reportElement x="412" y="0" width="34" height="15" uuid="12ef94bd-651e-4a05-bcc3-63cd7e36859f"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -82,10 +82,10 @@
 					<font size="11" isBold="false"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<text><![CDATA[Unidad:]]></text>
+				<text><![CDATA[Unid.:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="287" height="15" uuid="23dfeef8-f8dc-4043-b759-6ff8b0f66041"/>
+				<reportElement x="0" y="0" width="321" height="15" uuid="23dfeef8-f8dc-4043-b759-6ff8b0f66041"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -100,7 +100,7 @@
 				<textFieldExpression><![CDATA[$F{nombreProd}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement x="203" y="0" width="84" height="15" uuid="5d7d93a2-dc26-447a-9424-32cadfc79bbf"/>
+				<reportElement x="237" y="0" width="84" height="15" uuid="5d7d93a2-dc26-447a-9424-32cadfc79bbf"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="10" isBold="true"/>
 					<paragraph rightIndent="5"/>

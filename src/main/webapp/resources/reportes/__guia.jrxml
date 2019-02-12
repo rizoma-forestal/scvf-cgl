@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Recibo" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="b0afdfac-b5eb-4d89-aa6c-77705803faa6">
+	<property name="ireport.zoom" value="0.9090909090909091"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="269"/>
+	<subDataset name="Table Dataset 1" uuid="3b96fe36-c02d-46eb-a1af-51656d020fcb"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Users\\rincostante\\Documents\\NetBeansProjects\\grp_wildfly\\sacvefor\\sacvefor-gestionLocalCompleto\\src\\main\\webapp\\resources\\reportes\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="expediente" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[número de expediente de la autorización]]></parameterDescription>
+	</parameter>
+	<field name="provincia" class="java.lang.String"/>
+	<field name="tipo.nombre" class="java.lang.String"/>
+	<field name="codigo" class="java.lang.String"/>
+	<field name="origen.nombreCompleto" class="java.lang.String"/>
+	<field name="origen.cuit" class="java.lang.Long"/>
+	<field name="fechaEmisionGuia" class="java.util.Date"/>
+	<field name="destinoCopia" class="java.lang.String"/>
+	<field name="fechaVencimiento" class="java.util.Date"/>
+	<field name="items" class="java.util.List"/>
+	<field name="codQr" class="java.lang.String"/>
+	<field name="martillo" class="java.io.InputStream"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="141">
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="248" y="34" width="154" height="15" uuid="71b855c6-fed4-4884-8985-53d9805b4d81"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tipo.nombre}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="220" y="48" width="49" height="15" uuid="7c1e97e6-4651-4e05-932d-4f1f2acaec3c"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[N°:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="220" y="34" width="28" height="15" uuid="857df599-304a-47b7-9ffa-ca7e9b4173cc"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Guía:]]></text>
+			</staticText>
+			<image>
+				<reportElement x="414" y="0" width="140" height="140" uuid="086b5f49-b437-462b-9b8c-fb702e686f17"/>
+				<imageExpression><![CDATA[com.google.zxing.client.j2se.MatrixToImageWriter.toBufferedImage(new com.google.zxing.qrcode.QRCodeWriter().encode($F{codQr}, com.google.zxing.BarcodeFormat.QR_CODE, 70, 70))]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="220" y="76" width="71" height="15" uuid="67f8422b-b014-4b24-b362-1e9e6bbdca92"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Emisión:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="248" y="48" width="154" height="15" uuid="c4fa30a0-2bf1-4681-9bda-4fd88fdabe23"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="268" y="76" width="134" height="15" uuid="a9034b76-9070-487d-b557-057cf67ffdd9"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fechaEmisionGuia}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="220" y="90" width="71" height="15" uuid="c9f5244f-0cd0-45b9-bfe1-332f6a9c5f4c"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Venc:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="268" y="90" width="134" height="15" uuid="5a650390-1636-4da7-9e09-0e817c1dcf7f"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fechaVencimiento}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="1" y="38" width="76" height="67" uuid="43d6d15d-85dd-490c-b1b2-aab116618027"/>
+				<imageExpression><![CDATA["logo.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="220" y="62" width="49" height="15" uuid="93260076-0101-461d-86ea-089801095ee3"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Exp.]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="248" y="63" width="154" height="15" uuid="6728af43-4f38-448c-93a0-67589ad3ec85"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="84" y="110" width="238" height="15" uuid="4fab70c9-8fcc-429c-a869-d3bf625d6439"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{origen.nombreCompleto}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="84" y="124" width="238" height="15" uuid="91c909d3-ba35-4dd9-9162-ff847bcae4d1"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{origen.cuit}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="44" y="124" width="40" height="15" uuid="37a8d7d9-4493-462a-bc93-25a5cb23fcf4"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Cuit:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="44" y="110" width="40" height="15" uuid="754895c2-9ffc-49ad-9bed-d4a78b40bd85"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Titular:]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="639">
+			<line>
+				<reportElement x="0" y="59" width="350" height="1" uuid="7444e83f-a669-42cf-b56e-684f86c7cf55"/>
+			</line>
+			<staticText>
+				<reportElement x="1" y="15" width="110" height="15" uuid="dd81f7ea-cb92-4d42-a93e-c240d6f1fc22"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<text><![CDATA[Copia destinada a:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="43" width="272" height="15" uuid="d2276d3d-c7b5-4fc9-a4d8-a278c9d7a593"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true" isItalic="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<text><![CDATA[Listado de Productos]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="111" y="15" width="443" height="15" uuid="111b1985-a8fc-433c-bcf7-001b3c49654b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{destinoCopia}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="53" y="93" width="502" height="64" uuid="df864042-2922-42b7-a1be-5e36d7f08a84"/>
+				<subreportParameter name="SUBREPORT_DIR"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{items})]]></dataSourceExpression>
+				<subreportExpression><![CDATA["SR_item.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="212" y="69" width="70" height="24" uuid="28e2b5f1-ce82-4fb8-bb44-bfef095f3aa8"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<text><![CDATA[Clase]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="402" y="69" width="70" height="24" uuid="1c46a8a0-dad0-4dfe-859d-7c681212c3f0"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<text><![CDATA[Cant.:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="282" y="69" width="120" height="24" uuid="12ef94bd-651e-4a05-bcc3-63cd7e36859f"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<text><![CDATA[Unidad:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="53" y="69" width="159" height="24" uuid="079b5959-2331-45bf-bd68-7ad94094a4c9"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<text><![CDATA[Especie]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="472" y="69" width="83" height="24" uuid="82bde489-fe25-4267-b903-d2a7aaa863a8"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<text><![CDATA[Cant. Kg.:]]></text>
+			</staticText>
+			<break>
+				<reportElement x="0" y="636" width="100" height="1" uuid="1ab6647a-17ea-468c-a38f-7c7ccc6c7a79"/>
+			</break>
+			<line>
+				<reportElement x="1" y="8" width="553" height="1" uuid="7ef57257-9a9e-4e78-ab99-12ed46675474"/>
+			</line>
+			<image>
+				<reportElement x="212" y="489" width="110" height="110" uuid="1d3ee8ff-de9c-4f58-95a9-dd8de8509513"/>
+				<imageExpression><![CDATA[$F{martillo}]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="364" y="607" width="149" height="15" uuid="4389d54d-953c-406f-af45-83d05cddb971"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Firma titular]]></text>
+			</staticText>
+			<line>
+				<reportElement x="364" y="606" width="149" height="1" uuid="13d88536-e54d-4596-a146-f81aee90e96a"/>
+			</line>
+			<line>
+				<reportElement x="194" y="606" width="149" height="1" uuid="81cf491e-4953-4338-ba5e-35b54173cd0e"/>
+			</line>
+			<staticText>
+				<reportElement x="194" y="607" width="149" height="15" uuid="481be767-37f7-4fa3-ac64-619ea604a663"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Martillo del predio]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="22">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="20" uuid="85b07ec2-1c77-4c00-acc7-1739fd31fae6"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="10" isBold="false" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Texto fijo pie de página Texto fijo pie de página Texto fijo pie de página Texto fijo pie de página Texto fijo pie de página Texto fijo pie de página Texto fijo pie de página ]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

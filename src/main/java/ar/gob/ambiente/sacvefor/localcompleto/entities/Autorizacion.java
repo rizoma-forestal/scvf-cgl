@@ -224,6 +224,21 @@ public class Autorizacion implements Serializable {
     private Usuario usuario;
     
     /**
+     * Varable privada: Listado de rodales de los que se autoriza la extracción.
+     * Solo para los CGL configurados cuyos inmuebles se subdividen en rodales.
+     * Cada inmueble podrá estar subdividido en rodales y un mismo inmueble 
+     * podrá tener autorizaciones que se vincules a un subconjunto de la totalidad de los rodales en que esté subdividido.
+     */
+    @Audited(targetAuditMode = NOT_AUDITED)
+    @ManyToMany
+    @JoinTable(
+            name = "rodalesXAutorizaciones",
+            joinColumns = @JoinColumn(name = "autorizacion_fk"),
+            inverseJoinColumns = @JoinColumn(name = "rodal_fk")
+    )
+    private List<Rodal> rodales;  
+    
+    /**
      * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
@@ -263,11 +278,20 @@ public class Autorizacion implements Serializable {
         items = new ArrayList<>();
         subZonas = new ArrayList<>();
         zonas = new ArrayList<>();
+        rodales = new ArrayList<>();
     }
     
     /**********************
      * Métodos de acceso **
      **********************/
+    public List<Rodal> getRodales() {
+        return rodales;
+    }
+
+    public void setRodales(List<Rodal> rodales) {
+        this.rodales = rodales;
+    }
+
     public boolean isAsignadaDesc() {
         return asignadaDesc;
     }

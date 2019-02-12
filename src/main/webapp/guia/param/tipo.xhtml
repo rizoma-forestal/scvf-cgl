@@ -153,8 +153,10 @@
                             </p:dataTable>
                         </h:panelGrid>
                         <h:panelGrid columns="2">
-                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbParamGuia.saveTipo()}" update="frTiposGuia"/>
-                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbParamGuia.limpiarFormTipo()}" update="pnFrm"/>
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" 
+                                             action="#{mbParamGuia.saveTipo()}" update="frTiposGuia" oncomplete="PF('dlgAgregarTasa').hide();"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbParamGuia.limpiarFormTipo()}" 
+                                             update="pnFrm" oncomplete="PF('dlgAgregarTasa').hide();"/>
                         </h:panelGrid>
                     </p:panel>
                     

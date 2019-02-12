@@ -17,7 +17,9 @@
                 </h:panelGrid>
                 
                 <!-- Diálogo para agegar los rodales al predio, si corresponde -->
-                <p:dialog header="Agregue los rodales que correspondan" widgetVar="dlgAgregarRodal" minHeight="40" closable="false">
+                <p:dialog header="Agregue los rodales que correspondan" widgetVar="dlgAgregarRodal" minHeight="40" closable="false" width="400">
+                    <p:outputLabel value="Solo se podrán eliminar los rodales existentes del #{config.Inmueble} que no estén vinculados a ninguna Autorización vigente." 
+                                   style="font-style: italic; font-size: small" />
                     <h:form prependId="false" id="frAgregarRodal">
                         <p:panel id="pnDlg" style="margin-bottom:10px; width: 300px">
                             <h:panelGrid columns="2" >
@@ -28,7 +30,7 @@
                                 <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" 
                                                  action="#{mbInmueble.agregarRodal()}" update="frAgregarRodal,messages"/>
                                 <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" resetValues="true" 
-                                                 action="#{mbInmueble.prepareAddRodal()}" update="pnDlg"/>
+                                                 action="#{mbInmueble.limpiarRodal()}" update="pnDlg"/>
                             </h:panelGrid>
                             <h:panelGrid columns="1" >
                                 <p:dataTable styleClass="table" value="#{mbInmueble.inmueble.rodales}"
@@ -39,9 +41,10 @@
                                     </p:column>
                                     <p:column style="width:30px">
                                         <p:commandButton icon="fa fa-fw fa-toggle-off" title="Eliminar" action="#{mbInmueble.desagregarRodal()}" 
-                                                         process="@this" update="frAgregarRodal" >
+                                                         process="@this" update="frAgregarRodal" rendered="#{not rod.asignado}" >
                                             <f:setPropertyActionListener value="#{rod}" target="#{mbInmueble.rodal}" /> 
                                         </p:commandButton>
+                                        <p:button icon="fa fa-fw fa-ban" disabled="true" title="Rodal afectado a una Autorización" rendered="#{rod.asignado}" />
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGrid>
@@ -113,8 +116,8 @@
                                 <f:selectItems value="#{mbInmueble.lstOrigenInm}" 
                                                var="origenInm" itemLabel="#{origenInm.nombre}" itemValue="#{origenInm}"/>
                             </p:selectOneMenu>
-                            <p:outputLabel value="Asingar rodales " />
-                            <p:commandButton value="Rodales" icon="fa fa-fw fa-external-link" process="@this" 
+                            <p:outputLabel value="Asingar rodales " rendered="#{config.GestionaRodales eq 'si'}" />
+                            <p:commandButton value="Rodales" icon="fa fa-fw fa-external-link" process="@this" rendered="#{config.GestionaRodales eq 'si'}" 
                                              update="dtRodales" oncomplete="PF('dlgAgregarRodal').show();" action="#{mbInmueble.prepareAddRodal()}" />
                             <p:outputLabel value="Domicilio" for="domicilio"/>   
                             <p:inputText id="domicilio" value="#{mbInmueble.inmueble.domicilio}" style="text-transform: uppercase; width: 300px" />
@@ -152,8 +155,10 @@
                         </h:panelGrid>
                         
                         <h:panelGrid columns="2" rendered="#{mbInmueble.inmueble.rutaArchivo ne null}">
-                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbInmueble.save()}" update="frInmuebles,pnFrmNew"/>
-                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbInmueble.limpiarForm()}" update="pnFrmNew"/>
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbInmueble.save()}" 
+                                             update="frInmuebles,pnFrmNew" oncomplete="PF('dlgAgregarRodal').hide();"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbInmueble.limpiarForm()}" 
+                                             update="pnFrmNew" oncomplete="PF('dlgAgregarRodal').hide();"/>
                         </h:panelGrid>
                     </p:panel>
                     
@@ -205,7 +210,8 @@
                         </h:panelGrid>
                         <p:separator rendered="#{mbInmueble.view}" />
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbInmueble.prepareEdit()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" 
+                                             action="#{mbInmueble.prepareEdit()}" oncomplete="PF('dlgVerRodal').hide();" />
                         </h:panelGrid>
                     </p:panel>
 
@@ -282,14 +288,14 @@
                                                  process="@this" update="@form" rendered="#{inm.habilitado}" >
                                     <f:setPropertyActionListener value="#{inm}" target="#{mbInmueble.inmueble}" /> 
                                     <p:confirm header="Confirmar" 
-                                               message="¿Desea deshabilitar el Inmueble seleccionado: #{inm.nombre} - Catastro: #{inm.idCatastral}?" 
+                                               message="¿Desea deshabilitar el #{config.Inmueble} seleccionado: #{inm.nombre} - Catastro: #{inm.idCatastral}?" 
                                                icon="ui-icon-alert" />
                                 </p:commandButton>
                                 <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbInmueble.habilitar()}" 
                                                  process="@this" update="@form" rendered="#{not inm.habilitado}" >
                                     <f:setPropertyActionListener value="#{inm}" target="#{mbInmueble.inmueble}" /> 
                                     <p:confirm header="Confirmar" 
-                                               message="¿Desea habilitar el Inmueble seleccionado: #{inm.nombre} - Catastro: #{inm.idCatastral}?" 
+                                               message="¿Desea habilitar el #{config.Inmueble} seleccionado: #{inm.nombre} - Catastro: #{inm.idCatastral}?" 
                                                icon="ui-icon-alert" />
                                 </p:commandButton>
                                 <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">

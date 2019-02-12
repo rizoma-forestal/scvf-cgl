@@ -16,6 +16,25 @@
                     <p:outputLabel styleClass="titPanel" value="Listado de #{config.Guias}" />
                 </h:panelGrid>
                 
+                <p:dialog header="Rodales asignados" widgetVar="dlgVerRodales" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frAgregarRodal">
+                        <p:panel id="pnDlgView" style="margin-bottom:10px; width: 220px">
+                            <h:panelGrid columns="1" >
+                                <p:dataTable styleClass="table" value="#{mbGuia.guia.rodales}"
+                                     var="rod"
+                                     id="dtViewRales">
+                                    <p:column headerText="N° de Orden" >                              
+                                        <p:outputLabel value="#{rod.numOrden}"/>
+                                    </p:column>
+                                </p:dataTable> 
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerRodales').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>                 
+                
                 <h:form prependId="false" id="frListGuias">
                     <p:growl id="messages" showDetail="false" />
                     <!-- Vista detalle -->
@@ -139,6 +158,10 @@
                                         </p:column>
                                     </p:dataTable>
                                 </h:panelGrid>
+                                <h:panelGrid columns="2" cellpadding="1">
+                                    <p:outputLabel value="Con Destino externo: " rendered="#{config.DiscTasaDestExt eq 'si'}" />
+                                    <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guia.destinoExterno}" rendered="#{config.DiscTasaDestExt eq 'si'}" />
+                                </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>
                         
@@ -201,6 +224,11 @@
                                         <f:convertNumber type="currency"  currencySymbol=""/>
                                     </p:outputLabel>
                                 </p:column>
+                                <p:column headerText="Rodales" rendered="#{config.GestionaRodales eq 'si'}" style="width: 50px" >
+                                    <p:commandButton title="Ver rodales asignados" icon="fa fa-fw fa-search" 
+                                                     action="#{mbGuia.prepareViewRodalesAsignados()}"
+                                                     oncomplete="PF('dlgVerRodales').show();" update="frAgregarRodal"/>
+                                </p:column>
                             </p:dataTable>
                         </h:panelGrid>
                         
@@ -254,7 +282,9 @@
                             <p:outputLabel id="us" value="#{mbGuia.guia.usuario.nombreCompleto}"/>
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Cerrar" process="@this" update="frListGuias" action="#{mbGuia.prepareList()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Cerrar" process="@this" title="Cerrar detalle"
+                                             update="frListGuias" action="#{mbGuia.prepareList()}" 
+                                             oncomplete="PF('dlgVerRodales').hide();" />
                         </h:panelGrid>
                     </p:panel>
                     

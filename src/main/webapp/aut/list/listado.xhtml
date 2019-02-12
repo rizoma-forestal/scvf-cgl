@@ -17,6 +17,25 @@
                     <p:outputLabel styleClass="titPanel" value="Listado de #{config.Autorizaciones}" />
                 </h:panelGrid>
                 
+                <p:dialog header="Rodales asignados" widgetVar="dlgVerRodales" minHeight="40" closable="false">
+                    <h:form prependId="false" id="frAgregarRodal">
+                        <p:panel id="pnDlgView" style="margin-bottom:10px; width: 220px">
+                            <h:panelGrid columns="1" >
+                                <p:dataTable styleClass="table" value="#{mbAutorizacion.autorizacion.rodales}"
+                                     var="rod"
+                                     id="dtViewRales">
+                                    <p:column headerText="N° de Orden" >                              
+                                        <p:outputLabel value="#{rod.numOrden}"/>
+                                    </p:column>
+                                </p:dataTable> 
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerRodales').hide();"/>
+                            </f:facet>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
                 <h:form prependId="false" id="frListAut">
                     <!-- Formulario de búsqueda -->
                     <p:panel id="pnFrmBusqueda" header="Búsqueda" rendered="#{not mbAutorizacion.view}">
@@ -134,6 +153,10 @@
                                         <f:convertNumber type="currency"  currencySymbol=""/>
                                     </p:outputLabel>
                                 </p:column>
+                                <p:column headerText="Rodales" rendered="#{config.GestionaRodales eq 'si'}" style="width: 50px" >
+                                    <p:commandButton title="Ver rodales asignados" icon="fa fa-fw fa-search" 
+                                                     oncomplete="PF('dlgVerRodales').show();" update="frAgregarRodal"/>
+                                </p:column>
                             </p:dataTable>
                         </h:panelGrid>
                         
@@ -196,7 +219,9 @@
                             <p:outputLabel id="us" value="#{mbAutorizacion.autorizacion.usuario.nombreCompleto}"/>
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Cerrar" process="@this" update="frListAut" action="#{mbAutorizacion.prepareList()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Cerrar" process="@this" update="frListAut" 
+                                             action="#{mbAutorizacion.prepareList()}" title="Cerrar detalle" 
+                                             oncomplete="PF('dlgVerRodales').hide();" />
                         </h:panelGrid>
                     </p:panel>
                     
@@ -288,7 +313,7 @@
                                 filterBy="#{aut.intervencion.nombre}" >
                                 <p:outputLabel value="#{aut.intervencion.nombre}" />
                             </p:column> 
-                            <p:column headerText="Uso Suelo" 
+                            <p:column headerText="Modalidad" 
                                 filterMatchMode="contains"
                                 sortBy="#{aut.usoSuelo.nombre}" 
                                 filterBy="#{aut.usoSuelo.nombre}" >

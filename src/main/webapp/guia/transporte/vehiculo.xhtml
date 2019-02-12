@@ -364,15 +364,20 @@
                                    style="font-style: italic; font-size: small" />
                         <h:panelGrid columns="4">  
                             <p:commandButton value="Buscar por Matrícula" icon="fa fa-fw fa-external-link" process="@this" 
-                                             actionListener="#{mbVehiculo.prepareBuscarMat()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                                             actionListener="#{mbVehiculo.prepareBuscarMat()}" update="pnDlg" 
+                                             oncomplete="PF('dlgEditRue').hide(), PF('dlgModelos').hide(), PF('dlgMarcas').hide(), PF('dlgInsertRue').hide(), PF('dlgBuscarRue').show();"/>
                             <p:commandButton rendered="#{mbVehiculo.vehiculo.id eq null}" value="Agregar nuevo" icon="fa fa-fw fa-plus" update="pgSelPer" 
-                                             oncomplete="PF('dlgInsertRue').show();" action="#{mbVehiculo.limpiarFormVehiculoRue()}"/> 
+                                             oncomplete="PF('dlgModelos').hide(), PF('dlgMarcas').hide(), PF('dlgBuscarRue').hide(), PF('dlgInsertRue').show();" 
+                                             action="#{mbVehiculo.limpiarFormVehiculoRue()}"/> 
                             <p:commandButton rendered="#{mbVehiculo.vehiculo.id eq null}" value="Ver Marcas" icon="fa fa-fw fa-external-link" 
-                                             oncomplete="PF('dlgMarcas').show();" action="#{mbVehiculo.prepareMarcasRue()}" update="pnDlgMarcas"/>  
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgInsertRue').hide(), PF('dlgModelos').hide(), PF('dlgMarcas').show();" 
+                                             action="#{mbVehiculo.prepareMarcasRue()}" update="pnDlgMarcas"/>  
                             <p:commandButton rendered="#{mbVehiculo.vehiculo.id eq null}" value="Ver Modelos" icon="fa fa-fw fa-external-link" 
-                                             oncomplete="PF('dlgModelos').show();" action="#{mbVehiculo.prepareModelosRue()}" update="pnDlgModelos"/>  
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgInsertRue').hide(), PF('dlgMarcas').hide(), PF('dlgModelos').show();" 
+                                             action="#{mbVehiculo.prepareModelosRue()}" update="pnDlgModelos"/>  
                             <p:commandButton rendered="#{mbVehiculo.vehiculo.id ne null}" value="Editar datos RUE" icon="fa fa-fw fa-pencil" 
-                                             oncomplete="PF('dlgEditRue').show();" update="frEditRue" action="#{mbVehiculo.preparaEditRue()}"/>  
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').show();" 
+                                             update="frEditRue" action="#{mbVehiculo.preparaEditRue()}"/>  
                         </h:panelGrid>
                         <h:panelGrid columns="5" rendered="#{mbVehiculo.vehiculo.idRue ne null}">
                             <!-- Campos ocultos -->
@@ -398,9 +403,10 @@
                         </h:panelGrid>
                         <h:panelGrid columns="2" rendered="#{mbVehiculo.vehiculo.idRue ne null}">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbVehiculo.saveVehiculo()}" 
-                                             update="frVehiculos,pnFrmView"/>
+                                             update="frVehiculos,pnFrmView" oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').hide();"/>
                             <p:commandButton title="Hacer doble click para limpiar el formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
-                                             process="@this" action="#{mbVehiculo.limpiarForm()}" update="messagesLocal" >
+                                             process="@this" action="#{mbVehiculo.limpiarForm()}" update="messagesLocal" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').hide();" >
                                 <p:ajax update="pnFrmNew" resetValues="true" />
                             </p:commandButton>
                         </h:panelGrid>
@@ -426,9 +432,11 @@
                         <p:separator rendered="#{mbVehiculo.view}" />
                         <h:panelGrid id="pgBtn" columns="2" rendered="#{mbVehiculo.view}" >
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
-                                             actionListener="#{mbVehiculo.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                                             actionListener="#{mbVehiculo.verDatosRue()}" update="pnDlg" 
+                                             oncomplete="PF('dlgVerGuias').hide(), PF('dlgBuscarRue').show();"/>
                             <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" update="pnViewGuias" 
-                                             actionListener="#{mbVehiculo.preapreViewGuias()}" oncomplete="PF('dlgVerGuias').show();" />
+                                             actionListener="#{mbVehiculo.preapreViewGuias()}" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgVerGuias').show();" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbVehiculo.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbVehiculo.view}" >
@@ -442,7 +450,9 @@
                             <p:outputLabel id="v_habilitado" value="#{mbVehiculo.vehiculo.habilitado}" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbVehiculo.prepareNew()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" 
+                                             action="#{mbVehiculo.prepareNew()}" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgVerGuias').hide();" />
                         </h:panelGrid>
                     </p:panel> 
                     

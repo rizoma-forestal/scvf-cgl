@@ -382,11 +382,14 @@
                                    style="font-style: italic; font-size: small" />
                         <h:panelGrid columns="2">  
                             <p:commandButton value="Buscar por CUIT" icon="fa fa-fw fa-external-link" process="@this" 
-                                             actionListener="#{mbPersona.prepareBuscarCuit()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                                             actionListener="#{mbPersona.prepareBuscarCuit()}" update="pnDlg" 
+                                             oncomplete="PF('dlgDomLocal').hide(), PF('dlgEditRue').hide(), PF('dlgInsertRue').hide(), PF('dlgBuscarRue').show();"/>
                             <p:commandButton rendered="#{mbPersona.persona.id eq null}" value="Agregar nuevo" icon="fa fa-fw fa-plus" 
-                                             oncomplete="PF('dlgInsertRue').show();" action="#{mbPersona.prepareNewInsertRue()}"/>  
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgInsertRue').show();" 
+                                             action="#{mbPersona.prepareNewInsertRue()}"/>  
                             <p:commandButton rendered="#{mbPersona.persona.id ne null}" value="Editar datos RUE" icon="fa fa-fw fa-pencil" 
-                                             oncomplete="PF('dlgEditRue').show();" update="frEditRue" action="#{mbPersona.preparaEditRue()}"/>  
+                                             oncomplete="PF('dlgDomLocal').hide(), PF('dlgBuscarRue').hide(), PF('dlgEditRue').show();" 
+                                             update="frEditRue" action="#{mbPersona.preparaEditRue()}"/>  
                         </h:panelGrid>
                         <h:panelGrid columns="5" rendered="#{mbPersona.persona.idRue ne null}">
                             <!-- Campos ocultos -->
@@ -409,7 +412,8 @@
                             <p:outputLabel value="#{mbPersona.persona.email}" style="color: #0F4C20; font-weight: bold"/>
                             <p:outputLabel value="Domicilios: " />
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-plus" value="Agregar" action="#{mbPersona.prepareDomDest()}" 
-                                             oncomplete="PF('dlgDomLocal').show();" update="cmbProvLoc"/>
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').hide(), PF('dlgDomLocal').show();" 
+                                             update="cmbProvLoc"/>
                         </h:panelGrid>
                         <h:panelGrid columns="1" id="pgDomLoc" rendered="#{mbPersona.persona.idRue ne null}" >
                             <p:dataTable id="dtDomiciliosLoc" value="#{mbPersona.persona.domicilios}" var="domLoc" 
@@ -445,9 +449,11 @@
                         </h:panelGrid>
                         <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveDestinatario()}" 
-                                             update="frDestinatarios,pnFrmView"/>
+                                             update="frDestinatarios,pnFrmView" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').hide(), PF('dlgDomLocal').hide();" />
                             <p:commandButton title="Hacer doble click para limpiar el formulario" icon="fa fa-fw fa-refresh" value="Limpiar" 
-                                             process="@this" action="#{mbPersona.limpiarForm()}" update="messagesLocal" >
+                                             process="@this" action="#{mbPersona.limpiarForm()}" update="messagesLocal" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').hide(), PF('dlgDomLocal').hide();"  >
                                 <p:ajax update="pnFrmNew" resetValues="true" />
                             </p:commandButton>
                         </h:panelGrid>
@@ -497,9 +503,11 @@
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgBtn" columns="2" rendered="#{mbPersona.view}" >
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
-                                             actionListener="#{mbPersona.verDatosRue()}" update="pnDlg" oncomplete="PF('dlgBuscarRue').show();"/>
+                                             actionListener="#{mbPersona.verDatosRue()}" update="pnDlg" 
+                                             oncomplete="PF('dlgVerGuias').hide(), PF('dlgBuscarRue').show();"/>
                             <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" update="pnViewGuias" 
-                                             actionListener="#{mbPersona.preparaViewGuias(config.TegDestino)}" oncomplete="PF('dlgVerGuias').show();" />
+                                             actionListener="#{mbPersona.preparaViewGuias(config.TegDestino)}" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgVerGuias').show();" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbPersona.view}" >
@@ -513,7 +521,9 @@
                             <p:outputLabel id="v_habilitado" value="#{mbPersona.persona.habilitado}" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbPersona.prepareNew()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" 
+                                             action="#{mbPersona.prepareNew()}" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgVerGuias').hide();" />
                         </h:panelGrid>
                     </p:panel>
 

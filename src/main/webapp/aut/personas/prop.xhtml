@@ -382,11 +382,14 @@
                                    style="font-style: italic; font-size: small" />
                         <h:panelGrid columns="2">  
                             <p:commandButton value="Buscar por CUIT" icon="fa fa-fw fa-external-link" process="@this" 
-                                             actionListener="#{mbPersona.prepareBuscarCuit()}" update="pnDlgBuscar" oncomplete="PF('dlgBuscarRue').show();"/>
+                                             actionListener="#{mbPersona.prepareBuscarCuit()}" update="pnDlgBuscar" 
+                                             oncomplete="PF('dlgEditRue').hide(), PF('dlgInsertRue').hide(), PF('dlgBuscarRue').show();"/>
                             <p:commandButton rendered="#{mbPersona.persona.id eq null}" value="Agregar nuevo" icon="fa fa-fw fa-plus" 
-                                             oncomplete="PF('dlgInsertRue').show();" action="#{mbPersona.prepareNewInsertRue()}"/>  
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgInsertRue').show();" 
+                                             action="#{mbPersona.prepareNewInsertRue()}"/>  
                             <p:commandButton rendered="#{mbPersona.persona.id ne null}" value="Editar datos RUE" icon="fa fa-fw fa-pencil" 
-                                             oncomplete="PF('dlgEditRue').show();" update="frEditRue" action="#{mbPersona.preparaEditRue()}"/> 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').show();" 
+                                             update="frEditRue" action="#{mbPersona.preparaEditRue()}"/> 
                         </h:panelGrid>
                         <h:panelGrid columns="5" rendered="#{mbPersona.persona.idRue ne null}">
                             <!-- Campos ocultos -->
@@ -410,9 +413,10 @@
                         </h:panelGrid>
                         <h:panelGrid columns="2" rendered="#{mbPersona.persona.idRue ne null}">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbPersona.saveProponente()}" 
-                                             update="frProponentes,pnFrmView"/>
+                                             update="frProponentes,pnFrmView" oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').hide();" />
                             <p:commandButton title="Limpiar los datos del formulario" icon="fa fa-fw fa-refresh" value="Limpiar"  >
-                                <p:ajax listener="#{mbPersona.limpiarFormProp()}" update="pnFrmNew,messagesLocal" resetValues="true" />
+                                <p:ajax listener="#{mbPersona.limpiarFormProp()}" update="pnFrmNew,messagesLocal" resetValues="true" 
+                                        oncomplete="PF('dlgBuscarRue').hide(), PF('dlgEditRue').hide();"  />
                             </p:commandButton>
                         </h:panelGrid>
                     </p:panel>
@@ -434,11 +438,14 @@
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgBtn" columns="3" rendered="#{mbPersona.view}" >
                             <p:commandButton value="Ver más datos" icon="fa fa-fw fa-external-link" process="@this" 
-                                             actionListener="#{mbPersona.verDatosRue()}" update="pnDlgBuscar" oncomplete="PF('dlgBuscarRue').show();"/>
+                                             actionListener="#{mbPersona.verDatosRue()}" update="pnDlgBuscar" 
+                                             oncomplete="PF('dlgVerAut').hide(), PF('dlgVerGuias').hide(), PF('dlgBuscarRue').show();"/>
                             <p:commandButton value="Ver Autorizaciones" icon="fa fa-fw fa-external-link" process="@this" update="pnViewAut" 
-                                             actionListener="#{mbPersona.prepareViewAut(config.Proponente)}" oncomplete="PF('dlgVerAut').show();" />
+                                             actionListener="#{mbPersona.prepareViewAut(config.Proponente)}" 
+                                             oncomplete="PF('dlgVerGuias').hide(), PF('dlgBuscarRue').hide(), PF('dlgVerAut').show();" />
                             <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" update="pnViewGuias" 
-                                             actionListener="#{mbPersona.preparaViewGuias(config.TegFuente)}" oncomplete="PF('dlgVerGuias').show();" />
+                                             actionListener="#{mbPersona.preparaViewGuias(config.TegFuente)}" 
+                                             oncomplete="PF('dlgBuscarRue').hide(), PF('dlgVerAut').hide(), PF('dlgVerGuias').show();" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbPersona.view}" />
                         <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbPersona.view}" >
@@ -452,7 +459,9 @@
                             <p:outputLabel id="v_habilitado" value="#{mbPersona.persona.habilitado}" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbPersona.prepareNew()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" 
+                                             action="#{mbPersona.prepareNew()}" 
+                                             oncomplete="PF('dlgBuscarRue').hide(),PF('dlgVerAut').hide(), PF('dlgVerGuias').hide();" />
                         </h:panelGrid>
                     </p:panel>
 

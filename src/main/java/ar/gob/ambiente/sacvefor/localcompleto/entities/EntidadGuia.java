@@ -98,8 +98,8 @@ public class EntidadGuia implements Serializable {
      * Variable privada: Identificación catastral del Inmueble productor (cacheado del Inmueble)
      * Solo para Origen
      */
-    @Column (length=20)
-    @Size(message = "El campo inmCatastro no puede tener más de 20 caracteres", max = 20) 
+    @Column (length=30)
+    @Size(message = "El campo inmCatastro no puede tener más de 30 caracteres", max = 30) 
     private String inmCatastro;
     
     /**

@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 /**
  * Entidad que encapsula las características de un rodal,
@@ -27,6 +28,23 @@ public class Rodal implements Serializable {
      * Variable privada: Número de orden del rodal
      */
     private int numOrden;
+    
+    /**
+     * Variable privada: Flag que indica si el rodal listado 
+     * está o no asigado a la entidad que se está gestionando, 
+     * sea esta una Autorización o una Guía.
+     * No se persiste.
+     */
+    @Transient
+    private boolean asignado;
+
+    public boolean isAsignado() {
+        return asignado;
+    }
+
+    public void setAsignado(boolean asignado) {
+        this.asignado = asignado;
+    }
 
     public int getNumOrden() {
         return numOrden;

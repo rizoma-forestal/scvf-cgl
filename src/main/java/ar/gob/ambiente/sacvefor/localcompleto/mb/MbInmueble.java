@@ -5,6 +5,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Inmueble;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Rodal;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.AutorizacionFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.InmuebleFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
@@ -122,6 +123,11 @@ public class MbInmueble {
      */  
     @EJB
     private TipoParamFacade tipoParamFacade;    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Autorizacion
+     */
+    @EJB
+    private AutorizacionFacade autFacade;
     
     ////////////////////////////////////////////////////////////
     // Clientes REST para la selección de datos territoriales //
@@ -524,18 +530,65 @@ public class MbInmueble {
     }
     
     /**
-     * Método para instanciar el Rodal para asignarlo al inmueble
+     * Método para preparar el formulario de gestión de rodales.
+     * Agrega nuevos, quita existentes. 
+     * En caso de tener Autorizaciones vinculadas al inmueble, 
+     * de los rodales existentes, solo se podrán quitar los rodales 
+     * no asingados a ninguna autorización
      */
     public void prepareAddRodal(){
+        limpiarRodal();
+        // si el inmueble tiene rodales, valido su asignación para alguna autorización
+        if(!inmueble.getRodales().isEmpty()){
+            try{
+                for(Rodal r : inmueble.getRodales()){
+                    // si el rodal está asignado a alguna autorización, seteo el flag correspondiente
+                    if(!autFacade.getByRodal(r).isEmpty()){
+                        r.setAsignado(true);
+                    }
+                }
+            }catch(Exception ex){
+                JsfUtil.addErrorMessage("Hubo un error seteando los rodales asignados a una Autorización" + ex.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Método para limpiar el objeto rodal del formulario
+     */
+    public void limpiarRodal(){
         rodal = new Rodal();
     }
     
     /**
      * Método para agregar un rodal al inmueble
-     * Valida que el número de orden del rodal a registrar no esté asignado ya al inmueble
+     * Valida que el número de orden del rodal a registrar no esté asignado ya al inmueble y que sea correlativo del mayor
      */
     public void agregarRodal(){
         boolean valida = true;
+        // valido que no sea 0
+        if(rodal.getNumOrden() <= 0){
+            valida = false;
+            JsfUtil.addErrorMessage("El número de orden del rodal debe ser mayor que 0.");
+        }
+        // valido que sea correlativo
+        if(inmueble.getRodales().isEmpty()){
+            if(rodal.getNumOrden() > 1){
+                valida = false;
+                JsfUtil.addErrorMessage("Los números de orden de los rodales deben ser correlativos, corresponde 1.");
+            }
+        }else{
+            int num = 0;
+            for(Rodal r : inmueble.getRodales()){
+                if(r.getNumOrden() > num){
+                    num = r.getNumOrden();
+                }
+            }
+            if(rodal.getNumOrden() != num + 1){
+                valida = false;
+                JsfUtil.addErrorMessage("Los números de orden de los rodales deben ser correlativos, corresponde " + String.valueOf(num + 1) + ".");
+            }
+        }
         // valido que el número de orden del rodal no esté ya incluido
         for(Rodal rod : inmueble.getRodales()){
             if(rodal.getNumOrden() == rod.getNumOrden()){
@@ -547,7 +600,7 @@ public class MbInmueble {
         try{
             if(valida){
                 inmueble.getRodales().add(rodal);
-                prepareAddRodal();
+                limpiarRodal();
             }
         }catch(Exception ex){
             JsfUtil.addErrorMessage(ex, "Hubo un error al agergar el Rodal al " + ResourceBundle.getBundle("/Config").getString("Inmueble") + ": " + ex.getMessage());
@@ -567,7 +620,7 @@ public class MbInmueble {
             i = i+= 1;
         }
         inmueble.getRodales().remove(j);
-        prepareAddRodal();      
+        limpiarRodal();      
     }
     
     //////////////////////

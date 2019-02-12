@@ -126,11 +126,14 @@
                         </h:panelGrid>
                         <h:panelGrid columns="1">
                             <p:commandButton value="Agregar Tasas" icon="fa fa-fw fa-external-link" process="@this" 
-                                             update="dtTasas" action="#{mbProducto.prepareAddTasa()}" oncomplete="PF('dlgAgregarTasa').show();"/>
+                                             update="dtTasas" action="#{mbProducto.prepareAddTasa()}" 
+                                             oncomplete="PF('dlgAgregarTasa').show();"/>
                         </h:panelGrid>
                         <h:panelGrid columns="2">
-                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbProducto.saveProducto()}" update="frProductos"/>
-                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbProducto.limpiarFormProducto()}" update="pnFrmNew"/>
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbProducto.saveProducto()}" 
+                                             update="frProductos" oncomplete="PF('dlgAgregarTasa').hide();"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbProducto.limpiarFormProducto()}" 
+                                             update="pnFrmNew" oncomplete="PF('dlgAgregarTasa').hide();"/>
                         </h:panelGrid>
                     </p:panel>
                     
@@ -168,7 +171,8 @@
                             <p:outputLabel id="v_habilitado" value="#{mbProducto.producto.habilitado}" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbProducto.prepareNewEdit()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" 
+                                             action="#{mbProducto.prepareNewEdit()}" oncomplete="PF('dlgVerTasas').hide();" />
                         </h:panelGrid>
                     </p:panel>
 
