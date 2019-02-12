@@ -82,15 +82,15 @@
                                                  update="@form" action="#{mbProducto.prepareNewEdit()}" >
                                     <f:setPropertyActionListener value="#{clase}" target="#{mbProducto.prodClase}" /> 
                                 </p:commandButton>
-                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbProducto.deshabilitarUnidad()}" 
+                                <p:commandButton icon="fa fa-fw fa-toggle-off" title="Deshabilitar" action="#{mbProducto.deshabilitarClase()}" 
                                                  process="@this" update="@form" rendered="#{clase.habilitado}" >
                                     <f:setPropertyActionListener value="#{clase}" target="#{mbProducto.prodClase}" /> 
-                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar la Clase de Producto forestal: #{clase.nombre}?" icon="ui-icon-alert" />
+                                    <p:confirm header="Confirmar" message="¿Desea deshabilitar #{config.Clase} de Producto forestal: #{clase.nombre}?" icon="ui-icon-alert" />
                                 </p:commandButton>
-                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbProducto.habilitarUnidad()}" 
+                                <p:commandButton icon="fa fa-fw fa-toggle-on" title="Habilitar" action="#{mbProducto.habilitarClase()}" 
                                                  process="@this" update="@form" rendered="#{not clase.habilitado}" >
                                     <f:setPropertyActionListener value="#{clase}" target="#{mbProducto.prodClase}" /> 
-                                    <p:confirm header="Confirmar" message="¿Desea habilitar la Clase de Producto forestal: #{clase.nombre}?" icon="ui-icon-alert" />
+                                    <p:confirm header="Confirmar" message="¿Desea habilitar #{config.Clase} de Producto forestal: #{clase.nombre}?" icon="ui-icon-alert" />
                                 </p:commandButton>
                                 <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
                                     <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />

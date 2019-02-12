@@ -18,7 +18,7 @@
                     <p:outputLabel id="id" value="#{mbGuia.itemAsignado.idProd}"/>
                     <p:outputLabel value="Especie local: " for="especie"/>
                     <p:outputLabel id="especie" value="#{mbGuia.itemAsignado.nombreVulgar}"/>
-                    <p:outputLabel value="Clase: " for="clase"/>
+                    <p:outputLabel value="#{config.Clase}: " for="clase"/>
                     <p:outputLabel id="clase" value="#{mbGuia.itemAsignado.clase}"/>
                     <p:outputLabel value="Unidad: " for="unidad"/>
                     <p:outputLabel id="unidad" value="#{mbGuia.itemAsignado.unidad}"/>
@@ -72,7 +72,7 @@
                     <p:column headerText="Nombre científico" style="width:130px" >
                         <p:outputLabel value="#{itemOrigen.nombreCientifico}"/>
                     </p:column>
-                    <p:column headerText="Clase" >
+                    <p:column headerText="#{config.Clase}" >
                         <p:outputLabel value="#{itemOrigen.clase}"/>
                     </p:column>
                     <p:column headerText="Unidad" >
@@ -122,7 +122,7 @@
                     <p:column headerText="Nombre científico" >
                         <p:outputLabel value="#{itemAsignado.nombreCientifico}"/>
                     </p:column>
-                    <p:column headerText="Clase" >
+                    <p:column headerText="#{config.Clase}" >
                         <p:outputLabel value="#{itemAsignado.clase}"/>
                     </p:column>
                     <p:column headerText="Unidad" >

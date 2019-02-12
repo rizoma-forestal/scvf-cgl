@@ -106,6 +106,16 @@ public class Persona implements Serializable {
     private String tipo;
     
     /**
+     * Para los Obrajeros, ruta del martillo
+     */
+    private String rutaArchivo;
+    
+    /**
+     * Para los Obrajeros, nombre del archivo del martillo
+     */
+    private String nombreArchivo;    
+    
+    /**
      * Variable privada: Fecha de alta de la Persona
      */
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -137,7 +147,15 @@ public class Persona implements Serializable {
     @Audited(targetAuditMode = NOT_AUDITED)
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
     @JoinColumn(name = "persona_id", referencedColumnName = "id")
-    private List<Domicilio> domicilios;     
+    private List<Domicilio> domicilios;    
+    
+    /**
+     * Variable privada: indica si la ruta a la imagen del martillo es temporal o definitiva.
+     * Solo para Obradores
+     */
+    @Transient
+    private boolean rutaTemporal;
+   
     
     /**
      * Constructor, instancia el lsitado de domicilios
@@ -145,13 +163,40 @@ public class Persona implements Serializable {
     public Persona(){
         domicilios = new ArrayList<>();
     }
+
+    // métodos de acceso
+    public void setRutaTemporal(boolean rutaTemporal) {
+        this.rutaTemporal = rutaTemporal;
+    }
+
+    @XmlTransient
+    public boolean isRutaTemporal() {
+        return rutaTemporal;
+    } 
     
-    // métodos de acceso    
+    @XmlTransient    
+    public String getRutaArchivo() {    
+        return rutaArchivo;
+    }
+
+    public void setRutaArchivo(String rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
+    }
+
+    @XmlTransient
+    public String getNombreArchivo() {
+        return nombreArchivo;
+    }
+
+    public void setNombreArchivo(String nombreArchivo) {
+        this.nombreArchivo = nombreArchivo;
+    }
+
     /**
      * Método que devuelve los domicilio de una persona con el rol de destinatario
      * No estará disponible en la API
      * @return List<Domicilio> listado con los domicilios de la persona.
-     */
+     */    
     @XmlTransient
     public List<Domicilio> getDomicilios() {    
         return domicilios;

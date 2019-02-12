@@ -12,7 +12,7 @@
 	<columnHeader>
 		<band height="20" splitType="Stretch">
 			<staticText>
-				<reportElement x="161" y="0" width="64" height="20" uuid="1c46a8a0-dad0-4dfe-859d-7c681212c3f0"/>
+				<reportElement x="206" y="0" width="53" height="20" uuid="1c46a8a0-dad0-4dfe-859d-7c681212c3f0"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -26,7 +26,7 @@
 				<text><![CDATA[$/Unidad]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="0" width="161" height="20" uuid="348fa70f-9db2-4c43-a087-29ef6f23b130"/>
+				<reportElement x="0" y="0" width="206" height="20" uuid="348fa70f-9db2-4c43-a087-29ef6f23b130"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -40,7 +40,7 @@
 				<text><![CDATA[Tasa]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="225" y="0" width="62" height="20" uuid="ab08ed07-0664-4944-aa81-4299684ebe78"/>
+				<reportElement x="259" y="0" width="62" height="20" uuid="ab08ed07-0664-4944-aa81-4299684ebe78"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -58,7 +58,7 @@
 	<detail>
 		<band height="15" splitType="Stretch">
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="161" y="0" width="64" height="15" uuid="04b0b1ed-024b-44ae-adbb-621b33f9d6e2"/>
+				<reportElement x="206" y="0" width="53" height="15" uuid="04b0b1ed-024b-44ae-adbb-621b33f9d6e2"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -72,7 +72,7 @@
 				<textFieldExpression><![CDATA[$F{property}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="161" height="15" uuid="23dfeef8-f8dc-4043-b759-6ff8b0f66041"/>
+				<reportElement x="0" y="0" width="206" height="15" uuid="23dfeef8-f8dc-4043-b759-6ff8b0f66041"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -86,7 +86,7 @@
 				<textFieldExpression><![CDATA[$F{header}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="225" y="0" width="62" height="15" uuid="ca054109-b035-408b-9b54-5b842bcbc8f2"/>
+				<reportElement x="259" y="0" width="62" height="15" uuid="ca054109-b035-408b-9b54-5b842bcbc8f2"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>

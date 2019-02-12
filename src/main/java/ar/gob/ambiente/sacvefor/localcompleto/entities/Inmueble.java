@@ -4,6 +4,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.entities;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -82,8 +83,8 @@ public class Inmueble implements Serializable {
     /**
      * Variable privada: Si existiera, la identificación catastral
      */
-    @Column (length=20)
-    @Size(message = "El campo idCatastral no puede tener más de 20 caracteres", max = 20) 
+    @Column (length=30)
+    @Size(message = "El campo idCatastral no puede tener más de 30 caracteres", max = 30) 
     private String idCatastral;
     
     /**
@@ -127,7 +128,24 @@ public class Inmueble implements Serializable {
     /**
      * Variable privada: Para los Proponentes, nombre del archivo
      */
-    private String nombreArchivo;    
+    private String nombreArchivo; 
+    
+    /**
+     * Listado de los rodales que tendrá el inmueble en el caso que su rol sea el de Destinatario.
+     * Requerido por la Provincia de Misiones.
+     */
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
+    @JoinColumn(name = "inmueble_id", referencedColumnName = "id")    
+    private List<Rodal> rodales;
+    
+    /**
+     * Variable privada: Entidad paramétrica que representa el origen del predio.
+     * Puede ser nulo. Requerido por la Provincia de Misiones.
+     * Público, Privado, etc.
+     */
+    @ManyToOne
+    @JoinColumn(name="param_origen_id") 
+    private Parametrica origen;
     
     /**
      * Variable privada no persistida: Campo que indica si la ruta a la imagen del martillo es temporal o definitiva
@@ -141,15 +159,32 @@ public class Inmueble implements Serializable {
      */
     public Inmueble(){
         inmHijos = new ArrayList<>();
+        rodales = new ArrayList<>();
     }
     
-    // métodos de acceso    
+    // métodos de acceso
+    public Parametrica getOrigen() {
+        return origen;
+    }
+
+    public void setOrigen(Parametrica origen) {    
+        this.origen = origen;
+    }
+
+    public List<Rodal> getRodales() {
+        return rodales;
+    }
+
+    public void setRodales(List<Rodal> rodales) {
+        this.rodales = rodales;    
+    }
+
     /**
      * Método que retorna la condición de temporal de la ruta de la imagen del martillo
      * no incluido en la entidad de para la API Rest
      * @return boolean verdadero o falso según el caso
-     */
-    @XmlTransient    
+     */    
+    @XmlTransient
     public boolean isRutaTemporal() {
         return rutaTemporal;
     }

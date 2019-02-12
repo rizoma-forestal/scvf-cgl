@@ -24,10 +24,10 @@
                                        var="esp" itemLabel="#{esp.nombreVulgar}" itemValue="#{esp}"/>
                         <p:ajax listener="#{mbAutorizacion.especieChangeListener()}" update="pnBuscar,cmbClasesBuscar" />
                     </p:selectOneMenu>
-                    <p:outputLabel value="Clase" for="cmbClasesBuscar"/>
+                    <p:outputLabel value="#{config.Clase}" for="cmbClasesBuscar"/>
                     <p:selectOneMenu id="cmbClasesBuscar" value="#{mbAutorizacion.prodClaseSelected}" required="true" 
-                                     requiredMessage="Debe seleccionar una Clase." >
-                        <f:selectItem itemLabel="Seleccione una Clase" itemValue="" noSelectionOption="true"/>
+                                     requiredMessage="Debe seleccionar #{config.Clase}." >
+                        <f:selectItem itemLabel="Seleccione #{config.Clase}" itemValue="" noSelectionOption="true"/>
                         <f:selectItems value="#{mbAutorizacion.lstProductos}" 
                                        var="prodClase" itemLabel="#{prodClase.clase.nombre}-#{prodClase.clase.unidad.abreviatura}" itemValue="#{prodClase}"/>
                     </p:selectOneMenu>
@@ -48,7 +48,7 @@
                     <p:outputLabel id="especie" value="#{mbAutorizacion.itemAutorizado.nombreVulgar}"/>
                     <p:outputLabel value="Nombre científico: " for="nomCient"/>
                     <p:outputLabel id="nomCient" value="#{mbAutorizacion.itemAutorizado.nombreCientifico}"/>
-                    <p:outputLabel value="Clase: " for="clase"/>
+                    <p:outputLabel value="#{config.Clase}: " for="clase"/>
                     <p:outputLabel id="clase" value="#{mbAutorizacion.itemAutorizado.clase}"/>
                     <p:outputLabel value="Unidad: " for="unidad"/>
                     <p:outputLabel id="unidad" value="#{mbAutorizacion.itemAutorizado.unidad}"/>
@@ -119,7 +119,7 @@
                         filterBy="#{item.nombreVulgar}" >
                         <p:outputLabel value="#{item.nombreVulgar}"/>
                     </p:column>
-                    <p:column headerText="Clase" 
+                    <p:column headerText="#{config.Clase}" 
                         filterMatchMode="contains"
                         sortBy="#{item.clase}" 
                         filterBy="#{item.clase}" >
