@@ -336,6 +336,7 @@ public class Guia implements Serializable {
         rodales = new ArrayList<>();
     }
 
+    @XmlTransient
     public List<Rodal> getRodales() {
         return rodales;
     }
