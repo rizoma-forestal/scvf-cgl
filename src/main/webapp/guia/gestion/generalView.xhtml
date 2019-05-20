@@ -10,6 +10,26 @@
             <p:outputLabel styleClass="titPanel" value="#{config.Origen}" />
             <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
+        
+        <p:dialog header="Rodales asignados" widgetVar="dlgVerRodales" minHeight="40" closable="false">
+            <h:form prependId="false" id="frAgregarRodal">
+                <p:panel id="pnDlgView" style="margin-bottom:10px; width: 220px">
+                    <h:panelGrid columns="1" >
+                        <p:dataTable styleClass="table" value="#{mbGuia.guia.rodales}"
+                             var="rod"
+                             id="dtViewRales">
+                            <p:column headerText="N° de Orden" >                              
+                                <p:outputLabel value="#{rod.numOrden}"/>
+                            </p:column>
+                        </p:dataTable> 
+                    </h:panelGrid>
+                    <f:facet name="footer">
+                        <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerRodales').hide();"/>
+                    </f:facet>
+                </p:panel>
+            </h:form>
+        </p:dialog>        
+        
         <h:form prependId="false" id="frInstrumento">
             <p:growl id="messagesGral" showDetail="false" />
             <p:panel id="pnView" header="Detalle de los datos administrativos" style="margin-bottom:10px;" >
@@ -63,6 +83,12 @@
                             <p:outputLabel value="AUTORIZACION" style=" font-weight: bold" />
                             <p:outputLabel value="Número: " />
                             <p:outputLabel value="#{mbGuia.guia.numFuente}" style=" font-weight: bold" />
+                        </h:panelGrid>
+                    </p:fieldset>
+                    <p:fieldset toggleable="true" legend="Productos extraídos" style="margin-bottom:20px" rendered="#{config.DiscTasaDestExt eq 'si' and not mbGuia.guia.tipo.habilitaTransp}">
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Con Destino externo: " />
+                            <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guia.destinoExterno}" />
                         </h:panelGrid>
                     </p:fieldset>
                 </h:panelGrid>
@@ -126,6 +152,10 @@
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
+                        <h:panelGrid columns="2" cellpadding="1">
+                            <p:outputLabel value="Con Destino externo: " rendered="#{config.DiscTasaDestExt eq 'si'}" />
+                            <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guia.destinoExterno}" rendered="#{config.DiscTasaDestExt eq 'si'}" />
+                        </h:panelGrid>
                     </p:fieldset>
                 </h:panelGrid>
                 
@@ -139,6 +169,29 @@
                 </h:panelGrid>
                 
                 <p:separator />
+                
+                <h:panelGrid id="pgObrajeros" columns="1" rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" >
+                    <p:outputLabel value="#{config.Obrajeros}" style="font-weight: bold" />
+                    <p:dataTable styleClass="table" value="#{mbGuia.guia.obrajeros}"
+                                 var="obraj"
+                                 id="dtObrajeros" 
+                                 widgetVar="obrajTable" >
+                        <p:column headerText="Id" style="width:50px">
+                            <p:outputLabel value="#{obraj.id}"/>
+                        </p:column>
+                        <p:column headerText="Nombre completo" >
+                            <p:outputLabel value="#{obraj.nombreCompleto}"/>
+                        </p:column>
+                        <p:column headerText="CUIT" style="width:200px" >
+                            <p:outputLabel value="#{obraj.cuit}"/>
+                        </p:column>
+                        <p:column headerText="Tipo" style="width:200px" >
+                            <p:outputLabel value="#{obraj.tipo}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+                
+                <p:separator rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" />
                 
                 <h:panelGrid id="pgGuiaProductos" columns="1" >
                     <p:outputLabel value="Productos disponibles para el descuento" style="font-weight: bold" />
@@ -157,7 +210,7 @@
                             <p:column headerText="Nombre científico" >
                                 <p:outputLabel value="#{itemAut.nombreCientifico}"/>
                             </p:column>
-                            <p:column headerText="Clase" >
+                            <p:column headerText="#{config.Clase}" >
                                 <p:outputLabel value="#{itemAut.clase}"/>
                             </p:column>
                             <p:column headerText="Unidad" >
@@ -179,7 +232,7 @@
                 <p:separator />
 
                 <h:panelGrid id="pgGuiaInmuebles" columns="1" >
-                    <p:outputLabel value="Inmuebles" style="font-weight: bold" />
+                    <p:outputLabel value="#{config.Inmuebles}" style="font-weight: bold" />
                     <p:dataTable styleClass="table" value="#{mbGuia.lstInmueblesOrigen}"
                                  var="inm"
                                  id="dtGuiaInms" >
@@ -199,6 +252,11 @@
                             <p:outputLabel value="#{inm.superficie}" >
                                 <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
                             </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Rodales" rendered="#{config.GestionaRodales eq 'si'}" style="width: 50px" >
+                            <p:commandButton title="Ver rodales asignados" icon="fa fa-fw fa-search"
+                                             action="#{mbGuia.prepareViewRodalesAsignados()}"
+                                             oncomplete="PF('dlgVerRodales').show();" update="frAgregarRodal"/>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>

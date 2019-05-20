@@ -2,7 +2,13 @@
 package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Inmueble;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Rodal;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.AutorizacionFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.InmuebleFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.DepartamentoClient;
 import ar.gob.ambiente.sacvefor.localcompleto.territ.client.LocalidadClient;
@@ -62,6 +68,24 @@ public class MbInmueble {
     private List<Inmueble> lstInmOrigen;
     
     /**
+     * Variable privada: listado de las paramétricas que oficiarán de opciones para seleccionar el origen del inmueble.
+     * (Privado, Fiscal, etc.) A pedido de la Provincia de Misiones.
+     */
+    private List<Parametrica> lstOrigenInm;
+
+    /**
+     * Variable privada: rodal a asignar al inmueble
+     */
+    private Rodal rodal;
+    
+    /**
+     * Variable privada: listado de rodales en los que podrá estar subdividido un inmueble. 
+     * Los mismos podrán ser incuidos como atributo en el inmueble a registrar.
+     * A pedido de la Provincia de Misiones.
+     */
+    private List<Rodal> rodales;
+    
+    /**
      * Variable privada: flag que indica que el inmueble que se está gestionando no está editable
      */
     private boolean view;
@@ -89,6 +113,21 @@ public class MbInmueble {
      */ 
     @EJB
     private InmuebleFacade inmFacade;
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Parametrica.
+     */
+    @EJB
+    private ParametricaFacade paramFacade;
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de TipoParam
+     */  
+    @EJB
+    private TipoParamFacade tipoParamFacade;    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de Autorizacion
+     */
+    @EJB
+    private AutorizacionFacade autFacade;
     
     ////////////////////////////////////////////////////////////
     // Clientes REST para la selección de datos territoriales //
@@ -168,7 +207,32 @@ public class MbInmueble {
     ///////////////////////
     // Métodos de acceso //
     ///////////////////////  
-    public boolean isSubeMartillo() {        
+    public Rodal getRodal() {    
+        return rodal;
+    }    
+  
+    public void setRodal(Rodal rodal) {
+        this.rodal = rodal;
+    }
+
+    public List<Parametrica> getLstOrigenInm() {
+        TipoParam tipoParam = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("OrigenPredio"));
+        return paramFacade.getHabilitadas(tipoParam);
+    }    
+
+    public void setLstOrigenInm(List<Parametrica> lstOrigenInm) {
+        this.lstOrigenInm = lstOrigenInm;
+    }
+
+    public List<Rodal> getRodales() {
+        return rodales;
+    }
+
+    public void setRodales(List<Rodal> rodales) {        
+        this.rodales = rodales;
+    }
+
+    public boolean isSubeMartillo() {
         return subeMartillo;
     }    
     
@@ -177,7 +241,7 @@ public class MbInmueble {
     }
 
     public List<Inmueble> getLstInmOrigen() {
-        lstInmOrigen = inmFacade.getHabilitados();
+        lstInmOrigen = inmFacade.getHabilitados();  
         return lstInmOrigen;
     }
      
@@ -463,7 +527,101 @@ public class MbInmueble {
         }catch(IOException e){
             JsfUtil.addErrorMessage("Hubo un error subiendo la imagen del Martillo" + e.getLocalizedMessage());
         }
-    }      
+    }
+    
+    /**
+     * Método para preparar el formulario de gestión de rodales.
+     * Agrega nuevos, quita existentes. 
+     * En caso de tener Autorizaciones vinculadas al inmueble, 
+     * de los rodales existentes, solo se podrán quitar los rodales 
+     * no asingados a ninguna autorización
+     */
+    public void prepareAddRodal(){
+        limpiarRodal();
+        // si el inmueble tiene rodales, valido su asignación para alguna autorización
+        if(!inmueble.getRodales().isEmpty()){
+            try{
+                for(Rodal r : inmueble.getRodales()){
+                    // si el rodal está asignado a alguna autorización, seteo el flag correspondiente
+                    if(!autFacade.getByRodal(r).isEmpty()){
+                        r.setAsignado(true);
+                    }
+                }
+            }catch(Exception ex){
+                JsfUtil.addErrorMessage("Hubo un error seteando los rodales asignados a una Autorización" + ex.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Método para limpiar el objeto rodal del formulario
+     */
+    public void limpiarRodal(){
+        rodal = new Rodal();
+    }
+    
+    /**
+     * Método para agregar un rodal al inmueble
+     * Valida que el número de orden del rodal a registrar no esté asignado ya al inmueble y que sea correlativo del mayor
+     */
+    public void agregarRodal(){
+        boolean valida = true;
+        // valido que no sea 0
+        if(rodal.getNumOrden() <= 0){
+            valida = false;
+            JsfUtil.addErrorMessage("El número de orden del rodal debe ser mayor que 0.");
+        }
+        // valido que sea correlativo
+        if(inmueble.getRodales().isEmpty()){
+            if(rodal.getNumOrden() > 1){
+                valida = false;
+                JsfUtil.addErrorMessage("Los números de orden de los rodales deben ser correlativos, corresponde 1.");
+            }
+        }else{
+            int num = 0;
+            for(Rodal r : inmueble.getRodales()){
+                if(r.getNumOrden() > num){
+                    num = r.getNumOrden();
+                }
+            }
+            if(rodal.getNumOrden() != num + 1){
+                valida = false;
+                JsfUtil.addErrorMessage("Los números de orden de los rodales deben ser correlativos, corresponde " + String.valueOf(num + 1) + ".");
+            }
+        }
+        // valido que el número de orden del rodal no esté ya incluido
+        for(Rodal rod : inmueble.getRodales()){
+            if(rodal.getNumOrden() == rod.getNumOrden()){
+                valida = false;
+                JsfUtil.addErrorMessage("El rodal que está queriendo agregar ya está asignado al " + ResourceBundle.getBundle("/Config").getString("Inmueble") + ".");
+            }
+        }
+        
+        try{
+            if(valida){
+                inmueble.getRodales().add(rodal);
+                limpiarRodal();
+            }
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage(ex, "Hubo un error al agergar el Rodal al " + ResourceBundle.getBundle("/Config").getString("Inmueble") + ": " + ex.getMessage());
+        }   
+    }
+    
+    /**
+     * Método para desagregar un rodal ya asingado al inmueble
+     */
+    public void desagregarRodal(){
+        int i = 0, j = 0;
+        
+        for(Rodal rod : inmueble.getRodales()){
+            if(rodal.getNumOrden() == rod.getNumOrden()){
+                j = i;
+            }
+            i = i+= 1;
+        }
+        inmueble.getRodales().remove(j);
+        limpiarRodal();      
+    }
     
     //////////////////////
     // Métodos privados //

@@ -56,6 +56,38 @@ public class Parametrica implements Serializable {
      * Variable privada: condición de habilitado
      */
     private boolean habilitado;
+    
+    /**
+     * Variable privada: solo se utilizará para las Paramétrica de tipo TIPO_TASA, 
+     * en el caso en que la tasa sea discriminatoria.
+     */
+    @Column (nullable=true)
+    private boolean leeConf;
+    
+    /**
+     * Variable privada: solo se utilizará para las Paramétrica de tipo TIPO_TASA, 
+     * en el caso en que se haya seteado leeConf en true, indicará la variable de
+     * configuración para la discriminación de la liquidación de la tasa, configurada en el properties.
+     */
+    @Column (nullable=true, length=30)
+    @Size(message = "El campo conf no puede tener más de 30 caracteres", max = 30)  
+    private String conf;
+
+    public boolean isLeeConf() {
+        return leeConf;
+    }
+
+    public void setLeeConf(boolean leeConf) {
+        this.leeConf = leeConf;
+    }
+
+    public String getConf() {
+        return conf;
+    }
+
+    public void setConf(String conf) {
+        this.conf = conf;
+    }
 
     public Long getId() {
         return id;

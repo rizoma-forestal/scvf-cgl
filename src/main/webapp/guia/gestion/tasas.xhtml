@@ -19,7 +19,7 @@
                         <p:column headerText="Especie">
                             <p:outputLabel value="#{dt.nombreProd}" />
                         </p:column>
-                        <p:column headerText="Clase" style="width: 120px">
+                        <p:column headerText="#{config.Clase}" style="width: 120px">
                             <p:outputLabel value="#{dt.clase}" />
                         </p:column>
                         <p:columns value="#{mbGuia.lstNombresTasas}" var="nomTasa" style="text-align: right !important; width: 70px">
@@ -41,7 +41,7 @@
                         <p:column headerText="Especie">
                             <p:outputLabel value="#{detTasa.nombreProd}" />
                         </p:column>
-                        <p:column headerText="Clase" style="width: 120px">
+                        <p:column headerText="#{config.Clase}" style="width: 120px">
                             <p:outputLabel value="#{detTasa.clase}" />
                         </p:column>
                         <p:column headerText="Cantidad" style="text-align: right !important; width: 70px">

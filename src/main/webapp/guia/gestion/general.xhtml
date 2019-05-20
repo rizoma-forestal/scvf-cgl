@@ -9,6 +9,56 @@
             <img src="#{request.contextPath}/resources/img/resume.png" width="50" height="50" style="float: left; margin-left: 15px" />
             <p:outputLabel styleClass="titPanel" value="Datos generales" />
         </h:panelGrid>
+        <!-- Diálogo para ver los rodales del predio, si tiene asignados -->
+        <p:dialog header="Rodales disponibles" widgetVar="dlgVerRodales" minHeight="40" closable="false">
+            <h:form prependId="false" id="frAgregarRodal">
+                <p:panel id="pnDlgRodView" style="margin-bottom:10px; width: 220px">
+                    <h:panelGrid columns="1" >
+                        <p:dataTable styleClass="table" value="#{mbGuia.rodalesDisponibles}"
+                             var="rod"
+                             id="dtViewRodales">
+                            <p:column headerText="N° de Orden" >                              
+                                <p:outputLabel value="#{rod.numOrden}"/>
+                            </p:column>
+                            <p:column style="width:30px" >
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-plus-circle" title="Asignar el Rodal a la Autorización" process="@this" 
+                                                 update="frAgregarRodal" action="#{mbGuia.asignarRodal()}" 
+                                                 rendered="#{not rod.asignado}" >
+                                    <f:setPropertyActionListener value="#{rod}" target="#{mbGuia.rodalSelected}" /> 
+                                </p:commandButton>
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Desvincular el Rodal de la Autorización" process="@this" 
+                                                 update="frAgregarRodal,messages" action="#{mbGuia.desvincularRodal()}" 
+                                                 rendered="#{rod.asignado}" >
+                                    <f:setPropertyActionListener value="#{rod}" target="#{mbGuia.rodalSelected}" /> 
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable> 
+                    </h:panelGrid>
+                    <f:facet name="footer">
+                        <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerRodales').hide();"/>
+                    </f:facet>
+                </p:panel>
+            </h:form>
+        </p:dialog>  
+        <!-- Diálogo para ver los rodales del predio, si tiene asignados -->
+        <p:dialog header="Rodales asignados" widgetVar="dlgVerRodalesAsig" minHeight="40" closable="false">
+            <h:form prependId="false" id="frAgregarRodalAsig">
+                <p:panel id="pnDlgRodAsigView" style="margin-bottom:10px; width: 220px">
+                    <h:panelGrid columns="1" >
+                        <p:dataTable styleClass="table" value="#{mbGuia.guia.rodales}"
+                             var="rodAsig"
+                             id="dtViewRodalesAsig">
+                            <p:column headerText="N° de Orden" >                              
+                                <p:outputLabel value="#{rodAsig.numOrden}"/>
+                            </p:column>
+                        </p:dataTable> 
+                    </h:panelGrid>
+                    <f:facet name="footer">
+                        <p:commandButton title="Cerrar" icon="fa fa-fw fa-close" onclick="PF('dlgVerRodalesAsig').hide();"/>
+                    </f:facet>
+                </p:panel>
+            </h:form>
+        </p:dialog>          
         <h:form prependId="false" id="frOrigen">
             <!-- Selección de nueva o gestión de existente -->
             <p:panel id="pnBuscar" styleClass="centro" header="Buscar Guía existente o Crear nueva" rendered="#{mbGuia.guia eq null}" >
@@ -39,7 +89,12 @@
                             <f:selectItem itemLabel="Seleccione un Tipo de Guía" itemValue="" noSelectionOption="true"/>
                             <f:selectItems value="#{mbGuia.lstTiposGuia}" 
                                            var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo}"/>
+                            <p:ajax update="pgDestino" />
                         </p:selectOneMenu>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgDestino" columns="2" cellpadding="5" rendered="#{config.DiscTasaDestExt eq 'si'}" >
+                        <p:outputLabel value="Productos extraídos para Destino externo" for="chkDestino" rendered="#{not mbGuia.guia.tipo.habilitaTransp and mbGuia.guia.tipo ne null}" />
+                        <p:selectBooleanCheckbox id="chkDestino" value="#{mbGuia.guia.destinoExterno}" rendered="#{not mbGuia.guia.tipo.habilitaTransp and mbGuia.guia.tipo ne null}" />
                     </h:panelGrid>
                 </p:fieldset>
                 <!-- Ingreso del cuit del productor -->
@@ -188,6 +243,24 @@
                             <p:outputLabel value="Observaciones: " for="aut_obs"/>
                             <p:outputLabel id="aut_obs" value="#{mbGuia.autSelected.obs}"/>
                         </h:panelGrid>
+                        <h:panelGrid columns="1" >
+                            <p:commandButton title="Ver los rodales disponibles de la fuente seleccionada"
+                                             rendered="#{config.GestionaRodales eq 'si' 
+                                                         and not mbGuia.autSelected.asignadaDesc 
+                                                         and mbGuia.guia.tipo.descuentaAutoriz}"
+                                             styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Rodales disponibles" action="#{mbGuia.prepareViewRodalesDisponibles()}" 
+                                             oncomplete="PF('dlgVerRodales').show();" update="dtViewRodales" >
+                            </p:commandButton>
+                            <p:commandButton title="Ver los rodales aignados a la guía" 
+                                             rendered="#{config.GestionaRodales eq 'si' 
+                                                         and mbGuia.autSelected.asignadaDesc 
+                                                         and mbGuia.guia.tipo.descuentaAutoriz}"
+                                             styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Rodales asignados" 
+                                             oncomplete="PF('dlgVerRodalesAsig').show();" update="dtViewRodalesAsig" >
+                            </p:commandButton>
+                        </h:panelGrid>
                         <h:panelGrid id="pgAutProductos" columns="1" >
                             <p:outputLabel value="Productos Autorizados" style="font-weight: bold" />
                             <p:dataTable styleClass="table" value="#{mbGuia.autSelected.items}"
@@ -202,7 +275,7 @@
                                 <p:column headerText="Nombre científico" >
                                     <p:outputLabel value="#{itemOrigen.nombreCientifico}"/>
                                 </p:column>
-                                <p:column headerText="Clase" >
+                                <p:column headerText="#{config.Clase}" >
                                     <p:outputLabel value="#{itemOrigen.clase}"/>
                                 </p:column>
                                 <p:column headerText="Unidad" >
@@ -227,14 +300,14 @@
                         <h:panelGrid columns="2" >
                             <p:commandButton icon="fa fa-fw fa-download" title="Registrar la Autorización como Fuente de Productos" 
                                              rendered="#{mbGuia.guia.numFuente eq null}" value="Guardar" update="@form,messages" 
-                                             action="#{mbGuia.guardarFuente()}" />
+                                             action="#{mbGuia.guardarFuente()}" oncomplete="PF('dlgVerRodales').hide();" />
                             <p:commandButton icon="fa fa-fw fa-share" title="Ver el detalle de otra Fuente" 
                                              rendered="#{mbGuia.guia.numFuente eq null}" value="Ver Otra" update="@form" 
-                                             action="#{mbGuia.cancelarFuenteSelected()}" />
+                                             action="#{mbGuia.cancelarFuenteSelected()}" oncomplete="PF('dlgVerRodales').hide();" />
                             <p:outputLabel value="FUENTE SELECCIONADA" style="color: #3B8980; font-weight: bold" rendered="#{mbGuia.guia.numFuente ne null}"/>
                             <p:commandButton icon="fa fa-fw fa-close" title="Cancelar la Fuente seleccionada" 
-                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form,fsGuiaAut" 
-                                             action="#{mbGuia.deleteFuenteGuardada()}" />
+                                             rendered="#{mbGuia.guia.numFuente ne null}" value="Cancelar" update="@form" 
+                                             action="#{mbGuia.deleteFuenteGuardada()}" oncomplete="PF('dlgVerRodalesAsig').hide();" />
                             <p:commandButton icon="fa fa-fw fa-search" title="Ver Guías disponibles para descontar productos" 
                                              rendered="#{mbGuia.guia.numFuente ne null and not mbGuia.guia.tipo.descuentaAutoriz and mbGuia.lstGuiasMadre eq null}" value="Ver Guías disponibles" update="@form" 
                                              action="#{mbGuia.buscarGuiasDisponibles()}" />
@@ -368,6 +441,8 @@
                             </p:outputLabel>
                             <p:outputLabel value="Estado: " />
                             <p:outputLabel value="#{mbGuia.guiaSelected.estado.nombre}" />
+                            <p:outputLabel value="Con Destino externo: " rendered="#{config.DiscTasaDestExt eq 'si'}" />
+                            <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guiaSelected.destinoExterno}" rendered="#{config.DiscTasaDestExt eq 'si'}" />
                         </h:panelGrid>
                         <p:separator rendered="#{mbGuia.viewGuia}" />
                         <h:panelGrid id="pgGuiaInmueble" columns="2" >
@@ -401,7 +476,7 @@
                                 <p:column headerText="Nombre científico" >
                                     <p:outputLabel value="#{itemGuia.nombreCientifico}"/>
                                 </p:column>
-                                <p:column headerText="Clase" >
+                                <p:column headerText="#{config.Clase}" >
                                     <p:outputLabel value="#{itemGuia.clase}"/>
                                 </p:column>
                                 <p:column headerText="Unidad" >
@@ -453,7 +528,7 @@
                             <p:column headerText="Nombre científico" >
                                 <p:outputLabel value="#{itemADesc.nombreCientifico}"/>
                             </p:column>
-                            <p:column headerText="Clase" >
+                            <p:column headerText="#{config.Clase}" >
                                 <p:outputLabel value="#{itemADesc.clase}"/>
                             </p:column>
                             <p:column headerText="Unidad" >

@@ -29,6 +29,7 @@ import ar.gob.ambiente.sacvefor.servicios.rue.TipoSociedad;
 import ar.gob.ambiente.sacvefor.servicios.territorial.CentroPoblado;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Departamento;
 import ar.gob.ambiente.sacvefor.servicios.territorial.Provincia;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,6 +47,8 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
 
 /**
  * Bean de respaldo para las entidades Persona, cuyos roles podrán ser:
@@ -111,6 +114,16 @@ public class MbPersona implements Serializable {
     private List<Persona> lstDestFilter;
     
     /**
+     * Variable privada: listado de los obrajeros registrados
+     */
+    private List<Persona> lstObrajeros;
+    
+    /**
+     * Variable privada: listado para el filtrado de la tabla de obrajeros
+     */
+    private List<Persona> lstObrajFilter;
+    
+    /**
      * Variable privada: objeto para setear el domicilio en el RUE en el caso que la persona sea un Destinatario
      */    
     private Domicilio domicilio;
@@ -154,6 +167,11 @@ public class MbPersona implements Serializable {
      * Variable privada: objeto persona del paquete paqRue.jar para gestionar las Personas del RUE
      */
     private ar.gob.ambiente.sacvefor.servicios.rue.Persona personaRue;
+    
+    /**
+     * Variable privada: flag que indica si se está subiendo un martillo
+     */
+    private boolean subeMartillo;
     
     /**
      * Variable privada: MbSesion para gestionar las variables de sesión del usuario
@@ -412,8 +430,42 @@ public class MbPersona implements Serializable {
     
     ///////////////////////
     // Métodos de acceso //
-    ///////////////////////
-    public ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio getDomicilioLocal() {    
+    ///////////////////////    
+    public boolean isSubeMartillo() {    
+        return subeMartillo;
+    }
+
+    public void setSubeMartillo(boolean subeMartillo) {    
+        this.subeMartillo = subeMartillo;
+    }
+
+    /**
+     * Método para poblar el listado de obrajeros.
+     * Busca todas las personas con pasandole el rol como parámetro
+     * @return List<Persona> listado de todos los obrajeros
+     */
+    public List<Persona> getLstObrajeros() {
+        try{
+            lstObrajeros = perFacade.findAllByRol(obtenerRol(ResourceBundle.getBundle("/Config").getString("Obrajero")));
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage("Hubo un error obteniendo los Obrajeros registrados. " + ex.getMessage());
+        }
+        return lstObrajeros;
+    }
+
+    public void setLstObrajeros(List<Persona> lstObrajeros) {
+        this.lstObrajeros = lstObrajeros;
+    }
+
+    public List<Persona> getLstObrajFilter() {
+        return lstObrajFilter;
+    }
+
+    public void setLstObrajFilter(List<Persona> lstObrajFilter) {    
+        this.lstObrajFilter = lstObrajFilter;
+    }
+
+    public ar.gob.ambiente.sacvefor.localcompleto.entities.Domicilio getDomicilioLocal() {
         return domicilioLocal;
     }
 
@@ -870,6 +922,14 @@ public class MbPersona implements Serializable {
     }
     
     /**
+     * Método para limpiar el listado de autorizaciones.
+     * Llamado al cerrar el diálogo que muestra las autorizaciones vinculadas a una persona.
+     */
+    public void limpiarLstAut(){
+        lstAut = null;
+    }
+    
+    /**
      * Método para preparar el listado de Guías por Persona según su rol
      * @param rol String nombre del rol de la persona
      */
@@ -882,6 +942,23 @@ public class MbPersona implements Serializable {
             // obtengo las Guías que lo tienen como destinatario
             lstGuias = guiaFacade.getByDestino(persona.getCuit());
         }
+    }
+    
+    /**
+     * Método para preparar el listado de Guías por Obrajero.
+     * Llamado al abrir el diálogo con el listado de guías del Obrajero
+     */
+    public void prepareViewObrjGuias(){
+        lstGuias = new ArrayList<>();
+        lstGuias = guiaFacade.getByObrajero(persona);
+    }
+    
+    /**
+     * Método para limpiar el listado de guías.
+     * Llamado al cerrar el diálogo que muestra las guías vinculadas a una persona.
+     */
+    public void limpiarLstGuias(){
+        lstGuias = null;
     }
 
     /**
@@ -936,6 +1013,39 @@ public class MbPersona implements Serializable {
             JsfUtil.addErrorMessage("Debe seleccionar una Persona del Registro Unico.");
         }
     }
+    
+    /**
+     * Método para subir la imagen del martillo en el subdirectorio temporal
+     * El subdirectorio temporal se llama "TMP"
+     * Se configuran en el archivo de propiedades configurable "Config.properties"
+     * Solicitado para los obrajeros, Provincia de Misiones
+     * @param event evento de solicitud de subida del archivo
+     */
+    public void subirMartilloTmp(FileUploadEvent event){ 
+        // subo el archivo al directorio temporal
+        try{
+            UploadedFile fileMartillo = event.getFile();
+            String destino = ResourceBundle.getBundle("/Config").getString("SubdirTemp");
+            // obtengo el nombre del archivo
+            String nombreArchivo = getNombreArchivoASubir(fileMartillo);
+            // si todo salió bien, procedo
+            if(nombreArchivo != null){
+                // si logré subir el archivo, guardo la ruta
+                if(JsfUtil.copyFile(nombreArchivo, fileMartillo.getInputstream(), destino)){
+                    JsfUtil.addSuccessMessage("El archivo " + fileMartillo.getFileName() + " se ha subido al servidor con el nombre " + nombreArchivo);
+                    persona.setRutaArchivo(destino);
+                    persona.setNombreArchivo(nombreArchivo);
+                    persona.setRutaTemporal(true);
+                }
+                // actualizo el flag
+                subeMartillo = true;
+            }else{
+                JsfUtil.addErrorMessage("No se pudo obtener el destino de la imagen del Martillo.");
+            }
+        }catch(IOException e){
+            JsfUtil.addErrorMessage("Hubo un error subiendo la imagen del Martillo" + e.getLocalizedMessage());
+        }
+}     
 
     /**
      * Método para guardar la Persona con el rol de Proponente, sea inserción o edición.
@@ -1137,6 +1247,59 @@ public class MbPersona implements Serializable {
             JsfUtil.addErrorMessage(ex, "Hubo un error procesando el " + ResourceBundle.getBundle("/Config").getString("Destinatario") + " : " + ex.getMessage());
         }
     }   
+    
+    /**
+     * Método para guardar la Persona con el ron de Obrajero, sea inserción o edición.
+     * El rol de Obrajero fue incorporado a solicitud de la Provincia de Misiones.
+     */
+    public void saveObrajero(){
+        String mensaje = "";
+        boolean valida = true;
+        Parametrica rolObraj = obtenerRol(ResourceBundle.getBundle("/Config").getString("Obrajero"));
+        try{
+            Persona perExitente = perFacade.getExistente(persona.getCuit(), rolObraj);
+            // valido por el nombre
+            if(perExitente != null){
+                if(perExitente.getId() != null){
+                    // si edita, no habilito si no es el mismo
+                    if(!perExitente.equals(persona)){
+                        valida = false;
+                        mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Obrajero") + " con el CUIT que está registrando.";
+                    }
+                }else{
+                    // si no edita no habilito de ninguna manera
+                    valida = false;
+                    mensaje = "Ya existe un " + ResourceBundle.getBundle("/Config").getString("Obrajero") + " con el CUIT que está registrando.";
+                }
+            }
+            // si validó, continúo
+            if(valida){
+                persona.setUsuario(usLogueado);
+                // procedo al guardado definitivo de la imagen del martillo
+                if(saveMartillo()){
+                    // si no hubo errores en el guardado definitivo del martillo, persisto al obrador
+                    if(persona.getId() != null){
+                        perFacade.edit(persona);
+                        JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Obrajero") + " fue guardado con exito");
+                    }else{
+                        // seteo la fecha de alta, habilitado y Rols
+                        Date fechaAlta = new Date(System.currentTimeMillis());
+                        persona.setFechaAlta(fechaAlta);
+                        persona.setHabilitado(true);
+                        perFacade.create(persona);
+                        JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Obrajero") + " fue registrado con exito");
+                    }
+                }
+
+                persona = new Persona();
+                edit = false;
+            }else{
+                JsfUtil.addErrorMessage(mensaje);
+            }
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage(ex, "Hubo un error procesando el " + ResourceBundle.getBundle("/Config").getString("Obrajero") + " : " + ex.getMessage());
+        }
+    }
     
     /**
      * Método para guardar la Persona con el rol de Transportista, sea inserción o edición.
@@ -2151,6 +2314,50 @@ public class MbPersona implements Serializable {
             result = "";
         }
         return result;
+    }
+    
+    /**
+     * Método para nombrear un archivo subido, en este caso, el Martillo del Obrajero
+     * @param file archivo a nombrar
+     * @return String nombre del archivo
+     */
+    private String getNombreArchivoASubir(UploadedFile file){
+        Date date = new Date();
+        String extension = file.getFileName().substring(file.getFileName().lastIndexOf(".") + 1);
+        String sufijo = JsfUtil.getDateInString(date);
+        String nombreArchivo = ResourceBundle.getBundle("/Config").getString("IdProvinciaGt") + "_" + persona.getCuit() + "_" + sufijo + "." + extension;
+        return nombreArchivo;
+    }    
+    
+    /**
+     * Método para guardar la imagen del martillo a un directorio definitivo.
+     * Completado el renombrado y guardado, elimino el archivo del directorio temporal
+     * El directorio es "martillos" y está seteado en el Config.properties
+     * @return verdadero o falso según la operación haya resultado exitosa o no.
+     */
+    private boolean saveMartillo() {
+        if(subeMartillo){
+            // obtengo la imagen del martillo del directorio temporal
+            File martARenombrar = new File(ResourceBundle.getBundle("/Config").getString("SubdirTemp") + persona.getNombreArchivo());
+            // instancio un nuevo File para el renombrado con el path al directorio definitivo
+            File martDefinitivo = new File(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
+                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos") + persona.getNombreArchivo());
+            // si existe, lo elimino
+            martDefinitivo.delete();
+            // renombro y devuelvo el resultado: true si fue existoso, false, si no lo fue.
+            if(martARenombrar.renameTo(martDefinitivo)){
+                // si todo fue bien, actualizo la ruta en la persona y la condición de temporal de la ruta
+                persona.setRutaArchivo(ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
+                        ResourceBundle.getBundle("/Config").getString("SubdirMartillos"));
+                persona.setRutaTemporal(false);
+                subeMartillo = false;
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return true;
+        }
     }
     
     /**

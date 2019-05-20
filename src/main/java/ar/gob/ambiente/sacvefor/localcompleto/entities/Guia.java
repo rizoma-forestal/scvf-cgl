@@ -201,6 +201,42 @@ public class Guia implements Serializable {
     private EstadoGuia estado;
     
     /**
+     * Variable privada: Indica si la guía tiene un destino fuera de la provincia.
+     * Si la guía es madre, indica si los remitos serán con destino externo.
+     * Si la guía es un remito, indica si el destino es externo.
+     * A solicitud de Misiones.
+     */
+    @Column (nullable=true)
+    private boolean destinoExterno;
+    
+    /**
+     * Variable privada: listado de personas con el rol de obrajero que podrán estar vinculados
+     * a una guía. A pedido de Misiones.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "obrajerosXGuias",
+            joinColumns = @JoinColumn(name = "guia_fk"),
+            inverseJoinColumns = @JoinColumn(name = "obrajero_fk")
+    )
+    private List<Persona> obrajeros;    
+    
+    /**
+     * Varable privada: Listado de rodales de los que provienen los productos de la guía.
+     * Solo para los CGL configurados cuyos inmuebles se subdividen en rodales.
+     * En caso de tomar productos de una Autorización con rodales asigados, la guía deberá definir al menos un rodal.
+     * En caso de tomar productos de otra Guía, el remito tomará por defecto los rodales de la guía madre.
+     */
+    @Audited(targetAuditMode = NOT_AUDITED)
+    @ManyToMany
+    @JoinTable(
+            name = "rodalesXGuias",
+            joinColumns = @JoinColumn(name = "guia_fk"),
+            inverseJoinColumns = @JoinColumn(name = "rodal_fk")
+    )
+    private List<Rodal> rodales;     
+    
+    /**
      * Variable privada no persistida: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
@@ -283,12 +319,57 @@ public class Guia implements Serializable {
     private FileInputStream martillo;    
 
     /**
+     * Variable privada no persistida: destinada a guardar la imagen del martillo del obrejero (en caso de tenerlo) 
+     * al setearse el listado de Guías para emitir el reporte.
+     * No está disponible para la API
+     */    
+    @Transient
+    private FileInputStream martilloObrajero;        
+
+    /** 
      * Constructor, inicializa los ítems y las guías fuentes si corresponde
      */
     public Guia(){
         items = new ArrayList<>();
         guiasfuentes = new ArrayList<>();
         formProvisorios = new ArrayList<>();
+        rodales = new ArrayList<>();
+    }
+
+    @XmlTransient
+    public List<Rodal> getRodales() {
+        return rodales;
+    }
+
+    public void setRodales(List<Rodal> rodales) {
+        this.rodales = rodales;
+    }
+
+    @XmlTransient
+    public FileInputStream getMartilloObrajero() {
+        return martilloObrajero;
+    }
+
+    public void setMartilloObrajero(FileInputStream martilloObrajero) {
+        this.martilloObrajero = martilloObrajero;
+    }
+
+    @XmlTransient    
+    public boolean isDestinoExterno() {
+        return destinoExterno;
+    }
+
+    public void setDestinoExterno(boolean destinoExterno) {
+        this.destinoExterno = destinoExterno;
+    }
+
+    @XmlTransient
+    public List<Persona> getObrajeros() {
+        return obrajeros;
+    }
+
+    public void setObrajeros(List<Persona> obrajeros) {
+        this.obrajeros = obrajeros;
     }
 
     @XmlTransient

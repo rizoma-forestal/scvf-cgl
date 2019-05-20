@@ -10,6 +10,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Producto;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoEspecieLocal;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Rodal;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.SubZona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Usuario;
@@ -205,6 +206,18 @@ public class MbAutorizacion {
      */
     private boolean viewInmueble;
     
+    /**
+     * Variable privada: Rodal rodal del inmueble que se seleccionó para asignar o desasignar a la Autorización.
+     * Solo para CGL que trabajan con inmuebles subdivididos en rodales.
+     */
+    private Rodal rodalSelected;
+    
+    /**
+     * Variable privada: Listado de rodales de un inmueble, disponibles para ser vinculados a una autorizaión.
+     * Se trata de rodales que aún no estén vinculados a ninguna autorización vigente.
+     */
+    private List<Rodal> rodalesDisponibles;
+    
     ///////////////
     // Productos //
     ///////////////
@@ -341,10 +354,26 @@ public class MbAutorizacion {
      */
     public MbAutorizacion() {
     }
-    
+
     ///////////////////////
     // Métodos de acceso //
-    ///////////////////////       
+    ///////////////////////    
+    public List<Rodal> getRodalesDisponibles() {    
+        return rodalesDisponibles;
+    }
+
+    public void setRodalesDisponibles(List<Rodal> rodalesDisponibles) {    
+        this.rodalesDisponibles = rodalesDisponibles;
+    }
+
+    public Rodal getRodalSelected() {
+        return rodalSelected;
+    }
+    
+    public void setRodalSelected(Rodal rodalSelected) {
+        this.rodalSelected = rodalSelected;
+    }
+
     public Long getCuitPropBus() {
         return cuitPropBus;
     }
@@ -707,13 +736,18 @@ public class MbAutorizacion {
         producto = null;
         inmueble = null;
         page = strPage;
-        if(strPage.equals("productos.xhtml")){
-            // si se carga productos, cargo los listados
-            lstEspecieLocal = espLocalFacade.getHabilitadas();
-        }
-        if(strPage.equals("estado.xhtml")){
-            // seteo el estado seleccionado
-            estadoSelected = autorizacion.getEstado();
+        switch (strPage) {
+            case "productos.xhtml":
+                // si se carga productos, cargo los listados
+                lstEspecieLocal = espLocalFacade.getHabilitadas();
+                break;
+            case "estado.xhtml":
+                // seteo el estado seleccionado
+                estadoSelected = autorizacion.getEstado();
+                break;
+            case "inmuebles.xhtml":
+                // seteo el rodalSelected en null
+                rodalSelected = null;
         }
     }  
     
@@ -1186,10 +1220,19 @@ public class MbAutorizacion {
     }
     
     /**
-     * Método para agregar un Inmueble a la Autorización previa validación de un posible vínculo anterior
+     * Método para agregar un Inmueble a la Autorización previa validación de un posible vínculo anterior.
+     * También se valida que si el inmueble tiene rodales disponibles y la Autorización no asignó ninguno,
+     * no se procese el guardado. Solo en los casos en que esté configurado para gestionar rodales
      */
     public void addInmueble(){
-        boolean valida = true;
+        boolean valida = true, gestionaRodales = false;
+        List<Rodal> rodTemp = null;
+        
+        // si gestiona rodales y hay alguno vinculado a la autorización seteo un listado para gestionarlos y el flag correspondiente
+        if(ResourceBundle.getBundle("/Config").getString("GestionaRodales").equals("si")){
+            rodTemp = new ArrayList<>();
+            gestionaRodales = true;
+        }
 
         // valido que no esté agregando el mismo inmueble
         for(Inmueble inm : autorizacion.getInmuebles()){
@@ -1209,6 +1252,19 @@ public class MbAutorizacion {
             }
         }
         
+        // Si gestiona rodales valido
+        if(gestionaRodales){
+            // no están seteados los rodales disponibles, los seteo
+            if(rodalesDisponibles == null){
+                prepareViewRodalesDisponibles();
+            }
+            // Si el inmueble tiene rodales disponibles y la Autorización no asignó ninguno, no valida
+            if(!rodalesDisponibles.isEmpty() && autorizacion.getRodales().isEmpty()){
+                valida = false;
+                JsfUtil.addErrorMessage("Debe vincular alguno de los rodales disponibles del " + ResourceBundle.getBundle("/Config").getString("Inmueble"));
+            }   
+        }
+        
         try{
             if(valida){
                 autorizacion.getInmuebles().add(inmueble);
@@ -1217,14 +1273,39 @@ public class MbAutorizacion {
                 for(Inmueble inm : autorizacion.getInmuebles()){
                     inmTemp.add(inm);
                 }
+                // si gestiona rodales y hay alguno vinculado a la autorización, hago lo mismo con los rodales
+                if(gestionaRodales){
+                    if(!autorizacion.getRodales().isEmpty()){
+                        // guardo temporalmente el listado de rodales
+                        for(Rodal r : autorizacion.getRodales()){
+                            rodTemp.add(r);
+                        }
+                    }
+                }
                 // limpio lo guardado
                 autorizacion.setInmuebles(null);
+                // si gestiona rodales y hay alguno vinculado a la autorización, hago lo mismo con los rodales
+                if(gestionaRodales){
+                    if(!rodTemp.isEmpty()){
+                        autorizacion.setRodales(null);
+                    }
+                }
                 autFacade.edit(autorizacion);
                 // seteo y guardo los inmuebles definitivos
                 autorizacion.setInmuebles(inmTemp);
+                // si gestiona rodales y hay alguno vinculado a la autorización, hago lo mismo con los rodales
+                if(gestionaRodales){
+                    if(!rodTemp.isEmpty()){
+                        autorizacion.setRodales(rodTemp);
+                    }
+                }
                 autFacade.edit(autorizacion);
-                // limpio todo
+                // limpio todo 
                 inmueble = null;
+                // si gestiona rodales y hay alguno vinculado a la autorización, hago lo mismo con los rodales
+                if(gestionaRodales){
+                    rodalesDisponibles = null;
+                }
                 catastroBuscar = null;
                 JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " se agregó a la Autorización");
             }
@@ -1234,10 +1315,15 @@ public class MbAutorizacion {
     }    
     
     /**
-     * Método para desvincular un Inmueble a la Autorización
+     * Método para desvincular un Inmueble a la Autorización.
+     * Si gestiona rodales y hay asignado alguno, setea los flags 'asignado' en false
      */
     public void deleteInmueble(){
         int i = 0, j = 0;
+        // si gestiona rodales y había alguno asignado, reseteo los flags correspondiente
+        if(ResourceBundle.getBundle("/Config").getString("GestionaRodales").equals("si")){
+            autorizacion.getRodales().clear();
+        }
         try{
             for(Inmueble inm: autorizacion.getInmuebles()){
                 if(Objects.equals(inm.getIdCatastral(), inmueble.getIdCatastral())){
@@ -1264,13 +1350,92 @@ public class MbAutorizacion {
     }  
     
     /**
+     * Método para listar los rodales disponibles del inmueble para ser asignados a la Autorización. 
+     * Solo se trabajará con aquellos que no estén vinculados a una Autorización vigente (exceptuando la actual).
+     * Se actualiza el flag "asignado" para los rodales según esté o no asignado a la autorización.
+     * Solo para los casos en los que el CGL esté configurado para trabajar con rodales de inmuebles.
+     */
+    public void prepareViewRodalesDisponibles(){
+        // seteo los rodales disponibles
+        rodalesDisponibles = new ArrayList<>();
+        for(Rodal rodInm : inmueble.getRodales()){
+            List<Autorizacion> autRodal = autFacade.getByRodal(rodInm);
+            if(autRodal.isEmpty() || autRodal.get(0).equals(autorizacion)){
+                rodalesDisponibles.add(rodInm);
+            }
+        }
+        
+        // si algún rodal ya está asignado a la autorización seteo el flag correspondiente
+        for(Rodal rodDisp : rodalesDisponibles){
+            if(autorizacion.getRodales().contains(rodDisp)){
+                rodDisp.setAsignado(true);
+            }else{
+                rodDisp.setAsignado(false);
+            }
+        }
+    }
+
+    /**
+     * Método para asignar un rodal de un inmueble a una Autorización.
+     */
+    public void asignarRodal(){
+        rodalSelected.setAsignado(true);
+        autorizacion.getRodales().add(rodalSelected);
+    }
+    
+    /**
+     * Método para desvincular el rodal de un inmueble a una Autorización
+     */
+    public void desvincularRodal(){
+        int i = 0, iRod = 0;
+        if(autorizacion.getRodales().size() > 1 || !autorizacion.getInmuebles().contains(inmueble)){
+            for(Rodal r : autorizacion.getRodales()){
+                if(r.equals(rodalSelected)){
+                    iRod = i;
+                }
+                i += 1;
+            }
+            autorizacion.getRodales().remove(iRod);
+            rodalSelected.setAsignado(false);
+        }else{
+            JsfUtil.addErrorMessage("La Autorización debe tener al menos un rodal vinculado.");
+        }
+    }
+    
+    /**
      * Método para limpiar la vista detalle del Inmueble
      * Para todos los roles
      */
     public void limpiarViewInmueble(){
+        // limpio los atributos de la vista
         catastroBuscar = null;
         inmueble = null;
     } 
+    
+    /**
+     * Método para actualizar los rodales de un inmueble vinculados a una autorización.
+     * Solo para los cgl configurados para gestionar rodales. Se ejecuta al cerrar la 
+     * vista detalle de un inmueble ya vinculado a una Autorización, mientras esté en 
+     * estado que permita la edición de sus datos.
+     */
+    public void actualizarRodales(){
+        if(ResourceBundle.getBundle("/Config").getString("GestionaRodales").equals("si")){
+            List<Rodal> lstRod = new ArrayList<>();
+            // recorro los rodales gestionados
+            for(Rodal rodGest : rodalesDisponibles){
+                if(rodGest.isAsignado()){
+                    // si está asignado lo agrego al listado para actualizar
+                    lstRod.add(rodGest);
+                }
+            }
+            // limpio los rodales de la autorización y le seteo los actuales
+            autorizacion.getRodales().clear();
+            autFacade.edit(autorizacion);
+            autorizacion.setRodales(lstRod);
+            autFacade.edit(autorizacion);   
+        }
+        limpiarViewInmueble();
+    }
     
     ////////////////////////////
     // Métodos para Productos //

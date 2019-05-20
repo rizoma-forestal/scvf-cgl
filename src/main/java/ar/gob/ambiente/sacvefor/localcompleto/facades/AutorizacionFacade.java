@@ -7,6 +7,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoAutorizacion;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProdConsulta;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Rodal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -254,6 +255,24 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
                 .setParameter(2, fin)
                 .setParameter(3, depto);   
         return (List<AutSupConsulta>) q.getResultList();
+    }
+    
+    /**
+     * Método para obtener las Autorizaciones vinculadas a un rodal.
+     * Solo para los CGL configurados para trabajar con rodales de inmuebles.
+     * @param rodal Rodal a buscar las Autorizaciones vinculadas.
+     * @return List<Autorizacion> listado de las Autorizaciones vinculadas al rodal.
+     */
+    public List<Autorizacion> getByRodal(Rodal rodal){
+        Date fechaHoy = new Date(System.currentTimeMillis());
+        String queryString = "SELECT aut FROM Autorizacion aut "
+                + "INNER JOIN aut.rodales rodal "
+                + "WHERE rodal = :rodal "
+                + "AND aut.fechaVencAutoriz > :fechaHoy";
+        Query q = em.createQuery(queryString)
+                .setParameter("rodal", rodal)
+                .setParameter("fechaHoy", fechaHoy);
+        return q.getResultList();
     }
     
     /**

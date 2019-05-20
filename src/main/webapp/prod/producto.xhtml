@@ -112,10 +112,10 @@
                                 <f:selectItems value="#{mbProducto.lstProdEspecie}" 
                                                var="especie" itemLabel="#{especie.nombreVulgar}" itemValue="#{especie}"/>
                             </p:selectOneMenu>
-                            <p:outputLabel value="Clase" for="cmbClases"/>   
+                            <p:outputLabel value="#{config.Clase}" for="cmbClases"/>   
                             <p:selectOneMenu id="cmbClases" value="#{mbProducto.producto.clase}" required="true" 
-                                             requiredMessage="Debe seleccionar una Clase." >
-                                <f:selectItem itemLabel="Seleccione una Clase" itemValue="" noSelectionOption="true"/>
+                                             requiredMessage="Debe seleccionar #{config.Clase}." >
+                                <f:selectItem itemLabel="Seleccione #{config.Clase}" itemValue="" noSelectionOption="true"/>
                                 <f:selectItems value="#{mbProducto.lstProdClases}" 
                                                var="clase" itemLabel="#{clase.nombre}-#{clase.unidad.abreviatura}" itemValue="#{clase}"/>
                             </p:selectOneMenu>
@@ -126,11 +126,14 @@
                         </h:panelGrid>
                         <h:panelGrid columns="1">
                             <p:commandButton value="Agregar Tasas" icon="fa fa-fw fa-external-link" process="@this" 
-                                             update="dtTasas" action="#{mbProducto.prepareAddTasa()}" oncomplete="PF('dlgAgregarTasa').show();"/>
+                                             update="dtTasas" action="#{mbProducto.prepareAddTasa()}" 
+                                             oncomplete="PF('dlgAgregarTasa').show();"/>
                         </h:panelGrid>
                         <h:panelGrid columns="2">
-                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbProducto.saveProducto()}" update="frProductos"/>
-                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbProducto.limpiarFormProducto()}" update="pnFrmNew"/>
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbProducto.saveProducto()}" 
+                                             update="frProductos" oncomplete="PF('dlgAgregarTasa').hide();"/>
+                            <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbProducto.limpiarFormProducto()}" 
+                                             update="pnFrmNew" oncomplete="PF('dlgAgregarTasa').hide();"/>
                         </h:panelGrid>
                     </p:panel>
                     
@@ -143,7 +146,7 @@
                             <p:outputLabel id="v_especie" value="#{mbProducto.producto.especieLocal.nombreVulgar}"/>
                             <p:outputLabel value="Nombre científico: " for="v_nomCient"/>
                             <p:outputLabel id="v_nomCient" value="#{mbProducto.producto.especieLocal.nombreCientifico}"/>
-                            <p:outputLabel value="Clase: " for="v_clase"/>
+                            <p:outputLabel value="#{config.Clase}: " for="v_clase"/>
                             <p:outputLabel id="v_clase" value="#{mbProducto.producto.clase.nombre}"/>
                             <p:outputLabel value="Unidad: " for="v_unidad"/>
                             <p:outputLabel id="v_unidad" value="#{mbProducto.producto.clase.unidad.abreviatura}"/>
@@ -168,7 +171,8 @@
                             <p:outputLabel id="v_habilitado" value="#{mbProducto.producto.habilitado}" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
-                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" action="#{mbProducto.prepareNewEdit()}" />
+                            <p:commandButton icon="fa fa-fw fa-share" value="Agregar/Modificar" process="@this" update="@form" 
+                                             action="#{mbProducto.prepareNewEdit()}" oncomplete="PF('dlgVerTasas').hide();" />
                         </h:panelGrid>
                     </p:panel>
 
@@ -195,7 +199,7 @@
                                 filterBy="#{prod.especieLocal.nombreVulgar}" >
                                 <p:outputLabel value="#{prod.especieLocal.nombreVulgar}"/>
                             </p:column>
-                            <p:column headerText="Clase" 
+                            <p:column headerText="#{config.Clase}" 
                                 filterMatchMode="contains"
                                 sortBy="#{prod.clase.nombre}" 
                                 filterBy="#{prod.clase.nombre}" >

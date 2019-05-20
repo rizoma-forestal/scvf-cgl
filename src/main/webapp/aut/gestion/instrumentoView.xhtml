@@ -35,6 +35,8 @@
                     <h:panelGrid columns="2" cellpadding="1">
                         <p:outputLabel value="Tipo de intervención: " />
                         <p:outputLabel value="#{mbAutorizacion.autorizacion.intervencion.nombre}" style=" font-weight: bold" />
+                        <p:outputLabel value="Modalidad: " />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold" />
                         <p:outputLabel value="Fecha vencimiento: " />
                         <p:outputLabel value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" style=" font-weight: bold" >
                             <f:convertDateTime pattern="dd/MM/yyyy" />
@@ -56,10 +58,6 @@
                         <p:outputLabel value="#{mbAutorizacion.autorizacion.supAutorizada}" style=" font-weight: bold" >
                             <f:convertNumber type="currency" maxFractionDigits="4" currencySymbol=""/>
                         </p:outputLabel>
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" cellpadding="1">
-                        <p:outputLabel value="Uso del suelo: " />
-                        <p:outputLabel value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold" />
                     </h:panelGrid>
                     <h:panelGrid id="pgZonas" columns="1" cellpadding="1" rendered="#{mbAutorizacion.autorizacion.zonas.size() > 0}">
                         <p:dataTable id="dtZonas" value="#{mbAutorizacion.autorizacion.zonas}" var="zona" styleClass="table" style="width: 200px" >

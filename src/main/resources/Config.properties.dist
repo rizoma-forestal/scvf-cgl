@@ -1,9 +1,15 @@
 # Parámetros dinámicos de acceso a servicios
 Server=http://localhost:8080
+#Server=http://sacvefor.test.bosquesnativos.net.ar
+## Servidor del RUE, en desa y prod es 8080, en pruebas es 8180 ##
 ServerEntidades=http://localhost:8080
+## Servidor del TRAZ, en todos los casos es 8080 si comparte server ##
 ServerTrazabilidad=http://localhost:8080
+## Servidor del CTRL, en todos los casos es 8080 si comparte server ##
 ServerCtrlVerif=http://localhost:8080
+## Servidor de TERR y TAX, en desa es 8080, en prod y pruebas es 8280 ##
 ServerServiciosLectura=http://localhost:8080
+## uri realitivas ##
 UrlTerritorial=/gestionTerritorial/rest
 UrlEspecies=/especiesVegetales/rest
 UrlEntidades=/rue/rest
@@ -21,8 +27,15 @@ UsRestSvf=gestionLocal
 # Tiempo de vigencia del token recibido
 TimeToken=3600000
 
+# Define si registra y emite guías desde un sistema local
+emiteRemota=si
+
+# Define si trabaja o no con obrajeros
+TieneObrajeros=si
+
 # Parámetros de Gestión de Trazabilidad
 TrazServer=http://localhost:8080
+#TrazServer=http://sacvefor.test.bosquesnativos.net.ar
 TrazRutaAplicacion=/trazabilidad
 
 # Parámetros provinciales
@@ -45,6 +58,9 @@ ClaveDesencriptar=localcompleto
 # Definición Inmueble (o predio)
 Inmueble=Inmueble
 
+# Definición de clase o estado de productos
+Clase=Estado
+
 # Definición de Producto forestal para permitir su extracción
 Producto=Producto
 
@@ -54,6 +70,7 @@ Tecnico=TECNICO
 Apoderado=APODERADO
 Destinatario=DESTINATARIO
 Transportista=TRANSPORTISTA
+Obrajero=OBRAJERO
 
 # Mensajes de impresión de formularios
 ImprimeFormularios=si
@@ -63,7 +80,6 @@ MsgImpFormVigente=Podrá emitir los los formularios provisorios que considere ne
 # Mensajes de cancelación de guías
 MsgCancelVencida=Solo se podrán cancelar las guías durante su período de vigencia.
 MsgCancelVigente=Ingrese las razones por las cuales va a cancelar la guía. Recuerde que una vez cancelada los movimientos de productos quedarán sin efecto y los saldos descontados serán reintegrados a las fuentes de descuento. Finalmente podrá completar la acción mediante el botón 'Aceptar' o limpiar el campo de texto mediante el botón 'Limpiar'. Una vez cancelada la guía, la operación no podrá volverse atrás.
-
 
 # Tipos de Items productivos
 Autorizados=AUTORIZADOS
@@ -82,16 +98,32 @@ GuiaMadre=GUIA MADRE
 TegFuente=ORIGEN
 TegDestino=DESTINO
 
-# Tipos de tasas según la intervención autorizada. Si DiscTasaTipoInterv va en 'si' se setea el resto, si no, no es necesario
-DiscTasaTipoInterv=si
+# Tipos de discriminación para tasas. Cada tasa que lee de aquí la discriminación deberá tener seteado en el atributo 'conf' 
+# el contenido de la variable correspondiente.
+#################################################
+# Si al liquidar tasas discrimina según el origen del predio.
+DiscTasaOrigen=si
+CondAforoFiscal=FISCAL CON AFORO
+# Si al liquidar tasas discrimina según el destino de la guía sea interno o externo a la provincia
+CondDerInspExt=DESTINO EXTERNO
+CondDerInspInt=DESTINO INTERNO
+# Si al liquidar tasas discrimina según el tipo de intervención autorizada.
 IntervPCUS=CAMBIO USO DEL SUELO
 IntervPM=PLAN MANEJO SOSTENIBLE
-TasaPCUS=RENTAS-PCUS
-TasaPM=RENTAS-PM
 
+# Mostrar destino asignado a los productos en una guía de extracción
+DiscTasaDestExt=si
 # Permitir emisión de guías con tasas sin la acreditación del pago
-EmiteSinPagos=si
-CantEmitSinPago=1
+EmiteSinPagos=no
+CantEmitSinPago=0
+# Muestra la Autorización en las guías
+MuestraAutGuias=si
+# Muestra datos catastrales del predio
+MuestraPredioGuias=si
+# Muestra destino externo/interno
+MuestraDestinoGuias=si
+# Si el inmueble puede subdividirse en rodales
+GestionaRodales=si
 
 # ------------------------------------------------------------ #
 # Tipos de Parámetros y estados de Cotrol y Verificación (CCV) #
@@ -137,6 +169,7 @@ Copias=Copias por Tipo de Guía
 Origen=Origen
 Destino=Destino
 Destinatarios=Destinatarios
+Obrajeros=Obrajeros
 Transporte=Transporte
 Transportistas=Transportistas
 Vehiculos=Vehículos
@@ -166,6 +199,11 @@ SubdirMartillos=\\martillos\\
 #SubdirMartillos=/martillos/[provincia]/
 UrlMartillos=/martillos/
 #UrlMartillos=/martillos/[provincia]/
+# ----------------------------------------------------------- #
+# Archivos de imagen de martillos sin obrajero y sin martillo #
+# ----------------------------------------------------------- #
+MrtSinObrajero=sinObrajero.jpg
+MrtSinMartillo=sinMartillo.jpg
 
 # ------------------- #
 # Tipos de parámetros #
@@ -180,6 +218,7 @@ TipoItem=TIPO_ITEM
 TipoTasa=TIPO_TASA
 TipoFuente=TIPO_FUENTE
 TipoEntidadGuia=TIPO_ENT_GUIA
+OrigenPredio=ORIGEN_PREDIO
 
 # ----------------------- #
 # Roles de usuarios local #
