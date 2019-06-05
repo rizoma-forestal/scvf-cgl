@@ -18,17 +18,19 @@
                 </h:panelGrid>
                 
                 <h:form prependId="false" id="frListMovProd">
-                    <!-- Formulario de parámetros a consultar -->
-                    <p:panel id="pnFrmBusqueda" header="Búsqueda por período" >
-                        <p:outputLabel value="Desde aquí se podrá generar un listado con los productos removidos, indicando el Departamento 
-                                       de origen o dejandolo en blanco para obtener los datos de toda la Provincia. 
-                                       Deberá especificar el inicio y fin del período a consultar." style="font-style: italic; font-size: small" />
+                    <!-- Formulario para seleccionar la opción de búsqueda -->
+                    <p:panel id="pnFrmSelectBusq" header="Selección de búsqueda" >
+                        <p:outputLabel value="Seleccione el tipo de búsqueda que desea realizar: 
+                                       por Departamento desde el cual se extrajeron los productos, 
+                                       por producto removido o la totalidad de madera removida sin especificar producto. 
+                                       Luego indique el inicio y fin del período a consultar y luego" style="font-style: italic; font-size: small" />
                         <h:panelGrid id="pgBusqueda" columns="2" >
-                            <p:outputLabel value="Departamento" for="cmbDepto"/>   
-                            <p:selectOneMenu id="cmbDepto" value="#{mbReporte.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
-                                <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
-                                <f:selectItems value="#{mbReporte.lstDepartamentos}" 
-                                               var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
+                            <p:outputLabel value="Opción de búsqueda" for="cmbOptBusq"/>
+                            <p:selectOneMenu id="cmbOptBusq" value="#{mbReporte.busqSelected}" converter="omnifaces.SelectItemsConverter" required="true">
+                                <f:selectItem itemLabel="Seleccione la opción" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbReporte.lstBusqueda}" 
+                                               var="optBusq" itemLabel="#{optBusq.nombre}" itemValue="#{optBusq}" />
+                                <p:ajax listener="#{mbReporte.busqChangeListener()}" update="frListMovProd, messages" />
                             </p:selectOneMenu>  
                             <p:outputLabel value="Inicio: " for="per_inicio"/>
                             <p:calendar id="per_inicio" value="#{mbReporte.inicioPeriodo}" 
@@ -36,11 +38,92 @@
                             <p:outputLabel value="Fin: " for="per_fin"/>
                             <p:calendar id="per_fin" value="#{mbReporte.finPeriodo}" 
                                         required="true" requiredMessage="Debe indicar el fin del período a consultar" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="1" rendered="#{mbReporte.busqSelected.id eq 2}" >
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Buscar productos removidos" action="#{mbReporte.prepareBusqueda}" update="frListMovProd,messages"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Formulario para buscar por departamento -->
+                    <p:panel id="pnFrmBusqXDepto" header="Búsqueda por Departamento de origen" rendered="#{mbReporte.busqSelected.id eq 1}" >
+                        <p:outputLabel value="Desde aquí se podrá generar un listado con los productos removidos, indicando el Departamento 
+                                       de origen de los productos." 
+                                       style="font-style: italic; font-size: small" />
+                        <h:panelGrid id="pgBusqXDepto" columns="2" >
+                            <p:outputLabel value="Departamento" for="cmbDepto"/>   
+                            <p:selectOneMenu required="true" requiredMessage="Debe seleccionar un Departamento" 
+                                             id="cmbDepto" value="#{mbReporte.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
+                                <f:selectItem itemLabel="Seleccione el Departamento" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbReporte.lstDepartamentos}" 
+                                               var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
+                            </p:selectOneMenu>  
                             <p:commandButton title="Buscar los productos movidos durante el período configurado" styleClass="save" icon="fa fa-fw fa-search" 
-                                             value="Buscar" action="#{mbReporte.listarProdMovidos()}" update="frListMovProd,messages"/>
+                                             value="Buscar" action="#{mbReporte.listarProdMovXDepto}" update="frListMovProd,messages"/>
                             <p:commandButton title="Limpiar formulario" action="#{mbReporte.limpiarPeriodo()}" icon="fa fa-fw fa-refresh" value="Limpiar" >
                                 <p:ajax update="frListMovProd" resetValues="true" />
                             </p:commandButton>
+                        </h:panelGrid>
+                        <h:panelGrid id="pgLoadingXDepto" >
+                            <p:ajaxStatus >
+                                <f:facet name="start">
+                                    <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                                </f:facet>
+                            </p:ajaxStatus>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Formulario para buscar por producto -->
+                    <p:panel id="pnFrmBusqXProducto" header="Búsqueda por Producto removido" rendered="#{mbReporte.busqSelected.id eq 2 and not empty mbReporte.lstProdABuscar}" >
+                        <p:outputLabel value="Desde aquí se podrá ir generando un listado con los productos seleccionados. Al seleccionar un producto 
+                                       del listado correspondiente se mostrará en el listado principal la totalidad removida de ese producto. 
+                                       Se podrán generar los subtotales de uno, más o todos los productos." 
+                                       style="font-style: italic; font-size: small" />
+                        <h:panelGrid id="pgBusqXProducto" columns="2" >
+                            <p:dataGrid var="prod" value="#{mbReporte.lstProdABuscar}" columns="1" layout="grid"
+                                        rows="15" paginator="true" id="dgProd"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="15,20,25">
+                                <h:panelGrid columns="2" style="width:100%" >
+                                    <p:commandLink action="#{mbReporte.addTotProd()}" update="frListMovProd" title="Listar removidos">
+                                        <h:outputText value="#{prod.nombreVulgar} - #{prod.clase} - #{prod.unidad}" />
+                                        <f:setPropertyActionListener value="#{prod}" target="#{mbReporte.prodSelected}" />
+                                    </p:commandLink>
+                                </h:panelGrid>
+
+                            </p:dataGrid>
+                        </h:panelGrid>
+                        <h:panelGrid columns="1" >
+                            <p:commandButton title="Calcular los subtotales de todos los productos" styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Calcular todos" action="#{mbReporte.calcularAllProd()}" update="frListMovProd,messages"/>
+                        </h:panelGrid>
+                        <h:panelGrid id="pgLoadingXProducto" >
+                            <p:ajaxStatus >
+                                <f:facet name="start">
+                                    <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                                </f:facet>
+                            </p:ajaxStatus>
+                        </h:panelGrid>
+                    </p:panel>
+                    
+                    <!-- Formulario para la totalidad de la madera removida -->
+                    <p:panel id="pnFrmBusqTotal" header="Totalidad de madera removida" rendered="#{mbReporte.busqSelected.id eq 3}" >
+                        <h:panelGrid columns="1" >
+                            <p:commandButton title="Consultar la totalidad de madera removida" styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Consultar" action="#{mbReporte.totalProductosRemovidos()}" update="frListMovProd,messages"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="5" rendered="#{mbReporte.totalProdRemovidos > -1}" >
+                            <p:outputLabel styleClass="titPanel" value="#{mbReporte.totalProdRemovidos}" style="color: #004d40" >
+                                <f:convertNumber type="currency" maxFractionDigits="3" currencySymbol=""/>
+                            </p:outputLabel>
+                            <p:outputLabel styleClass="titPanel" value="Kg" style="color: #004d40" />  
+                        </h:panelGrid>
+                        <h:panelGrid id="pgLoadingTotal" >
+                            <p:ajaxStatus >
+                                <f:facet name="start">
+                                    <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                                </f:facet>
+                            </p:ajaxStatus>
                         </h:panelGrid>
                     </p:panel>
                     
@@ -69,7 +152,7 @@
                                 filterBy="#{prod.nombreVulgar}" >
                                 <p:outputLabel value="#{prod.nombreVulgar}"/>
                             </p:column>
-                            <p:column headerText="#{config.Clase}" 
+                            <p:column headerText="Clase" 
                                 filterMatchMode="contains"
                                 sortBy="#{prod.clase}" 
                                 filterBy="#{prod.clase}" >

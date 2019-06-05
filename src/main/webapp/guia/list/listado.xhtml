@@ -20,7 +20,7 @@
                     <h:form prependId="false" id="frAgregarRodal">
                         <p:panel id="pnDlgView" style="margin-bottom:10px; width: 220px">
                             <h:panelGrid columns="1" >
-                                <p:dataTable styleClass="table" value="#{mbGuia.guia.rodales}"
+                                <p:dataTable styleClass="table" value="#{mbGuiaList.guia.rodales}"
                                      var="rod"
                                      id="dtViewRales">
                                     <p:column headerText="N° de Orden" >                              
@@ -38,36 +38,36 @@
                 <h:form prependId="false" id="frListGuias">
                     <p:growl id="messages" showDetail="false" />
                     <!-- Vista detalle -->
-                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbGuia.view}" >
+                    <p:panel id="pnFrmView" header="Detalle" rendered="#{mbGuiaList.view}" >
                         <h:panelGrid id="pgDatosGrales" columns="5" styleClass="panelColumns" >
                             <p:fieldset toggleable="true" legend="Identificación" style="margin-bottom:20px">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Tipo: " />
-                                    <p:outputLabel value="#{mbGuia.guia.tipo.nombre}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.tipo.nombre}" style=" font-weight: bold" />
                                     <p:outputLabel value="Número: " />
-                                    <p:outputLabel value="#{mbGuia.guia.codigo}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.codigo}" style=" font-weight: bold" />
                                     <p:outputLabel value="Emisión volante: " for="fechaEmisionVolante"/>
-                                    <p:outputLabel id="fechaEmisionVolante" value="#{mbGuia.guia.fechaEmisionVolante}" style=" font-weight: bold" >
+                                    <p:outputLabel id="fechaEmisionVolante" value="#{mbGuiaList.guia.fechaEmisionVolante}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy hh:mm aa" timeZone="GMT-03:00" />
                                     </p:outputLabel>
-                                    <p:outputLabel value="Formularios emitidos: " rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc and not mbGuia.guia.tipo.movInterno}" />
-                                    <p:outputLabel value="#{mbGuia.guia.formEmitidos}" style=" font-weight: bold" rendered="#{config.ImprimeFormularios eq 'si' and mbGuia.guia.tipo.habilitaDesc and not mbGuia.guia.tipo.movInterno}" />
+                                    <p:outputLabel value="Formularios emitidos: " rendered="#{config.ImprimeFormularios eq 'si' and mbGuiaList.guia.tipo.habilitaDesc and not mbGuiaList.guia.tipo.movInterno}" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.formEmitidos}" style=" font-weight: bold" rendered="#{config.ImprimeFormularios eq 'si' and mbGuiaList.guia.tipo.habilitaDesc and not mbGuiaList.guia.tipo.movInterno}" />
                                 </h:panelGrid>
                             </p:fieldset>
                             <p:fieldset toggleable="true" legend="Vigencia" style="margin-bottom:20px">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Emisión: " for="fechaEmision"/>
-                                    <p:outputLabel id="fechaEmision" value="#{mbGuia.guia.fechaEmisionGuia}" style=" font-weight: bold" >
+                                    <p:outputLabel id="fechaEmision" value="#{mbGuiaList.guia.fechaEmisionGuia}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy" />
                                     </p:outputLabel>
                                     <p:outputLabel value="Vencimiento: " for="fechaVenc"/>
-                                    <p:outputLabel id="fechaVenc" value="#{mbGuia.guia.fechaVencimiento}" style=" font-weight: bold" >
+                                    <p:outputLabel id="fechaVenc" value="#{mbGuiaList.guia.fechaVencimiento}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy" />
                                     </p:outputLabel>
                                     <p:outputLabel value="Estado: " />
-                                    <p:outputLabel value="#{mbGuia.guia.estado.nombre}" style=" font-weight: bold" />
-                                    <p:outputLabel value="Fecha de cierre: " for="fechaCierre" rendered="#{mbGuia.guia.tipo.habilitaTransp and not mbGuia.guia.tipo.movInterno}"/>
-                                    <p:outputLabel id="fechaCierre" value="#{mbGuia.guia.fechaCierre}" style=" font-weight: bold" >
+                                    <p:outputLabel value="#{mbGuiaList.guia.estado.nombre}" style=" font-weight: bold" />
+                                    <p:outputLabel value="Fecha de cierre: " for="fechaCierre" rendered="#{mbGuiaList.guia.tipo.habilitaTransp and not mbGuiaList.guia.tipo.movInterno}"/>
+                                    <p:outputLabel id="fechaCierre" value="#{mbGuiaList.guia.fechaCierre}" style=" font-weight: bold" >
                                         <f:convertDateTime pattern="dd/MM/yyyy" />
                                     </p:outputLabel>
                                 </h:panelGrid>
@@ -75,12 +75,12 @@
                             <p:fieldset toggleable="true" legend="Titular" style="margin-bottom:20px">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Tipo: " />
-                                    <p:outputLabel value="#{mbGuia.guia.origen.tipoPersona}" style=" font-weight: bold" />
-                                    <p:outputLabel value="Razón Social: " rendered="#{mbGuia.guia.origen.tipoPersona eq 'Persona Jurídica'}"/>
-                                    <p:outputLabel value="Nombre completo: " rendered="#{mbGuia.guia.origen.tipoPersona eq 'Persona Física'}"/>
-                                    <p:outputLabel value="#{mbGuia.guia.origen.nombreCompleto}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.origen.tipoPersona}" style=" font-weight: bold" />
+                                    <p:outputLabel value="Razón Social: " rendered="#{mbGuiaList.guia.origen.tipoPersona eq 'Persona Jurídica'}"/>
+                                    <p:outputLabel value="Nombre completo: " rendered="#{mbGuiaList.guia.origen.tipoPersona eq 'Persona Física'}"/>
+                                    <p:outputLabel value="#{mbGuiaList.guia.origen.nombreCompleto}" style=" font-weight: bold" />
                                     <p:outputLabel value="CUIT: " />
-                                    <p:outputLabel value="#{mbGuia.guia.origen.cuit}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.origen.cuit}" style=" font-weight: bold" />
                                 </h:panelGrid>
                             </p:fieldset>
                             <p:fieldset toggleable="true" legend="Fuente" style="margin-bottom:20px">
@@ -88,58 +88,58 @@
                                     <p:outputLabel value="Tipo: " />
                                     <p:outputLabel value="AUTORIZACION" style=" font-weight: bold" />
                                     <p:outputLabel value="Número: " />
-                                    <p:outputLabel value="#{mbGuia.guia.numFuente}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.numFuente}" style=" font-weight: bold" />
                                 </h:panelGrid>
                             </p:fieldset>
-                            <p:fieldset toggleable="true" legend="Productos extraídos" style="margin-bottom:20px" rendered="#{config.DiscTasaDestExt eq 'si' and not mbGuia.guia.tipo.habilitaTransp}">
+                            <p:fieldset toggleable="true" legend="Productos extraídos" style="margin-bottom:20px" rendered="#{config.DiscTasaDestExt eq 'si' and not mbGuiaList.guia.tipo.habilitaTransp}">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Con Destino externo: " />
-                                    <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guia.destinoExterno}" />
+                                    <p:selectBooleanCheckbox disabled="true" value="#{mbGuiaList.guia.destinoExterno}" />
                                 </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>  
 
-                        <h:panelGrid columns="4" rendered="#{mbGuia.guia.tipo.habilitaTransp}" styleClass="panelColumns">
+                        <h:panelGrid columns="4" rendered="#{mbGuiaList.guia.tipo.habilitaTransp}" styleClass="panelColumns">
                             <p:fieldset toggleable="true" legend="Destino" >
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Nombre completo: " />
-                                    <p:outputLabel value="#{mbGuia.guia.destino.nombreCompleto}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.destino.nombreCompleto}" style=" font-weight: bold" />
                                     <p:outputLabel value="CUIT: " />
-                                    <p:outputLabel value="#{mbGuia.guia.destino.cuit}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.destino.cuit}" style=" font-weight: bold" />
                                     <p:outputLabel value="E-Mail: " />
-                                    <p:outputLabel value="#{mbGuia.guia.destino.email}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.destino.email}" style=" font-weight: bold" />
                                     <p:outputLabel value="Domicilio: " />
-                                    <p:outputLabel value="#{mbGuia.guia.destino.inmDomicilio}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.destino.inmDomicilio}" style=" font-weight: bold" />
                                     <p:outputLabel value="Provincia: " />
-                                    <p:outputLabel value="#{mbGuia.guia.destino.provincia}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.destino.provincia}" style=" font-weight: bold" />
                                     <p:outputLabel value="Departamento: " />
-                                    <p:outputLabel value="#{mbGuia.guia.destino.departamento}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.destino.departamento}" style=" font-weight: bold" />
                                     <p:outputLabel value="Localidad: " />
-                                    <p:outputLabel value="#{mbGuia.guia.destino.localidad}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.destino.localidad}" style=" font-weight: bold" />
                                 </h:panelGrid>
                             </p:fieldset >
-                            <p:fieldset toggleable="true" legend="Transporte" rendered="#{!mbGuia.guia.tipo.movInterno}">
+                            <p:fieldset toggleable="true" legend="Transporte" rendered="#{!mbGuiaList.guia.tipo.movInterno}">
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Matrícula: " />
-                                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.matricula}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.transporte.vehiculo.matricula}" style=" font-weight: bold" />
                                     <p:outputLabel value="Marca: " />
-                                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.marca}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.transporte.vehiculo.marca}" style=" font-weight: bold" />
                                     <p:outputLabel value="Modelo: " />
-                                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.modelo}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.transporte.vehiculo.modelo}" style=" font-weight: bold" />
                                     <p:outputLabel value="Año: " />
-                                    <p:outputLabel value="#{mbGuia.guia.transporte.vehiculo.anio}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.transporte.vehiculo.anio}" style=" font-weight: bold" />
                                     <p:outputLabel value="Acoplado: " />
-                                    <p:outputLabel value="#{mbGuia.guia.transporte.acoplado}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.transporte.acoplado}" style=" font-weight: bold" />
                                     <p:outputLabel value="Conductor: " />
-                                    <p:outputLabel value="#{mbGuia.guia.transporte.condNombre}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.transporte.condNombre}" style=" font-weight: bold" />
                                     <p:outputLabel value="DNI: " />
-                                    <p:outputLabel value="#{mbGuia.guia.transporte.condDni}" style=" font-weight: bold" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.transporte.condDni}" style=" font-weight: bold" />
                                 </h:panelGrid>
                             </p:fieldset>
                             <p:fieldset toggleable="true" legend="Formularios provisorios" 
-                                        rendered="#{not empty mbGuia.guia.formProvisorios and config.ImprimeFormularios eq 'si'}">
+                                        rendered="#{not empty mbGuiaList.guia.formProvisorios and config.ImprimeFormularios eq 'si'}">
                                 <h:panelGrid columns="1" cellpadding="1">
-                                    <p:dataTable id="dtFormProv" value="#{mbGuia.guia.formProvisorios}" var="form" styleClass="table" style="width: 300px" >
+                                    <p:dataTable id="dtFormProv" value="#{mbGuiaList.guia.formProvisorios}" var="form" styleClass="table" style="width: 300px" >
                                         <p:column headerText="Guía emisora" >
                                             <p:outputLabel value="#{form.codGuia}"/>
                                         </p:column>
@@ -150,9 +150,9 @@
                                 </h:panelGrid>
                             </p:fieldset>
                             <p:fieldset toggleable="true" legend="Productos descontados de:" 
-                                        rendered="#{not mbGuia.guia.tipo.descuentaAutoriz}">
+                                        rendered="#{not mbGuiaList.guia.tipo.descuentaAutoriz}">
                                 <h:panelGrid columns="1" cellpadding="1">
-                                    <p:dataTable id="dtGuiasFuentes" value="#{mbGuia.guia.guiasfuentes}" var="g" styleClass="table" style="width: 150px" >
+                                    <p:dataTable id="dtGuiasFuentes" value="#{mbGuiaList.guia.guiasfuentes}" var="g" styleClass="table" style="width: 150px" >
                                         <p:column headerText="Guía" >
                                             <p:outputLabel value="#{g.codigo}"/>
                                         </p:column>
@@ -160,28 +160,28 @@
                                 </h:panelGrid>
                                 <h:panelGrid columns="2" cellpadding="1">
                                     <p:outputLabel value="Con Destino externo: " rendered="#{config.DiscTasaDestExt eq 'si'}" />
-                                    <p:selectBooleanCheckbox disabled="true" value="#{mbGuia.guia.destinoExterno}" rendered="#{config.DiscTasaDestExt eq 'si'}" />
+                                    <p:selectBooleanCheckbox disabled="true" value="#{mbGuiaList.guia.destinoExterno}" rendered="#{config.DiscTasaDestExt eq 'si'}" />
                                 </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>
                         
                         <h:panelGrid id="pgObs" columns="1" cellpadding="1" 
-                                     rendered="#{not mbGuia.guia.estado.completaCiclo and not mbGuia.guia.estado.habilitaEdicionComp
-                                                 and not mbGuia.guia.estado.habilitaEdicionFuente and not mbGuia.guia.estado.habilitaEmision
-                                                 and not mbGuia.guia.estado.habilitaFuenteProductos and not mbGuia.guia.estado.habilitaLiquidacion
-                                                 and not mbGuia.guia.estado.habilitaTransito}">
+                                     rendered="#{not mbGuiaList.guia.estado.completaCiclo and not mbGuiaList.guia.estado.habilitaEdicionComp
+                                                 and not mbGuiaList.guia.estado.habilitaEdicionFuente and not mbGuiaList.guia.estado.habilitaEmision
+                                                 and not mbGuiaList.guia.estado.habilitaFuenteProductos and not mbGuiaList.guia.estado.habilitaLiquidacion
+                                                 and not mbGuiaList.guia.estado.habilitaTransito}">
                             <p:fieldset toggleable="true" legend="Observaciones" style="margin-bottom:20px">
                                 <h:panelGrid columns="1" cellpadding="1">
-                                    <p:outputLabel value="#{mbGuia.guia.obs}" />
+                                    <p:outputLabel value="#{mbGuiaList.guia.obs}" />
                                 </h:panelGrid>
                             </p:fieldset>
                         </h:panelGrid>
                         
-                        <p:separator rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" />
+                        <p:separator rendered="#{config.TieneObrajeros eq 'si' and not mbGuiaList.guia.tipo.habilitaTransp}" />
                         
-                        <h:panelGrid id="pgObrajeros" columns="1" rendered="#{config.TieneObrajeros eq 'si' and not mbGuia.guia.tipo.habilitaTransp}" >
+                        <h:panelGrid id="pgObrajeros" columns="1" rendered="#{config.TieneObrajeros eq 'si' and not mbGuiaList.guia.tipo.habilitaTransp}" >
                             <p:outputLabel value="#{config.Obrajeros}" style="font-weight: bold" />
-                            <p:dataTable styleClass="table" value="#{mbGuia.guia.obrajeros}"
+                            <p:dataTable styleClass="table" value="#{mbGuiaList.guia.obrajeros}"
                                          var="obraj"
                                          id="dtObrajeros" 
                                          widgetVar="obrajTable" >
@@ -200,11 +200,11 @@
                             </p:dataTable>
                         </h:panelGrid>
 
-                        <p:separator rendered="#{mbGuia.view and config.emiteRemota ne 'si'}" />
+                        <p:separator rendered="#{mbGuiaList.view and config.emiteRemota ne 'si'}" />
                         
                         <h:panelGrid id="pgGuiaInmuebles" columns="1" rendered="#{config.emiteRemota ne 'si'}" >
                             <p:outputLabel value="#{config.Inmuebles}" style="font-weight: bold" />
-                            <p:dataTable styleClass="table" value="#{mbGuia.lstInmueblesOrigen}"
+                            <p:dataTable styleClass="table" value="#{mbGuiaList.lstInmueblesOrigen}"
                                          var="inm"
                                          id="dtGuiaInms" >
                                 <p:column headerText="Id Catastral" >
@@ -226,17 +226,17 @@
                                 </p:column>
                                 <p:column headerText="Rodales" rendered="#{config.GestionaRodales eq 'si'}" style="width: 50px" >
                                     <p:commandButton title="Ver rodales asignados" icon="fa fa-fw fa-search" 
-                                                     action="#{mbGuia.prepareViewRodalesAsignados()}"
+                                                     action="#{mbGuiaList.prepareViewRodalesAsignados()}"
                                                      oncomplete="PF('dlgVerRodales').show();" update="frAgregarRodal"/>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
                         
-                        <p:separator rendered="#{mbGuia.view}" />
+                        <p:separator rendered="#{mbGuiaList.view}" />
                         
                         <h:panelGrid id="pgGuiaItems" columns="1" >
                             <p:outputLabel value="Detalle de Productos" style="font-weight: bold" />
-                            <p:dataTable styleClass="table" value="#{mbGuia.guia.items}"
+                            <p:dataTable styleClass="table" value="#{mbGuiaList.guia.items}"
                                          var="item"
                                          id="dtGuiaItems" >
                                 <p:column headerText="id" style="width:50px">
@@ -259,31 +259,31 @@
                                         <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Saldo disp." style="text-align: right !important;" rendered="#{mbGuia.guia.tipo.habilitaDesc}" >
+                                <p:column headerText="Saldo disp." style="text-align: right !important;" rendered="#{mbGuiaList.guia.tipo.habilitaDesc}" >
                                     <p:outputLabel value="#{item.saldo}" >
                                         <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                     </p:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view and not empty mbGuia.lstGuiasHijas}" />
-                        <h:panelGrid columns="1" rendered="#{not empty mbGuia.lstGuiasHijas}" >
+                        <p:separator rendered="#{mbGuiaList.view and not empty mbGuiaList.lstGuiasHijas}" />
+                        <h:panelGrid columns="1" rendered="#{not empty mbGuiaList.lstGuiasHijas}" >
                             <p:commandButton value="Ver Guías" icon="fa fa-fw fa-external-link" process="@this" 
                                              title="Ver las guías que descontaron productos de esta guía." 
                                              update="pnViewGuias" oncomplete="PF('dlgVerGuias').show();"/>
                         </h:panelGrid>
-                        <p:separator rendered="#{mbGuia.view}" />
-                        <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbGuia.view}" >
+                        <p:separator rendered="#{mbGuiaList.view}" />
+                        <h:panelGrid id="pgDatosAdmin" columns="2" rendered="#{mbGuiaList.view}" >
                             <p:outputLabel value="Fecha Alta: " for="fechaAlta"/>
-                            <p:outputLabel id="fechaAlta" value="#{mbGuia.guia.fechaAlta}" >
+                            <p:outputLabel id="fechaAlta" value="#{mbGuiaList.guia.fechaAlta}" >
                                 <f:convertDateTime pattern="dd/MM/yyyy" />
                             </p:outputLabel>
                             <p:outputLabel value="Usuario: " for="us"/>
-                            <p:outputLabel id="us" value="#{mbGuia.guia.usuario.nombreCompleto}"/>
+                            <p:outputLabel id="us" value="#{mbGuiaList.guia.usuario.nombreCompleto}"/>
                         </h:panelGrid>
                         <h:panelGrid columns="2" >
                             <p:commandButton icon="fa fa-fw fa-share" value="Cerrar" process="@this" title="Cerrar detalle"
-                                             update="frListGuias" action="#{mbGuia.prepareList()}" 
+                                             update="frListGuias" action="#{mbGuiaList.prepareList()}" 
                                              oncomplete="PF('dlgVerRodales').hide();" />
                         </h:panelGrid>
                     </p:panel>
@@ -292,7 +292,7 @@
                     <p:dialog header="Guías emitidas" widgetVar="dlgVerGuias" minHeight="40" closable="false">
                         <p:panel id="pnViewGuias" style="margin-bottom:10px; width: 800px">
                             <h:panelGrid columns="2" >
-                                <p:dataTable styleClass="table" value="#{mbGuia.lstGuiasHijas}"
+                                <p:dataTable styleClass="table" value="#{mbGuiaList.lstGuiasHijas}"
                                      var="guia"
                                      id="dtViewGuias">
                                     <p:column headerText="Id" style="width: 30px" >                              
@@ -327,91 +327,22 @@
                             </f:facet>
                         </p:panel>
                     </p:dialog>
-
-                    <!-- Formulario para la búsqueda de guías -->
-                    <p:panel id="pnBusqueda" header="Generar Listado" style="margin-bottom:10px;" rendered="#{not mbGuia.view}">
-                        <p:outputLabel value="Seleccione la opción de búsqueda de Guías y luego complete el parámetro correspondientes. 
-                                       Mediante el botón que corresponda se mostrará un listado con los resultados de la búsqueda que podrá 
-                                       filtrar según sus columnas." 
-                                           style="font-style: italic; font-size: small" />
-                        <h:panelGrid id="pgBusqueda" columns="2" cellpadding="10" >
-                            <h:panelGrid id="pgBusqSelectOpt" columns="2" cellpadding="2" >
-                                <p:outputLabel value="Buscar por: " for="cmbOpt"/>   
-                                <p:selectOneMenu id="cmbOpt" value="#{mbGuia.optBusqSelected}" converter="omnifaces.SelectItemsConverter" >
-                                    <f:selectItem itemLabel="Seleccione la Opción" itemValue="" noSelectionOption="true"/>
-                                    <f:selectItems value="#{mbGuia.lstOptBucarGuias}" 
-                                                   var="opt" itemLabel="#{opt.nombre}" itemValue="#{opt}"/>
-                                    <p:ajax update="pnBusqueda" />
-                                </p:selectOneMenu> 
-                            </h:panelGrid>
-                            <h:panelGrid id="pgBusqTipoGuia" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 1}" >
-                                <p:outputLabel value="Tipo de guía: " for="cmbTipoGuia"/>
-                                <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Tipo de guías a buscar" id="cmbTipoGuia" 
-                                                 value="#{mbGuia.busqTipoGuiaSelected}" converter="omnifaces.SelectItemsConverter" >
-                                    <f:selectItem itemLabel="Seleccione el tipo de guía" itemValue="" noSelectionOption="true"/>
-                                    <f:selectItems value="#{mbGuia.lstBusqTipoGuias}" 
-                                                   var="tipoABusc" itemLabel="#{tipoABusc.nombre}" itemValue="#{tipoABusc}"/>
-                                </p:selectOneMenu> 
-                                <p:commandButton value="Buscar por Tipo de Guía" icon="fa fa-fw fa-search"
-                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias,messages" />
-                            </h:panelGrid>
-                            <h:panelGrid id="pgBusqNumGuia" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 2}" >
-                                <p:outputLabel value="Código de guía: " for="txtCodGuiaBuscar"/>
-                                <p:inputMask placeholder="#{config.maskGuia}" id="txtCodGuiaBuscar" value="#{mbGuia.busqCodGuia}" 
-                                             style="text-transform: uppercase" requiredMessage="Debe ingresar el Número a buscar" 
-                                             required="true" mask="#{config.maskGuia}" />
-                                <p:commandButton value="Buscar por Número de Guía" icon="fa fa-fw fa-search" 
-                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias,messages" />
-                            </h:panelGrid>
-                            <h:panelGrid id="pgBusqCuitTit" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 3}" >
-                                <p:outputLabel value="CUIT del Titular: " for="txtCuitTitBuscar"/>
-                                <p:inputNumber id="txtCuitTitBuscar" value="#{mbGuia.busqCuitTit}" thousandSeparator="" decimalPlaces="0" 
-                                               requiredMessage="Debe ingresar un CUIT del Titular de las guías a buscar" required="true" />
-                                <p:commandButton value="Buscar por Cuit Titular" icon="fa fa-fw fa-search" 
-                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
-                            </h:panelGrid>
-                            <h:panelGrid id="pgBusqCuitDest" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 4}" >
-                                <p:outputLabel value="CUIT del Destinatario " for="txtCuitDestBuscar"/>
-                                <p:inputNumber id="txtCuitDestBuscar" value="#{mbGuia.busqCuitDest}" thousandSeparator="" decimalPlaces="0" 
-                                               requiredMessage="Debe ingresar un CUIT del Destinatario de las guías a buscar" required="true" />
-                                <p:commandButton value="Buscar por Cuit Destinatario" icon="fa fa-fw fa-search" 
-                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
-                            </h:panelGrid>
-                            <h:panelGrid id="pgBusqAutFuente" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 5}" >
-                                <p:outputLabel value="Autorización fuente" for="txtAutFuenteBuscar"/>
-                                <p:inputMask placeholder="#{config.maskInstrumento}" id="txtAutFuenteBuscar" value="#{mbGuia.busqNumFuente}" 
-                                             style="text-transform: uppercase" requiredMessage="Debe ingresar el Número" 
-                                             required="true" mask="#{config.maskInstrumento}" />
-                                <p:commandButton value="Buscar por Autorización fuente" icon="fa fa-fw fa-search" 
-                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
-                            </h:panelGrid>
-                            <h:panelGrid id="pgBusqEstGuia" columns="3" cellpadding="2" rendered="#{mbGuia.optBusqSelected.id eq 6}" >
-                                <p:outputLabel value="Estado de guía: " for="cmbEstGuia"/>
-                                <p:selectOneMenu required="true" requiredMessage="Debe ingresar el Estado de guías a buscar" id="cmbEstGuia" 
-                                                 value="#{mbGuia.busqEstadoGuiaSelected}" converter="omnifaces.SelectItemsConverter" >
-                                    <f:selectItem itemLabel="Seleccione el estado de guía" itemValue="" noSelectionOption="true"/>
-                                    <f:selectItems value="#{mbGuia.lstBusqEstadosGuias}" 
-                                                   var="estABusc" itemLabel="#{estABusc.nombre}" itemValue="#{estABusc}"/>
-                                </p:selectOneMenu> 
-                                <p:commandButton value="Buscar por Estado de Guía" icon="fa fa-fw fa-search" 
-                                             actionListener="#{mbGuia.poblarListado()}" update="frListGuias" />
-                            </h:panelGrid>
-                        </h:panelGrid>
-                        <p:outputLabel value="No se registran guías con los parámetros ingresados." 
-                                       style="font-size: 20px !important; color: #8A0829" rendered="#{mbGuia.busqSinResultados}" />
-                    </p:panel>
+                    
+                    <!-- Barra de estado -->
+                    <h:panelGrid >
+                        <p:ajaxStatus >
+                            <f:facet name="start">
+                                <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                            </f:facet>
+                        </p:ajaxStatus>
+                    </h:panelGrid>
                     
                     <!-- Listado -->
-                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;" rendered="#{mbGuia.listado.size() > 0}">
-                        <p:dataTable styleClass="table" value="#{mbGuia.listado}"
-                                     filteredValue="#{mbGuia.listadoFilter}"
-                             var="guia"
-                             id="dtGuia" 
-                             rows="5"
-                             paginator="true"      
-                             widgetVar="guiaTable"
-                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="5,10,15">
+                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;" >
+                        <p:dataTable value="#{mbGuiaList.model}" var="guia" paginator="true" rows="10" lazy="true" resizableColumns="true" styleClass="table" widgetVar="guiaTable" id="dtGuia"  
+                                     filteredValue="#{mbGuiaList.listadoFilter}"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="10,15,20">
                             <f:facet name="header">
                                 <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
                                          onclick="PF('guiaTable').clearFilters()" update="dtGuia"/>
@@ -422,74 +353,37 @@
                                     <p:dataExporter type="xls" target="dtGuia" fileName="Guías" />
                                 </h:commandLink>   
                             </f:facet>
-                            <p:column headerText="id" style="width:25px">
-                                <p:outputLabel value="#{guia.id}"/>
-                            </p:column>
-                            <p:column headerText="Tipo" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.tipo.nombre}" 
-                                filterBy="#{guia.tipo.nombre}" >
+                            <p:column headerText="Tipo" filterMatchMode="contains" filterBy="#{guia.tipo.nombre}" style="width:120px">
                                 <p:outputLabel value="#{guia.tipo.nombre}"/>
                             </p:column>
-                            <p:column headerText="Número" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.codigo}" 
-                                filterBy="#{guia.codigo}" >
+                            <p:column headerText="Número" filterBy="#{guia.codigo}" filterMatchMode="contains" style="width:110px">
                                 <p:outputLabel value="#{guia.codigo}"/>
                             </p:column>
-                            <p:column  headerText="Alta" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.fechaAlta}" 
-                                filterBy="#{guia.fechaAlta}" >
-                                <p:outputLabel value="#{guia.fechaAlta}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Emisión" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.fechaEmisionGuia}" 
-                                filterBy="#{guia.fechaEmisionGuia}" >
-                                <p:outputLabel value="#{guia.fechaEmisionGuia}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Vencimiento" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.fechaVencimiento}" 
-                                filterBy="#{guia.fechaVencimiento}" >
-                                <p:outputLabel value="#{guia.fechaVencimiento}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Titular" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.origen.nombreCompleto} - #{guia.origen.cuit}" 
-                                filterBy="#{guia.origen.nombreCompleto} - #{guia.origen.cuit}" >
-                                <p:outputLabel value="#{guia.origen.nombreCompleto} - #{guia.origen.cuit}" />
+                            <p:column headerText="CUIT Titular" filterBy="#{guia.origen.cuit}" filterMatchMode="contains" style="width:110px">
+                                <p:outputLabel value="#{guia.origen.cuit}" />
                             </p:column>  
-                            <p:column headerText="Procedencia" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.origen.localidad} - #{guia.origen.departamento}" 
-                                filterBy="#{guia.origen.localidad} - #{guia.origen.departamento}" >
-                                <p:outputLabel value="#{guia.origen.localidad} - #{guia.origen.departamento}" />
+                            <p:column headerText="Nombre Titular" filterBy="#{guia.origen.nombreCompleto}" filterMatchMode="contains" >
+                                <p:outputLabel value="#{guia.origen.nombreCompleto}" />
+                            </p:column>  
+                            <p:column headerText="Procedencia" filterMatchMode="contains" filterBy="#{guia.origen.departamento}" >
+                                <p:outputLabel value="#{guia.origen.departamento}" />
                             </p:column>
-                            <p:column headerText="Fuente" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" 
-                                filterBy="#{guia.tipoFuente.nombre} - #{guia.numFuente}" >
-                                <p:outputLabel value="#{guia.tipoFuente.nombre} - #{guia.numFuente}" />
+                            <p:column headerText="CUIT Dest." filterBy="#{guia.destino.cuit}" filterMatchMode="contains" style="width:110px">
+                                <p:outputLabel value="#{guia.destino.cuit}" />
+                            </p:column>  
+                            <p:column headerText="Nombre Destinatario" filterBy="#{guia.destino.nombreCompleto}" filterMatchMode="contains" >
+                                <p:outputLabel value="#{guia.destino.nombreCompleto}" />
+                            </p:column>  
+                            <p:column headerText="Destino" filterMatchMode="contains" filterBy="#{guia.destino.departamento}" >
+                                <p:outputLabel value="#{guia.destino.departamento}" />
                             </p:column>
-                            <p:column headerText="Estado" 
-                                filterMatchMode="contains"
-                                sortBy="#{guia.estado.nombre}" 
-                                filterBy="#{guia.estado.nombre}" >
+                            <p:column headerText="Estado" filterMatchMode="contains" filterBy="#{guia.estado.nombre}" >
                                 <p:outputLabel value="#{guia.estado.nombre}" />
                             </p:column>
-
                             <p:column style="width:30px" exportable="false">
                                 <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
-                                                 update="@form" action="#{mbGuia.prepareViewDetalle()}" >
-                                    <f:setPropertyActionListener value="#{guia}" target="#{mbGuia.guia}" /> 
+                                                 update="@form" action="#{mbGuiaList.prepareViewDetalle()}" >
+                                    <f:setPropertyActionListener value="#{guia}" target="#{mbGuiaList.guia}" /> 
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>

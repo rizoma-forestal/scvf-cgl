@@ -93,12 +93,6 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
  * @author rincostante
  */
 public class MbGuia {
-    
-    /**
-     * Variable privada: guarda las claves y nombres para la gestión de los mensajes de vigencia de las guías.
-     * Se setea en el método init() para el caso de la vista formulario.xhtml
-     */
-    private static final Map<Integer, String> VIGENCIAS = iniciateMap();
 
     /**
      * Variable privada: setea la página inicial para mostrar en el frame
@@ -119,67 +113,7 @@ public class MbGuia {
      * Variable privada: listado para filtrar la tabla de guías existentes
      */
     private List<Guia> listadoFilter;
-    
-    //////////////////////////////////////
-    // campos para la búsqueda de guías //
-    //////////////////////////////////////
-    
-    /**
-     * Variable privada: listado de las opciones de búsqueda para obtener el listado de guías.
-     * Según la opción seleccionada se abrirá mostrará el campo para el ingreso de la opción y el botón de búsqueda.
-     */
-    private List<EntidadServicio> lstOptBucarGuias;
-    
-    /**
-     * Variable privada: opción seleccionada para realizar la búsqueda
-     */
-    private EntidadServicio optBusqSelected;
-    
-    /**
-     * Variable privada: litado de tipos de guías para llenar el combo de selección del tipo a buscar las guías respectivas
-     */
-    private List<TipoGuia> lstBusqTipoGuias;
-    
-    /**
-     * Variable privada: tipo de guía seleccionado para la búsqueda
-     */    
-    private TipoGuia busqTipoGuiaSelected;
-    
-    /**
-     * Variable privada: listado de estados de guías para llenar el combo de selección del estado a buscar las guías respectivas
-     */    
-    private List<EstadoGuia> lstBusqEstadosGuias;
-    
-    /**
-     * Variable privada: estado de guía seleccionado para la búsqueda
-     */    
-    private EstadoGuia busqEstadoGuiaSelected;
-    
-    /**
-     * Variable privada: cadena para guardar el código de la guía a buscar
-     */    
-    private String busqCodGuia;
-    
-    /**
-     * Variable privada: cuit del titular cuyas guías se quiere buscar
-     */    
-    private Long busqCuitTit;
-    
-    /**
-     * Variable privada: cuit del destinatario cuyas guías remitidas se quiere buscar
-     */    
-    private Long busqCuitDest;
-    
-    /**
-     * Variable privada: número de autorización de la cual las guías a buscar tomaron los productos
-     */    
-    private String busqNumFuente;
-    
-    /**
-     * Variable privada: flag que indica que la búsqueda no arrojó resultados
-     */    
-    private boolean busqSinResultados;
-    
+
     /**
      * Variable privada: número de la guía para obtenerla para su gestión
      */
@@ -781,103 +715,6 @@ public class MbGuia {
         this.viewObrajero = viewObrajero;
     }
 
-    public boolean isBusqSinResultados() {
-        return busqSinResultados;
-    }
-
-    public void setBusqSinResultados(boolean busqSinResultados) {    
-        this.busqSinResultados = busqSinResultados;
-    }
-
-    public EntidadServicio getOptBusqSelected() {
-        return optBusqSelected;
-    }
-
-    public void setOptBusqSelected(EntidadServicio optBusqSelected) {   
-        this.optBusqSelected = optBusqSelected;
-    }
-
-    public List<EntidadServicio> getLstOptBucarGuias() {
-        lstOptBucarGuias = new ArrayList<>();
-        lstOptBucarGuias.add(new EntidadServicio(Long.valueOf(1), "Tipo de Guía"));
-        lstOptBucarGuias.add(new EntidadServicio(Long.valueOf(2), "Número de Guía"));
-        lstOptBucarGuias.add(new EntidadServicio(Long.valueOf(3), "CUIT del Titular"));
-        lstOptBucarGuias.add(new EntidadServicio(Long.valueOf(4), "CUIT del Destinatario"));
-        lstOptBucarGuias.add(new EntidadServicio(Long.valueOf(5), "Autorización fuente"));
-        lstOptBucarGuias.add(new EntidadServicio(Long.valueOf(6), "Estado de la Guía"));
-        return lstOptBucarGuias;
-    }
-
-    public void setLstOptBucarGuias(List<EntidadServicio> lstOptBucarGuias) {
-        this.lstOptBucarGuias = lstOptBucarGuias;
-    }
-
-    public List<TipoGuia> getLstBusqTipoGuias() {
-        lstBusqTipoGuias = tipoGuiaFacade.getHabilitados();
-        return lstBusqTipoGuias;
-    }
-
-    public void setLstBusqTipoGuias(List<TipoGuia> lstBusqTipoGuias) {
-        this.lstBusqTipoGuias = lstBusqTipoGuias;
-    }
-
-    public TipoGuia getBusqTipoGuiaSelected() {
-        return busqTipoGuiaSelected;
-    }
-
-    public void setBusqTipoGuiaSelected(TipoGuia busqTipoGuiaSelected) {
-        this.busqTipoGuiaSelected = busqTipoGuiaSelected;
-    }
-
-    public List<EstadoGuia> getLstBusqEstadosGuias() {
-        lstBusqEstadosGuias = estadoFacade.getHabilitados();
-        return lstBusqEstadosGuias;
-    }
-
-    public void setLstBusqEstadosGuias(List<EstadoGuia> lstBusqEstadosGuias) {
-        this.lstBusqEstadosGuias = lstBusqEstadosGuias;
-    }
-
-    public EstadoGuia getBusqEstadoGuiaSelected() {
-        return busqEstadoGuiaSelected;
-    }
-
-    public void setBusqEstadoGuiaSelected(EstadoGuia busqEstadoGuiaSelected) {
-        this.busqEstadoGuiaSelected = busqEstadoGuiaSelected;
-    }
-
-    public String getBusqCodGuia() {
-        return busqCodGuia;
-    }
-
-    public void setBusqCodGuia(String busqCodGuia) {
-        this.busqCodGuia = busqCodGuia;
-    }
-
-    public Long getBusqCuitTit() {
-        return busqCuitTit;
-    }
-
-    public void setBusqCuitTit(Long busqCuitTit) {
-        this.busqCuitTit = busqCuitTit;
-    }
-
-    public Long getBusqCuitDest() {
-        return busqCuitDest;
-    }
-
-    public void setBusqCuitDest(Long busqCuitDest) {
-        this.busqCuitDest = busqCuitDest;
-    }
-
-    public String getBusqNumFuente() {
-        return busqNumFuente;
-    }
-
-    public void setBusqNumFuente(String busqNumFuente) {   
-        this.busqNumFuente = busqNumFuente;
-    }
-
     public boolean isVencAtualizado() {
         return vencAtualizado;
     }
@@ -1414,58 +1251,12 @@ public class MbGuia {
 	ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
         sesion = (MbSesion)ctx.getSessionMap().get("mbSesion");
         usLogueado = sesion.getUsuario();
-        optBusqSelected = null;
-        busqSinResultados = false;
-        limpiarFormBusqGuias();
     }    
     
     ////////////////////////
     // Métodos operativos //
     ////////////////////////  
-    
-    /**
-     * Método para listar las guías según los parámetros de búsqueda
-     * seteados en en getLstBusqTipoGuias()
-     * Si no hubo resultados setea el flag correspondiente para mostrar un mensaje al usuario.
-     * Al final limpia el formulario de búsqueda.
-     */
-    public void poblarListado(){
-        // reseteo el resultado
-        busqSinResultados = false;
-        // busco y pueblo el listado luego de validar
-        switch (optBusqSelected.getId().intValue()) {
-            case 1:
-                // Si busca por tipo de guía
-                listado = guiaFacade.getByTipo(busqTipoGuiaSelected);
-                break;
-            case 2:
-                // Si busca por número de guía
-                listado = new ArrayList<>();
-                listado.add(guiaFacade.getExistente(busqCodGuia));
-                break;
-            case 3:
-                // Si busca por el cuit del titular
-                listado = guiaFacade.getByOrigen(busqCuitTit);
-                break;
-            case 4:
-                // Si busca por el cuit del destinatario
-                listado = guiaFacade.getByDestino(busqCuitDest);
-                break;
-            case 5:
-                // Si busca por el número de la Autorización fuente
-                listado = guiaFacade.getByNumFuente(busqNumFuente);
-                break;
-            case 6:
-                // Si busca por estado de guía
-                listado = guiaFacade.getByEstado(busqEstadoGuiaSelected);
-                break;
-        }
-        // verifico los resultados
-        if(listado.isEmpty()) busqSinResultados = true;
-        // limpio el formulario
-        limpiarFormBusqGuias();
-    }
-    
+
     /**
      * Método que carga la vista que se mostrará en el iframe complementario.
      * Según la vista solicitada se instanciarán los objetos a gestionar.
@@ -1592,20 +1383,6 @@ public class MbGuia {
      * También setea el Prductor (Persona) según el CUIT obtenido.
      */
     public void buscarFuentesProductos(){
-//        // si estoy editando limpio todo
-//        if(guia.getId() != null && viewGuia){
-//            autSelected = null;
-//            guiaSelected = null;
-//            guiaAsignada = null;
-//            viewFuente = false;
-//            guia.setNumFuente(null);
-//            if(!guia.getGuiasfuentes().isEmpty()){
-//                guia.getGuiasfuentes().clear();
-//            }
-//            lstGuiasMadre = null;
-//            lstItemsOrigen = null;
-//            lstItemsADescontar = null;
-//        }
         // obtengo el rol de Proponente
         TipoParam tipoParamRol = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("RolPersonas"));
         Parametrica rolProp = paramFacade.getExistente(ResourceBundle.getBundle("/Config").getString("Proponente"), tipoParamRol);
@@ -3296,34 +3073,7 @@ public class MbGuia {
             JsfUtil.addErrorMessage("Hubo un error actualzando la guía. " + ex.getMessage());
         }
     }
-    
-    //////////////////////////////////////
-    // Métodos para el listado de Guias //
-    //////////////////////////////////////
-    /**
-     * Método para inicializar el listado Autorizaciones
-     */
-    public void prepareList(){
-        guia = null;
-        view = false;
-    }
-    
-    /**
-     * Método para inicializar la vista detalle de la Guía.
-     * Instancia las posibles guías que toman productos de la presente.
-     * Si las guías no se emiten de forma remota instanciará los inmuebles a partir de la Autorización
-     */
-    public void prepareViewDetalle(){
-        if(guia.getTipo().isHabilitaDesc()){
-            lstGuiasHijas = guiaFacade.findHijas(guia);
-        }
-        // Busco los inmuebles si la guía no se emite de forma remota
-        if(!ResourceBundle.getBundle("/Config").getString("emiteRemota").equals("si")){
-            setearInmueblesOrigen();
-        }
-        view = true;
-    }    
-    
+
     //////////////////////////////////////////
     // Métodos para la cancelación de Guias //
     //////////////////////////////////////////    
@@ -3716,16 +3466,6 @@ public class MbGuia {
     //////////////////////
 
     /**
-     * Método privado y estático que inicializa el map con los tipos de consulta de cancelación
-     * @return Map<Integer, String> map con las claves y tipos
-     */
-    private static Map<Integer, String> iniciateMap() {
-        Map<Integer, String> result = new HashMap<>();
-        result.put(1, "Cancel");
-        result.put(2, "PrintForm");
-        return Collections.unmodifiableMap(result);
-    }
-    /**
      * Método para limpiar resetear el listado con los tipos.
      * utilizado en prepareNew(), prepareEdit() y limpiarForm()
      */
@@ -3824,34 +3564,6 @@ public class MbGuia {
             ent.setLocalidad(domDestino.getLocalidad());
             ent.setDepartamento(domDestino.getDepartamento());
             ent.setProvincia(domDestino.getProvincia());
-//            try{
-//                // obtengo el token si no está seteado o está vencido
-//                if(tokenRue == null){
-//                    getTokenRue();
-//                }else try {
-//                    if(!tokenRue.isVigente()){
-//                        getTokenRue();
-//                    }
-//                } catch (IOException ex) {
-//                    logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la vigencia del token", ex.getMessage()});
-//                }
-//                
-//                
-//                personaClient = new PersonaClient();
-//                personaRue = personaClient.find_JSON(ar.gob.ambiente.sacvefor.servicios.rue.Persona.class, String.valueOf(per.getIdRue()), tokenRue.getStrToken());
-//                personaClient.close();
-//                ent.setIdLocGT(personaRue.getDomicilio().getIdLocalidadGt());
-//                ent.setInmDomicilio(personaRue.getDomicilio().getCalle() + "-" + personaRue.getDomicilio().getNumero());
-//                ent.setLocalidad(personaRue.getDomicilio().getLocalidad());
-//                ent.setDepartamento(personaRue.getDomicilio().getDepartamento());
-//                ent.setProvincia(personaRue.getDomicilio().getProvincia());
-//            }catch(ClientErrorException ex){
-//                // muestro un mensaje al usuario
-//                JsfUtil.addErrorMessage("Hubo un error obteniendo los datos de la Persona del Registro Unico. " + ex.getMessage());
-//                logger.log(Level.SEVERE, "{0} - {1}", new Object[]{"Hubo un error obteniendo la Persona por id desde el "
-//                        + "servicio REST de RUE", ex.getMessage()});
-//                return null;
-//            }
             
             // entidad
             ent.setTipoEntidadGuia(tipoEntidad);
@@ -4512,21 +4224,6 @@ public class MbGuia {
         
         return result;               
     }  
-
-    /**
-     * Método para limpiar el formulario de búsqueda de guías.
-     * Resetea todas las variables y listados.
-     */
-    private void limpiarFormBusqGuias() {
-        optBusqSelected = null;
-        lstBusqTipoGuias = new ArrayList<>();
-        busqTipoGuiaSelected = null;
-        lstBusqEstadosGuias = new ArrayList<>();
-        busqEstadoGuiaSelected = null;
-        busqCodGuia = null;
-        busqCuitTit = null;
-        busqCuitDest = null;
-    }
 
     /**
      * Método privado para validar el domicilio seleccionado para el destino de la guía de transporte.

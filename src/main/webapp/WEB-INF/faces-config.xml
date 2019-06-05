@@ -108,4 +108,9 @@
         <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbDelegacion</managed-bean-class>
         <managed-bean-scope>view</managed-bean-scope>
     </managed-bean>
+    <managed-bean>
+        <description>Bean de respaldo para la gestión del listado y vista detalle de las guías registradas</description>
+        <managed-bean-name>mbGuiaList</managed-bean-name>
+        <managed-bean-class>ar.gob.ambiente.sacvefor.localcompleto.mb.MbGuiaList</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope></managed-bean>
 </faces-config>
