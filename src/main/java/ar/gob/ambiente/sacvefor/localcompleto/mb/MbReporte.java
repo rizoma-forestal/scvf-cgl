@@ -3,28 +3,18 @@ package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.AutSupConsulta;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
-import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ItemProductivo;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.AutorizacionFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.GuiaFacade;
-import ar.gob.ambiente.sacvefor.localcompleto.territ.client.ProvinciaClient;
-import ar.gob.ambiente.sacvefor.localcompleto.territ.client.UsuarioClient;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProdConsulta;
-import ar.gob.ambiente.sacvefor.localcompleto.util.Token;
-import ar.gob.ambiente.sacvefor.servicios.territorial.Departamento;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ResourceBundle;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 
 /**
  * Bean de respaldo para la gestión de listados parametrizados para exportar en planilla electrónica
@@ -58,30 +48,6 @@ public class MbReporte {
      */
     private List<ProdConsulta> lstProdFilter;    
     
-    //////////////////////////////////////////////
-    // Variables para la consulta a la API Terr //
-    //////////////////////////////////////////////
-    
-    /**
-     * Variable privada: Cliente para la API Rest de Departamentos en Organización territorial
-     */
-    private ProvinciaClient provClient;    
-    
-    /**
-     * Variable privada: Cliente para la API Rest de Usuarios en Organización territorial
-     */
-    private UsuarioClient usClientTerr;
-    
-    /**
-     * Variable privada: Token obtenido al validar el usuario de la API de Organización territorial
-     */
-    private Token tokenTerr;
-    
-    /**
-     * Variable privada: Token en formato String del obtenido al validar el usuario de la API de Organización territorial
-     */
-    private String strTokenTerr;    
-    
     /**
      * Variable privada: Listado de entidades de servicio con el id y nombre para los Departamentos
      */ 
@@ -100,7 +66,45 @@ public class MbReporte {
     /**
      * Variable privada: Logger para escribir en el log del server
      */ 
-    static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(MbReporte.class);        
+    static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(MbReporte.class);      
+    
+    /**
+     * Variable privada: inicio del período a buscar
+     */
+    private Date inicioPeriodo;
+    
+    /**
+     * Variable privada: fin del período a buscar
+     */    
+    private Date finPeriodo;
+    
+    /**
+     * Variable privada: listado de opciones de búsqueda:
+     * 1: por departamento de origen
+     * 2: por producto
+     * 3: total de madera movida
+     */
+    private List<EntidadServicio> lstBusqueda;
+    
+    /**
+     * Variable privada: tipo de búsqueda seleccionado del combo
+     */
+    private EntidadServicio busqSelected;
+    
+    /**
+     * Variable privada: listado de productos removidos a buscar
+     */
+    private List<ProdConsulta> lstProdABuscar;
+    
+    /**
+     * Variable privada: producto seleccionado para buscar removidos
+     */
+    private ProdConsulta prodSelected;
+    
+    /**
+     * Variable privada: cantidad total de productos removidos consultados
+     */
+    private float totalProdRemovidos;    
     
     //////////////////////////////////////////
     // Accesos a datos, recursos inyectados //
@@ -117,16 +121,46 @@ public class MbReporte {
      */      
     @EJB
     private AutorizacionFacade autFacade;
+
+    public float getTotalProdRemovidos() {
+        return totalProdRemovidos;
+    }
     
-    /**
-     * Variable privada: 
-     */
-    private Date inicioPeriodo;
-    
-    /**
-     * Variable privada: 
-     */    
-    private Date finPeriodo;
+    public void setTotalProdRemovidos(float totalProdRemovidos) {
+        this.totalProdRemovidos = totalProdRemovidos;
+    }
+
+    public List<ProdConsulta> getLstProdABuscar() {
+        return lstProdABuscar;
+    }
+
+    public void setLstProdABuscar(List<ProdConsulta> lstProdABuscar) {
+        this.lstProdABuscar = lstProdABuscar;
+    }
+
+    public ProdConsulta getProdSelected() {
+        return prodSelected;
+    }
+
+    public void setProdSelected(ProdConsulta prodSelected) {
+        this.prodSelected = prodSelected;
+    }
+
+    public EntidadServicio getBusqSelected() {
+        return busqSelected;
+    }
+
+    public void setBusqSelected(EntidadServicio busqSelected) {
+        this.busqSelected = busqSelected;
+    }
+
+    public List<EntidadServicio> getLstBusqueda() {
+        return lstBusqueda;
+    }
+
+    public void setLstBusqueda(List<EntidadServicio> lstBusqueda) {
+        this.lstBusqueda = lstBusqueda;
+    }    
 
     public boolean isSinResultados() {
         return sinResultados;
@@ -219,88 +253,123 @@ public class MbReporte {
     ////////////////////////
     
     /**
-     * Método que se ejecuta luego de instanciada la clase e inicializa el listado de departamentos.
+     * Método que se ejecuta luego de instanciada la clase.
+     * Puebla el listado con las opciones para reportar y los departamentos desde los cuales se emitieron guías
      * Consultando a la API de TERR
      */  
     @PostConstruct
     public void init(){
+        lstBusqueda = new ArrayList<>();
+        lstBusqueda.add(new EntidadServicio(Long.valueOf(1), "por Departamento de Origen"));
+        lstBusqueda.add(new EntidadServicio(Long.valueOf(2), "por Producto removido"));
+        lstBusqueda.add(new EntidadServicio(Long.valueOf(3), "total de madera removida"));
+        
+        // pueblo el combo de departamentos
         try{
-            // obtengo el tokenTerr si no está seteado o está vencido
-            if(tokenTerr == null){
-                getTokenTerr();
-            }else try {
-                if(!tokenTerr.isVigente()){
-                    getTokenTerr();
-                }
-            } catch (IOException ex) {
-                LOG.fatal("Hubo un error obteniendo la vigencia del token TERR. " + ex.getMessage());
-            }
-            // instancio el cliente para la selección de los Departamentos
-            provClient = new ProvinciaClient();
-            // obtngo el listado
-            GenericType<List<Departamento>> gType = new GenericType<List<Departamento>>() {};
-            Response response = provClient.findByProvincia_JSON(Response.class, String.valueOf(String.valueOf(ResourceBundle.getBundle("/Config").getString("IdProvinciaGt"))), tokenTerr.getStrToken());
-            List<Departamento> lstDeptos = response.readEntity(gType);
-            // lleno el listado de los combos
+            // obtengo los departamentos de las guías emitidas
+            List<String> deptos = guiaFacade.findDeptoByOrigen();
+            // pueblo el listado de EntidadServicio para el combo
+            int i = 0;
             lstDepartamentos = new ArrayList<>();
-            for(Departamento dpt : lstDeptos){
-                EntidadServicio depto = new EntidadServicio(dpt.getId(), dpt.getNombre());
-                lstDepartamentos.add(depto);
+            for(String depto : deptos){
+                i += 1;
+                EntidadServicio dptSrv = new EntidadServicio(Long.valueOf(i), depto);
+                lstDepartamentos.add(dptSrv);
             }
-            // cierro el cliente
-            provClient.close();
         }catch(ClientErrorException ex){
-            // muestro un mensaje al usuario
             JsfUtil.addErrorMessage("Hubo un error cargando el listado de Departamentos de la Provincia para su selección.");
-            // lo escribo en el log del server
-            LOG.fatal("Hubo un error cargando los Departamentos desde el servicio REST del TERR. " + ex.getMessage());
+            LOG.fatal("Hubo un error cargando los Departamentos. " + ex.getMessage());
+        }
+    }   
+    
+    /**
+     * Método para resetear los listadode de productos (removidos y a buscar)
+     * Accionado con la selección de una opción de reporte
+     */
+    public void busqChangeListener(){
+        lstProdMovidos = new ArrayList<>();
+        lstProdABuscar = new ArrayList<>();
+        totalProdRemovidos = -1;
+    }
+    
+    /**
+     * Método que resetea el listado de productos removidos e instancia los productos a buscar
+     */
+    public void prepareBusqueda(){
+        lstProdMovidos = new ArrayList<>();
+        try{
+            lstProdABuscar = guiaFacade.getProdRemov(inicioPeriodo, finPeriodo);
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage("Hubo un error obteniendo los productos removidos.");
+            LOG.fatal("Hubo un error cargando los Productos removidos para el listado de reporte. " + ex.getMessage());
         }
     }    
     
     /**
-     * Método para obtener un listado con todos los productos movidos según las guías emitidas
-     * durante el período de tiempo definido por el usuario, ya sea por departamento o para toda la provincia.
-     * Obtiene las guías emitidas y de sus ítems los distintos productos.
-     * Finalmente obtiene los totales para cada producto
+     * Método para listar los productos removidos por departamento.
+     * Primero puebla el listado de los productos incluidos en las guías emitidas (lstProdABuscar)
+     * entre las fechas de inicio y fin para un departamento específico (sin totales).
+     * Luego, por cada producto leído obtiene los subtotales y puebla el listado de removidos (lstProdMovidos).
+     * Finalmente limpia el listado de productos a buscar.
      */
-    public void listarProdMovidos(){
-        // listado para los códigos de productos
-        List<Long> lstCodProd = new ArrayList<>();
-        // intancio el listado 
+    public void listarProdMovXDepto(){
         lstProdMovidos = new ArrayList<>();
-        // completo el listado de guías según el inicio y fin del príodo definido y si es para toda la provincia o para un departamento
-        List<Guia> lstGuias;
-        if(deptoSelected != null){
-            lstGuias = guiaFacade.getByFechaEmisionDepto(inicioPeriodo, finPeriodo, deptoSelected.getNombre());
-        }else{
-            lstGuias = guiaFacade.getByFechaEmision(inicioPeriodo, finPeriodo);
-        }
-        
-        // recorro las guías y sus items para guardar los productos incluidos en ellas
-        for(Guia g : lstGuias){
-            for (ItemProductivo i : g.getItems()){
-                if(!lstCodProd.contains(i.getIdProd())){
-                    // solo guardo el id del producto una vez
-                    lstCodProd.add(i.getIdProd());
-                }
-            }    
-        }
-        // recorro el listado de códigos de productos y por cada uno consulto y agrego al listado de productos movidos
-        for(Long idProd : lstCodProd){
-            if(deptoSelected != null){
-                // si hay departamento seleccionado consulto por departamento
-                ProdConsulta prod = guiaFacade.getProdDeptoQuery(inicioPeriodo, finPeriodo, deptoSelected.getNombre(), idProd);
-                lstProdMovidos.add(prod);
-            }else{
-                // si no, consulto para toda la provincia
-                ProdConsulta prod = guiaFacade.getProdQuery(inicioPeriodo, finPeriodo, idProd);
-                lstProdMovidos.add(prod);
+        try{
+            // obtengo los productos deptoSelected.getNombre()
+            lstProdABuscar = guiaFacade.getProdRemovXDepto(inicioPeriodo, finPeriodo, deptoSelected.getNombre());
+            // recorro el listado y voy poblando los totales por producto
+            for (ProdConsulta prod : lstProdABuscar){
+                ProdConsulta p = guiaFacade.getProdDeptoQuery(inicioPeriodo, finPeriodo, deptoSelected.getNombre(), prod.getIdProd());
+                lstProdMovidos.add(p);
             }
+            lstProdABuscar.clear();   
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage("Hubo un error obteniendo los productos del Departamento.");
+            LOG.fatal("Hubo un error obteniendo los productos del Departamento " + deptoSelected.getNombre() + ". " + ex.getMessage());
         }
-        
-        // seteo el flag si no hubo resultados
-        if(lstProdMovidos.isEmpty()) sinResultados = true;
     }
+    
+    /**
+     * Método que obtiene el total para un producto seleccionado y lo quita del listado de los que quedan para seleccionar
+     */
+    public void addTotProd(){
+        try{
+            ProdConsulta p = guiaFacade.getProdQuery(inicioPeriodo, finPeriodo, prodSelected.getIdProd());
+            lstProdMovidos.add(p);
+            lstProdABuscar.remove(prodSelected);
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage("Hubo un error obteniendo el total para el producto.");
+            LOG.fatal("Hubo un error obteniendo el total para el producto " + prodSelected.getNombreVulgar() + " - " + prodSelected.getClase() + ". " + ex.getMessage());
+        }
+    }
+    
+    /**
+     * Método para calcular el total de productos sin discriminar los departamentos
+     */
+    public void calcularAllProd(){
+        try{
+            for(ProdConsulta prod : lstProdABuscar){
+                ProdConsulta p = guiaFacade.getProdQuery(inicioPeriodo, finPeriodo, prod.getIdProd());
+                lstProdMovidos.add(p);
+            }
+            lstProdABuscar.clear();
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage("Hubo un error obteniendo los subtotales de los productos removidos.");
+            LOG.fatal("Hubo un error obteniendo los subtotales de los productos removidos. " + ex.getMessage());
+        }
+    }    
+    
+    /**
+     * Método para obtener el total de madera removida
+     */
+    public void totalProductosRemovidos(){
+        try{
+            totalProdRemovidos = guiaFacade.getTotalProdRemov(inicioPeriodo, finPeriodo);
+        }catch(Exception ex){
+            JsfUtil.addErrorMessage("Hubo un error obteniendo la cantidad total de productos removidos.");
+            LOG.fatal("Hubo un error obteniendo la cantidad total de productos removidos." + ex.getMessage());
+        }
+    }    
     
     /**
      * Método para obtener un listado con todos los productos autoririzados según las Autorizaciones registradas
@@ -380,23 +449,4 @@ public class MbReporte {
             lstAutSup.clear();
         }
     }
-
-    /**
-     * Método privado que obtiene y setea el tokenTerr para autentificarse ante la API rest de Territorial
-     * Crea el campo de tipo Token con la clave recibida y el momento de la obtención.
-     * Utilizado en cargarEntidadesTerr(Long idLocalidad), getDepartamentosSrv(Long idProv) y cargarProvincias()
-     */
-    private void getTokenTerr(){
-        try{
-            usClientTerr = new UsuarioClient();
-            Response responseUs = usClientTerr.authenticateUser_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("UsRestTerr"));
-            MultivaluedMap<String, Object> headers = responseUs.getHeaders();
-            List<Object> lstHeaders = headers.get("Authorization");
-            strTokenTerr = (String)lstHeaders.get(0); 
-            tokenTerr = new Token(strTokenTerr, System.currentTimeMillis());
-            usClientTerr.close();
-        }catch(ClientErrorException ex){
-            System.out.println("Hubo un error obteniendo el token para la API Territorial: " + ex.getMessage());
-        }
-    }  
 }

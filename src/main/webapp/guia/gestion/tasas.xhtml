@@ -89,6 +89,16 @@
                     </p:dataTable>
                 </h:panelGrid>
             </p:panel>
+            
+            <!-- Barra de estado -->
+            <h:panelGrid >
+                <p:ajaxStatus >
+                    <f:facet name="start">
+                        <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                    </f:facet>
+                </p:ajaxStatus>
+            </h:panelGrid>
+            
             <p:panel id="pnBotones" >
                 <h:panelGrid  columns="4" >
                     <p:commandButton title="Generar resumen de pago" styleClass="save" icon="fa fa-fw fa-file-pdf-o" 

@@ -84,7 +84,7 @@
                     <p:outputLabel value="Seleccione el Tipo de Guía a confeccionar." style="font-style: italic; font-size: small" />
                     <h:panelGrid columns="2" cellpadding="5">
                         <p:outputLabel value="Tipo de Guía" for="cmbTipos"/>
-                        <p:selectOneMenu id="cmbTipos" value="#{mbGuia.guia.tipo}" required="true" 
+                        <p:selectOneMenu id="cmbTipos" value="#{mbGuia.guia.tipo}" required="true" disabled="#{mbGuia.guia.id ne null}" 
                                          requiredMessage="Debe seleccionar un Tipo de Guía." >
                             <f:selectItem itemLabel="Seleccione un Tipo de Guía" itemValue="" noSelectionOption="true"/>
                             <f:selectItems value="#{mbGuia.lstTiposGuia}" 

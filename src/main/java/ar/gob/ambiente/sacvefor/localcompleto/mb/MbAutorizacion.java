@@ -1784,7 +1784,8 @@ public class MbAutorizacion {
                 result = result + " Debe registrar al menos un " + ResourceBundle.getBundle("/Config").getString("Proponente");
             }
         }
-        if(autorizacion.getLstTecnicos().isEmpty()){
+        // solo valido que tenga Técnico si no está configurado para que sea ocpional (a pedido de Catamarca)
+        if(autorizacion.getLstTecnicos().isEmpty() && !ResourceBundle.getBundle("/Config").getString("TecnicoOpcional").equals("si")){
             if(result.equals("")){
                 result = "Debe registrar al menos un " + ResourceBundle.getBundle("/Config").getString("Tecnico") + ".";
             }else{

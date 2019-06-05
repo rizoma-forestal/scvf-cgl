@@ -63,6 +63,16 @@
                             </p:column>
                         </p:dataTable>
                     </h:panelGrid>
+                    
+                    <!-- Barra de estado -->
+                    <h:panelGrid >
+                        <p:ajaxStatus >
+                            <f:facet name="start">
+                                <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                            </f:facet>
+                        </p:ajaxStatus>
+                    </h:panelGrid>
+                    
                     <h:panelGrid columns="2" >
                         <p:commandButton title="Emitir la Guía sin el registro del pago de tasas" value="Emitir Guía" icon="fa fa-fw fa-file-pdf-o" 
                                          action="#{mbGuia.generarCodReciboTemp()}" ajax="false" update="frEmision,pMenuIndex,frame,messages" 
@@ -210,6 +220,15 @@
                         </p:dataTable>
                     </h:panelGrid>
                 </p:fieldset>
+                
+                <!-- Barra de estado -->
+                <h:panelGrid >
+                    <p:ajaxStatus >
+                        <f:facet name="start">
+                            <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                        </f:facet>
+                    </p:ajaxStatus>
+                </h:panelGrid>
 
                 <!-- botón de emisión -->
                 <h:panelGrid id="pgBoton" columns="1" >
