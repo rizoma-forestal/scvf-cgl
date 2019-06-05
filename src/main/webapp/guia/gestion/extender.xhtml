@@ -27,6 +27,16 @@
                     <h:outputText value="" />
                     <h:outputText id="display" style="font-size: 12px" />
                 </h:panelGrid>
+                
+                <!-- Barra de estado -->
+                <h:panelGrid >
+                    <p:ajaxStatus >
+                        <f:facet name="start">
+                            <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                        </f:facet>
+                    </p:ajaxStatus>
+                </h:panelGrid>
+                
                 <h:panelGrid id="pgBotones" columns="3" >
                     <p:commandButton title="Extender la fecha de vencimiento para la guía" value="Aceptar" icon="fa fa-fw fa-save" 
                                      action="#{mbGuia.extenderVenc()}" update="frExtension,messagesExtend"/>

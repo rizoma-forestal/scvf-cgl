@@ -42,6 +42,13 @@
                                 <p:ajax update="frListMovProd" resetValues="true" />
                             </p:commandButton>
                         </h:panelGrid>
+                        <h:panelGrid id="pgLoadingXDepto" >
+                            <p:ajaxStatus >
+                                <f:facet name="start">
+                                    <p:graphicImage name="/img/ajaxloadingbar.gif" />
+                                </f:facet>
+                            </p:ajaxStatus>
+                        </h:panelGrid>
                     </p:panel>
                     
                     <!-- Listado -->

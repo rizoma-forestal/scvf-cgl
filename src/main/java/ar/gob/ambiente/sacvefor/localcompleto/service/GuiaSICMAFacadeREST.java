@@ -3,6 +3,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.service;
 
 import ar.gob.ambiente.sacvefor.localcompleto.annotation.Secured;
 import ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.GuiaCtrlClient;
+import ar.gob.ambiente.sacvefor.localcompleto.ctrl.client.ParamCtrlClient;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ItemProductivo;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
@@ -10,6 +11,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Transporte;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.EntidadGuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.EstadoGuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.GuiaFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.ItemProductivoFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoGuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
@@ -26,6 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -93,13 +96,17 @@ public class GuiaSICMAFacadeREST {
      */
     private GuiaCtrlClient guiaCtrlClient;    
     /**
+     * Variable privada: ParamCtrlClient Cliente para la API REST de Control y Verificación
+     */
+    private ParamCtrlClient paramCtrlClient;    
+    /**
      * Variable privada: cliente para el acceso a la API de usuarios de Trazabilidad
      */
     private UsuarioClient usuarioClientTraz;    
     /**
      * Variable privada: cliente para el acceso a la API de Tipo de paramétrica de Trazabilidad
      */
-    private TipoParamClient tipoParamClient;    
+    private TipoParamClient tipoParamClient;   
     /**
      * Variable privada: sesión de mail del servidor
      */
@@ -121,7 +128,9 @@ public class GuiaSICMAFacadeREST {
     @EJB
     private VehiculoFacade vehiculoFacade;
     @EJB
-    private UsuarioFacade usFacade;        
+    private UsuarioFacade usFacade;     
+    @EJB
+    private ItemProductivoFacade itemFacade;    
     
     @Context
     UriInfo uriInfo;         
@@ -226,6 +235,7 @@ public class GuiaSICMAFacadeREST {
             
         }catch(IllegalArgumentException | UriBuilderException ex){
             // armo la respuesta de error
+            LOG.fatal("Hubo un error registrando la guía remota: " + entity.getCodigo() + "." + ex.getMessage());
             return Response.status(400).entity("Hubo un error procesado la inserción de la Guia en el CGL. " + ex.getMessage()).build();
         }
     }   
@@ -372,7 +382,7 @@ public class GuiaSICMAFacadeREST {
                 if(!listUs.isEmpty()){
                     // el destinatario ya tiene cuenta, así que solo notifico
                     usuarioClientTraz.close();
-                    if(!enviarCorreoEmision(guiaCgl)){
+                    if(!notificarEmision(guiaCgl)){
                         mensajeEnviado = false;
                         msgError = "La guía se emitió correctamente, se registró en el componente de Control y Vefificación "
                                 + "pero no se pudo notificar al destinatario, que deberá ser notificado por algún medio. ";
@@ -426,9 +436,346 @@ public class GuiaSICMAFacadeREST {
             }
         }catch(IllegalArgumentException | UriBuilderException ex){
             // armo la respuesta de error
+            LOG.fatal("Hubo un error emitiendo la guía remota: " + entity.getCodigo() + "." + ex.getMessage());
             return Response.notModified().entity("Hubo un error emitiendo la guía remota. " + ex.getMessage()).build();
         }
     }    
+    
+    /**
+     * @api {put} /guias_sicma/cancelar:id Cancela una guía emitida en vigencia
+     * @apiExample {curl} Ejemplo de uso:
+     *     curl -X PUT -d [PATH_SERVER]:cgl-prov/rest/guias_sicma/cancelar/26 -H "authorization: xXyYvWzZ"
+     * @apiVersion 1.0.0
+     * @apiName PutGuia
+     * @apiGroup Guia
+     * @apiHeader {String} Authorization Token recibido al autenticar el usuario
+     * @apiHeaderExample {json} Ejemplo de header:
+     *     {
+     *       "Authorization": "xXyYvWzZ"
+     *     } 
+     * @apiParam {ar.gob.ambiente.sacvefor.servicios.cglsicma.Guia} entity Objeto java del paquete paqGestionLocalSICMA.jar con los datos de la Guia a cancelar
+     * @apiParam {Long} Id Identificador único de la Guía a cancelar
+     * @apiParamExample {java} Ejemplo de Guia
+     *      {"entity":{
+     *                  "id_usuario":"6",
+     *                  "codigo":"TT-25-00026-2019",
+     *                  "id_tipo":"2",
+     *                  "id_estado":"9",
+     *                  "num_fuente":"369/2018/LQMT",
+     *                  "id_origen":"13",
+     *                  "id_destino":"12",
+     *                  "transporte":
+     *                          {
+     *                               "id_usuario": "1",
+     *                               "cond_nombre": "FARRUGIA GONZALO",
+     *                               "cond_dni": "36985741",
+     *                               "id_veh":"4"
+     *                          }
+     *              }
+     * @apiParamExample {json} Emplo de id
+     *      {
+     *          "id": "26"
+     *      }
+     * @apiDescription Método para cancelar una Guía ya emitida y todavía en vigencia.
+     * Los pasos que se ejecutan son los siguientes:
+     * Se obtiene la guía a partir del id
+     * Se setean el estado (CANCELADA), el usuario y las observaciones
+     * Luego se actualiza la Guía en el componente local.
+     * Posteriormente se recorre el listado de items de la guía y se retorna su saldo al cupo del que descontó.
+     * Se accede al CTRL y se obtiene la guía para actualizar su estado a CANCELADA
+     * Finalmente, se arma el mensaje de respuesta al usuario.
+     * @apiSuccessExample Response exitosa:
+     *     HTTP/1.1 200 OK
+     *     {}
+     * @apiError GuiaNoCancelada No se canceló la Guía.
+     * @apiErrorExample Respuesta de Error:
+     *     HTTP/1.1 400 Not Modified
+     *     {
+     *       "error": "Hubo un error procesado la cancelación de la Guía."
+     *     }
+     */
+    @PUT
+    @Path("/cancelar/{id}")
+    @Secured
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response cancelar(@PathParam("id") Long id, ar.gob.ambiente.sacvefor.servicios.cglsicma.Guia entity){
+        boolean actualizadaCcv = false, actualizadaLocal = false, 
+                guiaCcvNoEncontrada = false, estadoCcvNoEncontrado = false, titularNotificado = false, destinatarioNotificado = false;
+        String msgError = "";
+        try{
+            //////////////////////////////////
+            // actualizo la guía localmente //
+            //////////////////////////////////
+            // obtengo la guía
+            Guia guiaCgl = guiaFacade.find(id);
+            // seteo el estado de CANCELADA
+            guiaCgl.setEstado(estadoFacade.getExistente(ResourceBundle.getBundle("/Config").getString("GuiaCancelada")));
+            // setear usuario modificación
+            guiaCgl.setUsuario(usFacade.find(entity.getId_usuario()));
+            // seteo las observaciones por la cancelación
+            guiaCgl.setObs("Guía cancelada por decisión de la Autoridad local.");
+            // actualizo guía
+            guiaFacade.edit(guiaCgl);
+            // obtengo los items
+            List<ItemProductivo> lstItems = guiaCgl.getItems();
+            // recorro el listado y por cada uno retorno los productos a su origen original y deshabilito
+            for (ItemProductivo item : lstItems){
+                // obtengo el id del item origen
+                Long idItemOrigen = item.getItemOrigen();
+                // obtengo el item origen
+                ItemProductivo itemOrigen = itemFacade.find(idItemOrigen);
+                // seteo los saldos actuales
+                float saldoActual = itemOrigen.getSaldo();
+                float saldoKgActual = itemOrigen.getSaldoKg();
+                // actualizo los saldos
+                itemOrigen.setSaldo(saldoActual + item.getTotal());
+                itemOrigen.setSaldoKg(saldoKgActual + item.getTotalKg());
+                // actualizo el origen
+                itemFacade.edit(itemOrigen);
+                // deshabilito el item actual
+                item.setHabilitado(false);
+                itemFacade.edit(item);
+            }
+            actualizadaLocal = true;
+            
+            ////////////////////////////////////////////////////////////////////////
+            // actualizo la guía en el componente de control y verificación (CCV) //
+            ////////////////////////////////////////////////////////////////////////            
+            // valido el token de acceso a CCV
+            validarTokenCtrl();
+            // busco la Guía
+            guiaCtrlClient = new GuiaCtrlClient();
+            List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia> lstGuias;
+            GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia>> gTypeG = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia>>() {};
+            Response response = guiaCtrlClient.findByQuery_JSON(Response.class, guiaCgl.getCodigo(), null, null, tokenCtrl.getStrToken());
+            lstGuias = response.readEntity(gTypeG);
+            // valido que tuve respuesta
+            if(lstGuias.get(0) != null){
+                // obtengo el id de la guía en CCV
+                Long idGuiaCtrl = lstGuias.get(0).getId();
+                // instancio la guía a editar
+                ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia guiaCtrol = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia();
+                // obtengo el estado "CANCELADA" del CCV
+                List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Parametrica> lstParmEstados;
+                paramCtrlClient = new ParamCtrlClient();
+                GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Parametrica>> gTypeParam = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Parametrica>>() {};
+                Response responseParam = paramCtrlClient.findByQuery_JSON(Response.class, ResourceBundle.getBundle("/Config").getString("CtrlTipoParamEstGuia"), ResourceBundle.getBundle("/Config").getString("CtrlGuiaCancelada"), tokenCtrl.getStrToken());
+                lstParmEstados = responseParam.readEntity(gTypeParam);
+                // solo continúo si encontré el Estado correspondiente
+                if(lstParmEstados.get(0) != null){
+                    // seteo la Guía solo con los valores que necesito para editarla
+                    guiaCtrol.setId(idGuiaCtrl);
+                    guiaCtrol.setEstado(lstParmEstados.get(0));
+                    // valido el token
+                    validarTokenCtrl();
+                    response = guiaCtrlClient.edit_JSON(guiaCtrol, String.valueOf(guiaCtrol.getId()), tokenCtrl.getStrToken());
+                    if(response.getStatus() == 200){
+                        // se completaron todas las operaciones
+                        actualizadaCcv = true;
+                    }
+                }else{
+                    estadoCcvNoEncontrado = true;
+                }
+                // cierro los clientes
+                paramCtrlClient.close();
+                guiaCtrlClient.close();
+            }else{
+                // no se encontró la guía a editar en el CCV
+                guiaCcvNoEncontrada = true;
+            }
+            
+            // notifico al titular
+            titularNotificado = notificarCancelTitular(guiaCgl);
+            // notifico al destinatario      
+            destinatarioNotificado = notificarCancelDestino(guiaCgl);
+            
+            // armo el retorno. Si llegó hasta acá se actualizó localmente
+            if(!actualizadaCcv || guiaCcvNoEncontrada || estadoCcvNoEncontrado || !titularNotificado || !destinatarioNotificado){
+                // si hubo algún problema en las comunicaciones y/o actualizaciones en 
+                msgError = "La guía fue cancelada localmente. ";
+                if(!actualizadaCcv) msgError += "No se actualizó la guía en el CCV. ";
+                if(guiaCcvNoEncontrada ) msgError += "No se encontró la guía para actualizar en el CCV. ";
+                if(estadoCcvNoEncontrado ) msgError += "No se encontró el estado CANCELADA en el CCV. ";
+                if(!titularNotificado ) msgError += "No se pudo notificar al titular. ";
+                if(!destinatarioNotificado ) msgError += "No se pudo notificar al destinatario.";
+                return Response.accepted().entity(msgError).build();
+            }else{
+                // si no hubo problemas
+                return Response.ok().build();
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            // armo la respuesta de error
+            msgError = "Hubo un error en la cancelación de la guía. ";
+            if(!actualizadaLocal ) msgError += "No se actualizó la guía localmente. ";
+            if(!actualizadaCcv) msgError += "No se actualizó la guía en el CCV. ";
+            if(guiaCcvNoEncontrada ) msgError += "No se encontró la guía para actualizar en el CCV. ";
+            if(estadoCcvNoEncontrado ) msgError += "No se encontró el estado CANCELADA en el CCV. ";
+            if(!titularNotificado ) msgError += "No se pudo notificar al titular. ";
+            if(!destinatarioNotificado ) msgError += "No se pudo notificar al destinatario.";
+            
+            LOG.fatal("Hubo un error en la cancelación de la guía remota: " + entity.getCodigo() + ". " + ex.getMessage());
+            return Response.notModified().entity(msgError + ". " + ex.getMessage()).build();
+        }
+    }
+    
+    /**
+     * @api {put} /guias_sicma/extender:id Extiende la vigencia de una Guía ya emitida y aún no vencida
+     * @apiExample {curl} Ejemplo de uso:
+     *     curl -X PUT -d [PATH_SERVER]:cgl-prov/rest/guias_sicma/extender/26 -H "authorization: xXyYvWzZ"
+     * @apiVersion 1.0.0
+     * @apiName PutExtenderGuia
+     * @apiGroup Guia
+     * @apiHeader {String} Authorization Token recibido al autenticar el usuario
+     * @apiHeaderExample {json} Ejemplo de header:
+     *     {
+     *       "Authorization": "xXyYvWzZ"
+     *     } 
+     * @apiParam {ar.gob.ambiente.sacvefor.servicios.cglsicma.Guia} entity Objeto java del paquete paqGestionLocalSICMA.jar con los datos de la Guia a extender su vigencia
+     * @apiParam {Long} Id Identificador único de la Guía a extender su vigencia
+     * @apiParamExample {java} Ejemplo de Guia
+     *      {"entity":{
+     *                  "id_usuario":"6",
+     *                  "codigo":"TT-25-00026-2019",
+     *                  "id_tipo":"2",
+     *                  "id_estado":"9",
+     *                  "num_fuente":"369/2018/LQMT",
+     *                  "id_origen":"13",
+     *                  "id_destino":"12",
+     *                  "vigencia":"24",
+     *                  "fecha_venc":"2019-06-09",
+     *                  "transporte":
+     *                          {
+     *                                  "id_usuario":"6",
+     *                                  "cond_nombre":"FARRUGIA GONZALO",
+     *                                  "cond_dni":"36985741",
+     *                                  "id_veh":"4"
+     *                          }
+     *                 }
+     * @apiParamExample {json} Emplo de id
+     *      {
+     *          "id": "26"
+     *      }
+     * @apiDescription Método para extender la vigencia de una Guía ya emitida sin haber vencido.
+     * Los pasos que se ejecutan son los siguientes:
+     * Se obtiene la guía a partir del id y valida que el nuevo vencimiento sea posterior al existente.
+     * Se setean la nueva fecha de vencimiento, el usuario y las observaciones.
+     * Luego se actualiza la Guía en el componente local.
+     * Si todo anduvo bien, se obtiene la Guía del CTRL y se actualiza su vencimiento.
+     * Luego de validado lo anterior se notifica al titular y al destinatario de la guía la modificación de su vencimiento.
+     * Finalmente, se arma el mensaje de respuesta al usuario.
+     * @apiSuccessExample Response exitosa:
+     *     HTTP/1.1 200 OK
+     *     {}
+     * @apiError GuiaNoExtendida No se extendió la vigencia de la Guía.
+     * @apiErrorExample Respuesta de Error:
+     *     HTTP/1.1 400 Not Modified
+     *     {
+     *       "error": "Hubo un error procesado la extensión de la vigencia de la Guía."
+     *     }
+     */    
+    @PUT
+    @Path("/extender/{id}")
+    @Secured
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response extender(@PathParam("id") Long id, ar.gob.ambiente.sacvefor.servicios.cglsicma.Guia entity){
+        boolean actualizoCtrl = false, actualizadaLocal = false, titularNotificado = false, 
+                destinatarioNotificado = false, guiaCcvNoEncontrada = false;
+        String msgError = "";    
+        try{
+            //////////////////////////////////
+            // actualizo la guía localmente //
+            //////////////////////////////////
+            // obtengo la guía
+            Guia guiaCgl = guiaFacade.find(id);
+            // solo continúo si la fecha de vencimiento es validada
+            if(!guiaCgl.getFechaVencimiento().after(entity.getFecha_venc())){
+                // actualizo el vencimiento
+                guiaCgl.setFechaVencimiento(entity.getFecha_venc());
+                // actualizo el usuario de modificación
+                guiaCgl.setUsuario(usFacade.find(entity.getId_usuario()));
+                // seteo las observaciones por la extensión de la vigencia
+                guiaCgl.setObs("Guía con la vigencia extendida por decisión de la Autoridad local.");
+                // actualizo la guía
+                guiaFacade.edit(guiaCgl);
+                actualizadaLocal  = true;
+                //////////////////////////////
+                // actualizo la guía en CCV //
+                //////////////////////////////
+                // valido el token de acceso a CCV
+                validarTokenCtrl();
+                // busco la Guía
+                guiaCtrlClient = new GuiaCtrlClient();
+                List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia> lstGuias;
+                GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia>> gTypeG = new GenericType<List<ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia>>() {};
+                Response response = guiaCtrlClient.findByQuery_JSON(Response.class, guiaCgl.getCodigo(), null, null, tokenCtrl.getStrToken());
+                lstGuias = response.readEntity(gTypeG);
+                // valido que tuve respuesta
+                if(lstGuias.get(0) != null){
+                    // obtengo el id de la guía en CCV
+                    Long idGuiaCtrl = lstGuias.get(0).getId();
+                    // instancio la guía a editar
+                    ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia guiaCtrol = new ar.gob.ambiente.sacvefor.servicios.ctrlverif.Guia();
+                    // seteo la nueva fecha de venicimiento y el nuevo qr
+                    guiaCtrol.setId(idGuiaCtrl);
+                    guiaCtrol.setFechaVencimiento(guiaCgl.getFechaVencimiento());
+                    // seteo el estado y el cuit destino porque los chequea la API
+                    guiaCtrol.setEstado(lstGuias.get(0).getEstado());
+                    guiaCtrol.setCuitDestino(lstGuias.get(0).getCuitDestino());
+                    // vuelvo a validar el token
+                    validarTokenCtrl();
+                    response = guiaCtrlClient.edit_JSON(guiaCtrol, String.valueOf(guiaCtrol.getId()), tokenCtrl.getStrToken());
+                    if(response.getStatus() == 200){
+                        actualizoCtrl = true;
+                    }else{
+                        actualizoCtrl = false;
+                    }
+                    // cierro el cliente
+                    guiaCtrlClient.close();
+
+                }else{
+                    guiaCcvNoEncontrada = true;
+                }
+                
+                // si todo anduvo bien notifico
+                if(actualizoCtrl){
+                    // notifico al titular
+                    if(guiaCgl.getOrigen().getEmail() != null){
+                        titularNotificado = notificarExtVigencia(guiaCgl, guiaCgl.getOrigen().getEmail());
+                    }
+                    // notifico al destinatario
+                    if(guiaCgl.getDestino().getEmail() != null){
+                        destinatarioNotificado = notificarExtVigencia(guiaCgl, guiaCgl.getDestino().getEmail());
+                    }
+                }
+                // armo el retorno. Si llegó hasta acá se actualizó localmente
+                if(!actualizoCtrl || guiaCcvNoEncontrada || !titularNotificado || !destinatarioNotificado){
+                    // si hubo algún problema en las comunicaciones y/o actualizaciones en 
+                    msgError = "La vigencia de la guía fue exitosa localmente. ";
+                    if(!actualizoCtrl) msgError += "No se actualizó la guía en el CCV. ";
+                    if(guiaCcvNoEncontrada ) msgError += "No se encontró la guía para actualizar en el CCV. ";
+                    if(!titularNotificado ) msgError += "No se pudo notificar al titular. ";
+                    if(!destinatarioNotificado ) msgError += "No se pudo notificar al destinatario.";
+                    return Response.accepted().entity(msgError).build();
+                }else{
+                    // si no hubo problemas
+                    return Response.ok().build();
+                }
+            }else{
+                return Response.notModified().entity("La nueva fecha de vencimiento debe ser mayor que la existente.").build();
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            // armo la respuesta de error
+            msgError = "Hubo un error en la cancelación de la guía. ";
+            if(!actualizadaLocal ) msgError += "No se actualizó la guía localmente. ";
+            if(!actualizoCtrl) msgError += "No se actualizó la guía en el CCV. ";
+            if(guiaCcvNoEncontrada ) msgError += "No se encontró la guía para actualizar en el CCV. ";
+            if(!titularNotificado ) msgError += "No se pudo notificar al titular. ";
+            if(!destinatarioNotificado ) msgError += "No se pudo notificar al destinatario.";
+            
+            LOG.fatal("Hubo un error extendiendo la vigencia de la guía remota: " + entity.getCodigo() + ". " + ex.getMessage());
+            return Response.notModified().entity(msgError + ". " + ex.getMessage()).build();
+        }
+    }
     
     /**
      * Método privado que valida la existencia y vigencia del token de acceso al CTRL
@@ -503,7 +850,7 @@ public class GuiaSICMAFacadeREST {
      * Utilizado en emitir()
      * @return boolean verdadero o falso según el correo se haya enviado o no
      */
-    private boolean enviarCorreoEmision(Guia guia){  
+    private boolean notificarEmision(Guia guia){  
         SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         boolean result;
         String bodyMessage;
@@ -535,9 +882,140 @@ public class GuiaSICMAFacadeREST {
             
         }catch(MessagingException ex){
             result = false;
-            System.out.println("Hubo un error enviando el correo de registro de usuario" + ex.getMessage());
+            LOG.fatal("Hubo un error enviando el correo de emisión de la guía remota: " + guia.getCodigo() + " "
+                    + "a su destinatario: " + guia.getDestino().getNombreCompleto() + ". " + ex.getMessage());
         }
         
         return result;
-    }       
+    }     
+    
+    /**
+     * Método para notificar a titular de una guía que la misma fue cancelada.
+     * Utilizado por cancelar()
+     * @return boolean verdadero o falso según el correo se haya enviado o no
+     */
+    private boolean notificarCancelTitular(Guia guia){
+        boolean result;
+        String bodyMessage;
+        Message mensaje = new MimeMessage(mailSesion);
+        bodyMessage = "<p>Estimado/a</p> "
+                + "<p>La Guía " + guia.getCodigo() + " de la cual es titular, acaba de ser cancelada. Todo lo documentado en la misma queda sin efecto. "
+                + "Los productos descontados han sido retornados a sus fuentes de origen. Por cualquier consulta podrá dirigirse a la Autoridad local.</p>"
+                
+                + "<p>Por favor, no responda este correo.</p> "
+                + "<p>Saludos cordiales</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("AutoridadLocal") + "</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("DependienteDe") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("DomicilioAutLocal") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("TelAutLocal") + "<br /> "
+                + "Correo electrónico: <a href=\"mailto:" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "\">" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "</a></p>";        
+        
+        try{
+            mensaje.setRecipient(Message.RecipientType.TO, new InternetAddress(guia.getOrigen().getEmail()));
+            mensaje.setSubject(ResourceBundle.getBundle("/Bundle").getString("Aplicacion") + ": Notificación de cancelación de Guía");
+            mensaje.setContent(bodyMessage, "text/html; charset=utf-8");
+            
+            Date timeStamp = new Date();
+            mensaje.setSentDate(timeStamp);
+            
+            Transport.send(mensaje);
+            
+            result = true;
+            
+        }catch(MessagingException ex){
+            result = false;
+            LOG.fatal("Hubo un error enviando el correo de cancelación de la guía remota: " + guia.getCodigo() + " "
+                    + "a su titular: " + guia.getOrigen().getNombreCompleto() + ". " + ex.getMessage());
+        }        
+        
+        return result;
+    }    
+    
+    /**
+     * Método para notificar al destinatario de una guía que la misma fue cancelada.
+     * Utilizado por cancelar()
+     * @return boolean verdadero o falso según el correo se haya enviado o no
+     */
+    private boolean notificarCancelDestino(Guia guia){
+        boolean result;
+        String bodyMessage;
+        Message mensaje = new MimeMessage(mailSesion);
+        bodyMessage = "<p>Estimado/a</p> "
+                + "<p>La Guía " + guia.getCodigo() + " que le fuera remitida ha sido cancelada por su titular " + guia.getOrigen().getNombreCompleto() + ". Todo lo documentado en la misma queda sin efecto.</p>"
+                
+                + "<p>Por favor, no responda este correo.</p> "
+                + "<p>Saludos cordiales</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("AutoridadLocal") + "</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("DependienteDe") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("DomicilioAutLocal") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("TelAutLocal") + "<br /> "
+                + "Correo electrónico: <a href=\"mailto:" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "\">" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "</a></p>";        
+        
+        try{
+            mensaje.setRecipient(Message.RecipientType.TO, new InternetAddress(guia.getDestino().getEmail()));
+            mensaje.setSubject(ResourceBundle.getBundle("/Bundle").getString("Aplicacion") + ": Notificación de cancelación de Guía");
+            mensaje.setContent(bodyMessage, "text/html; charset=utf-8");
+            
+            Date timeStamp = new Date();
+            mensaje.setSentDate(timeStamp);
+            
+            Transport.send(mensaje);
+            
+            result = true;
+            
+        }catch(MessagingException ex){
+            result = false;
+            LOG.fatal("Hubo un error enviando el correo de cancelación de la guía remota: " + guia.getCodigo() + " "
+                    + "a su destinatario: " + guia.getDestino().getNombreCompleto() + ". " + ex.getMessage());
+        }        
+        
+        return result;
+    }     
+    
+    /**
+     * Método para enviar un correo electrónico al titular y al destinatario de una guía
+     * para notificarlos de la extensión del período de vigencia.
+     * @param mail String dirección de correo electrónico del destinatario del mensaje
+     * @return boolean verdadero o false según el resultado del envío.
+     */
+    private boolean notificarExtVigencia(Guia guia, String email) {
+        SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date hoy = new Date(System.currentTimeMillis());
+        boolean result;
+        String bodyMessage;
+        Message mensaje = new MimeMessage(mailSesion);
+        
+        bodyMessage = "<p>Estimado/a</p> "
+                + "Hoy: " + formateador.format(hoy) + " se ha extendido la vigencia de la "
+                + "guía " + guia.getCodigo() + " emitida el " + formateador.format(guia.getFechaEmisionGuia()) + ", "
+                + "que ahora vencerá el " + formateador.format(guia.getFechaVencimiento()) + ".</p>"
+                
+                + "<p>Por favor, no responda este correo.</p> "
+                + "<p>Saludos cordiales</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("AutoridadLocal") + "</p> "
+                + "<p>" + ResourceBundle.getBundle("/Config").getString("DependienteDe") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("DomicilioAutLocal") + "<br/> "
+                + ResourceBundle.getBundle("/Config").getString("TelAutLocal") + "<br /> "
+                + "Correo electrónico: <a href=\"mailto:" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "\">" + ResourceBundle.getBundle("/Config").getString("CorreoAutLocal") + "</a></p>";
+
+        try{
+            mensaje.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            mensaje.setSubject(ResourceBundle.getBundle("/Bundle").getString("Aplicacion") + ": Aviso de extensión del período de vigencia de Guía");
+            mensaje.setContent(bodyMessage, "text/html; charset=utf-8");
+            
+            Date timeStamp = new Date();
+            mensaje.setSentDate(timeStamp);
+            
+            Transport.send(mensaje);
+            
+            result = true;
+            
+        }catch(MessagingException ex){
+            result = false;
+            LOG.fatal("Hubo un error enviando el correo de extensión de vigencia de la guía remota: " + guia.getCodigo() + " "
+                    + "a : " + email + ". " + ex.getMessage());
+        }
+        
+        return result;               
+    }     
 }

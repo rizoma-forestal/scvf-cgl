@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.Stateless;
 import javax.persistence.Query;
 import org.hibernate.Hibernate;
@@ -384,6 +385,235 @@ public class GuiaFacade extends AbstractFacade<Guia> {
                 .setParameter("numFuente", numFuente);
         return q.getResultList();
     }
+    
+    /**
+     * Método para obtener todas las guías emitidas entre una fecha y otra para un departamento determinado
+     * @param inicio Date fecha de inicio de la emision de las guias consultadas
+     * @param fin Date fecha de fin de la emision de las guias consultadas
+     * @param depto String departamento desde el cual se emitieron las guías
+     * @return List<Long> listado de los id de las guías correspondientes.
+     */
+    public List<Long> getIdByFechaEmisionDepto(Date inicio, Date fin, String depto){
+        String queryString = "SELECT guia.id FROM Guia guia "
+                + "INNER JOIN guia.origen origen "
+                + "WHERE guia.fechaEmisionGuia >= :inicio "
+                + "AND guia.fechaEmisionGuia <= :fin "
+                + "AND guia.tipo.habilitaTransp = true "
+                + "AND guia.tipo.movInterno = false "
+                + "AND origen.departamento =:depto "
+                + "AND (guia.estado.nombre = 'EMITIDA' "
+                + "OR guia.estado.nombre = 'CERRADA')";
+        Query q = em.createQuery(queryString)
+                .setParameter("depto", depto)
+                .setParameter("inicio", inicio)
+                .setParameter("fin", fin);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener un listado de departamentos desde los cuales se han emitido guías.
+     * @return List<String> listado de los departamentos consultados 
+     */
+    public List<String> findDeptoByOrigen(){
+        String queryString = "SELECT DISTINCT guia.origen.departamento "
+                + "FROM Guia guia "
+                + "WHERE guia.estado.nombre = 'EMITIDA' "
+                + "OR guia.estado.nombre = 'CERRADA' "
+                + "ORDER BY guia.origen.departamento";
+        Query q = em.createQuery(queryString);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener los productos removidos entre una fecha y otra.
+     * @param inicio Date fecha de inicio de la emision de las guias consultadas
+     * @param fin Date fecha de fin de la emision de las guias consultadas
+     * @return List <ProdConsulta> listado de los productos consultados
+     */
+    public List<ProdConsulta> getProdRemov(Date inicio, Date fin){
+        String queryString = "SELECT DISTINCT i.idprod, i.nombrevulgar, i.clase, i.unidad, 0 AS total "
+                + "FROM itemproductivo i "
+                + "INNER JOIN guia g ON g.id = i.guia_id "
+                + "INNER JOIN tipoguia tipo ON tipo.id = g.tipo_id "
+                + "INNER JOIN estadoguia est ON est.id = g.estado_id "
+                + "WHERE g.fechaemisionguia >= ?1 "
+                + "AND g.fechaemisionguia <= ?2 "
+                + "AND tipo.habilitatransp = TRUE "
+                + "AND tipo.movInterno = FALSE "
+                + "AND (est.nombre = 'EMITIDA' OR est.nombre = 'CERRADA') "
+                + "ORDER BY i.nombrevulgar, i.clase"; 
+        Query q = em.createNativeQuery(queryString, ProdConsulta.class)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
+        return (List<ProdConsulta>)q.getResultList();
+    }
+    
+    /**
+     * Método para obtener los productos removidos entre una fecha y otra para un departamento determinado.
+     * @param inicio Date fecha de inicio de la emision de las guias consultadas
+     * @param fin Date fecha de fin de la emision de las guias consultadas
+     * @param depto String departamento desde el cual se emitieron las guías
+     * @return List<ProdConsulta> listado de los productos consultados
+     */
+    public List<ProdConsulta> getProdRemovXDepto(Date inicio, Date fin, String depto){
+        String queryString = "SELECT DISTINCT i.idprod, i.nombrevulgar, i.clase, i.unidad, 0 AS total "
+                + "FROM itemproductivo i "
+                + "INNER JOIN guia g ON g.id = i.guia_id "
+                + "INNER JOIN tipoguia tipo ON tipo.id = g.tipo_id "
+                + "INNER JOIN estadoguia est ON est.id = g.estado_id "
+                + "INNER JOIN entidadguia ent ON ent.id = g.origen_id "
+                + "WHERE g.fechaemisionguia >= ?1 "
+                + "AND g.fechaemisionguia <= ?2 "
+                + "AND ent.departamento = ?3 "
+                + "AND tipo.habilitatransp = TRUE "
+                + "AND tipo.movInterno = FALSE "
+                + "AND (est.nombre = 'EMITIDA' OR est.nombre = 'CERRADA') "
+                + "ORDER BY i.nombrevulgar, i.clase"; 
+        Query q = em.createNativeQuery(queryString, ProdConsulta.class)
+                .setParameter(1, inicio)
+                .setParameter(2, fin)
+                .setParameter(3, depto);
+        return (List<ProdConsulta>)q.getResultList();
+    }
+    
+    /**
+     * Método para obtener el total de productos removidos (sin especificar especies y clase) entre una fecha y otra.
+     * @param inicio Date fecha de inicio de la emision de las guias consultadas
+     * @param fin Date fecha de fin de la emision de las guias consultadas
+     * @return float cantidad de productos consultada
+     */
+    public float getTotalProdRemov(Date inicio, Date fin){
+        String queryString = "SELECT SUM(i.totalkg) AS total "
+                + "FROM itemproductivo i "
+                + "INNER JOIN guia g ON g.id = i.guia_id "
+                + "INNER JOIN tipoguia tipo ON tipo.id = g.tipo_id "
+                + "INNER JOIN estadoguia est ON est.id = g.estado_id "
+                + "WHERE g.fechaemisionguia >= ?1 "
+                + "AND g.fechaemisionguia <= ?2 "
+                + "AND tipo.habilitatransp = TRUE "
+                + "AND tipo.movInterno = FALSE "
+                + "AND (est.nombre = 'EMITIDA' OR est.nombre = 'CERRADA')"; 
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
+        if(q.getSingleResult() == null){
+            return 0;
+        }else{
+            return (float)q.getSingleResult();
+        }
+    }
+    
+    /**
+     * Método para paginar la totalidad de las guías
+     * @param first int número de orden inicial a partir del cual tomar los registros
+     * @param count int cantidad de registros a tomar a partir del first
+     * @return List<Guia> listad de las guías consultadas
+     */
+    public List<Guia> findAllPaginated(int first, int count){
+        String queryString = "SELECT guia FROM Guia guia ORDER BY guia.id";
+        Query q = em.createQuery(queryString)
+                .setFirstResult(first)
+                .setMaxResults(count);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para paginar la totalidad de las guías con una serie de parámetros para filtrar.
+     * @param first int número de orden inicial a partir del cual tomar los registros
+     * @param count int cantidad de registros a tomar a partir del first
+     * @param filters Map<String, Object> mapeo de los pares campo-valor a filtrar
+     * @return List<Guia> listado de guías consultadas
+     */
+    public List<Guia> findAllPagFilterJpa(int first, int count, Map<String, Object> filters){
+        StringBuilder qString; 
+        qString = new StringBuilder();
+        qString.append("SELECT guia FROM Guia guia WHERE 1=1 ");
+        for(Map.Entry<String, Object> entry : filters.entrySet()) {
+            String field = entry.getKey();
+            String param;
+            // verifico si es un campo directo
+            if(field.contains(".")){
+                // si es indirecto (contiene '.') lo saco
+                param = field.replace(".", "");
+            }else{
+                // si es directo lo paso como viene
+                param = field;
+            }
+            // si consulta por CUIT hago un CAST
+            if(field.contains("cuit")){
+                qString.append("AND CAST(guia.").append(field).append(" AS text) LIKE :").append(param).append(" ");
+            }else{
+                qString.append("AND guia.").append(field).append(" LIKE :").append(param).append(" ");
+            }
+        }
+        qString.append("ORDER BY guia.id");
+        Query q = em.createQuery(qString.toString());
+        
+        for(Map.Entry<String, Object> entry : filters.entrySet()) {
+            String field = entry.getKey();
+            Object value = entry.getValue();
+            String param;
+            // verifico si es un campo directo
+            if(field.contains(".")){
+                // si es indirecto (contiene '.') lo saco
+                param = field.replace(".", "");
+            }else{
+                // si es directo lo paso como viene
+                param = field;
+            }
+            q.setParameter(param, "%" + value.toString().toUpperCase() + "%");
+        }
+        q.setFirstResult(first);
+        q.setMaxResults(count);
+        
+        return q.getResultList();
+    }  
+    
+    /**
+     * Metodo para obtener la cantidad total de guías conforme a los parámetros de consulta.
+     * @param filters Map<String, Object> mapeo de los pares campo-valor a filtrar
+     * @return int cantidad de guías consultada
+     */
+    public int findAllPagFilterJpaCount(Map<String, Object> filters){
+        StringBuilder qString; 
+        qString = new StringBuilder();
+        qString.append("SELECT guia.id FROM Guia guia WHERE 1=1 ");
+        for(Map.Entry<String, Object> entry : filters.entrySet()) {
+            String field = entry.getKey();
+            String param;
+            // verifico si es un campo directo
+            if(field.contains(".")){
+                // si es indirecto (contiene '.') lo saco
+                param = field.replace(".", "");
+            }else{
+                // si es directo lo paso como viene
+                param = field;
+            }
+            // si consulta por CUIT hago un CAST
+            if(field.contains("cuit")){
+                qString.append("AND CAST(guia.").append(field).append(" AS text) LIKE :").append(param).append(" ");
+            }else{
+                qString.append("AND guia.").append(field).append(" LIKE :").append(param).append(" ");
+            }
+        }
+        Query q = em.createQuery(qString.toString());
+        
+        for(Map.Entry<String, Object> entry : filters.entrySet()) {
+            String field = entry.getKey();
+            Object value = entry.getValue();
+            String param;
+            // verifico si es un campo directo
+            if(field.contains(".")){
+                // si es indirecto (contiene '.') lo saco
+                param = field.replace(".", "");
+            }else{
+                // si es directo lo paso como viene
+                param = field;
+            }
+            q.setParameter(param, "%" + value.toString().toUpperCase() + "%");
+        }
+        return q.getResultList().size();
+    }    
     
     /**
      * Método para obtener todas las revisiones de la entidad
