@@ -522,19 +522,21 @@ public class GuiaSICMAFacadeREST {
             for (ItemProductivo item : lstItems){
                 // obtengo el id del item origen
                 Long idItemOrigen = item.getItemOrigen();
-                // obtengo el item origen
-                ItemProductivo itemOrigen = itemFacade.find(idItemOrigen);
-                // seteo los saldos actuales
-                float saldoActual = itemOrigen.getSaldo();
-                float saldoKgActual = itemOrigen.getSaldoKg();
-                // actualizo los saldos
-                itemOrigen.setSaldo(saldoActual + item.getTotal());
-                itemOrigen.setSaldoKg(saldoKgActual + item.getTotalKg());
-                // actualizo el origen
-                itemFacade.edit(itemOrigen);
-                // deshabilito el item actual
-                item.setHabilitado(false);
-                itemFacade.edit(item);
+                if(idItemOrigen != null){
+                    // obtengo el item origen
+                    ItemProductivo itemOrigen = itemFacade.find(idItemOrigen);
+                    // seteo los saldos actuales
+                    float saldoActual = itemOrigen.getSaldo();
+                    float saldoKgActual = itemOrigen.getSaldoKg();
+                    // actualizo los saldos
+                    itemOrigen.setSaldo(saldoActual + item.getTotal());
+                    itemOrigen.setSaldoKg(saldoKgActual + item.getTotalKg());
+                    // actualizo el origen
+                    itemFacade.edit(itemOrigen);
+                    // deshabilito el item actual
+                    item.setHabilitado(false);
+                    itemFacade.edit(item);
+                }
             }
             actualizadaLocal = true;
             
