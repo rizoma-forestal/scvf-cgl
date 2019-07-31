@@ -10,7 +10,7 @@
             <p:outputLabel styleClass="titPanel" value="Datos generales" />
         </h:panelGrid>
         <!-- Diálogo para ver los rodales del predio, si tiene asignados -->
-        <p:dialog header="Rodales disponibles" widgetVar="dlgVerRodales" minHeight="40" closable="false">
+        <p:dialog header="#{config.Rodales} disponibles" widgetVar="dlgVerRodales" minHeight="40" closable="false">
             <h:form prependId="false" id="frAgregarRodal">
                 <p:panel id="pnDlgRodView" style="margin-bottom:10px; width: 220px">
                     <h:panelGrid columns="1" >
@@ -21,12 +21,12 @@
                                 <p:outputLabel value="#{rod.numOrden}"/>
                             </p:column>
                             <p:column style="width:30px" >
-                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-plus-circle" title="Asignar el Rodal a la Autorización" process="@this" 
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-plus-circle" title="Asignar el #{config.Rodal} a la Autorización" process="@this" 
                                                  update="frAgregarRodal" action="#{mbGuia.asignarRodal()}" 
                                                  rendered="#{not rod.asignado}" >
                                     <f:setPropertyActionListener value="#{rod}" target="#{mbGuia.rodalSelected}" /> 
                                 </p:commandButton>
-                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Desvincular el Rodal de la Autorización" process="@this" 
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Desvincular el #{config.Rodal} de la Autorización" process="@this" 
                                                  update="frAgregarRodal,messages" action="#{mbGuia.desvincularRodal()}" 
                                                  rendered="#{rod.asignado}" >
                                     <f:setPropertyActionListener value="#{rod}" target="#{mbGuia.rodalSelected}" /> 
@@ -41,7 +41,7 @@
             </h:form>
         </p:dialog>  
         <!-- Diálogo para ver los rodales del predio, si tiene asignados -->
-        <p:dialog header="Rodales asignados" widgetVar="dlgVerRodalesAsig" minHeight="40" closable="false">
+        <p:dialog header="#{config.Rodales} asignados" widgetVar="dlgVerRodalesAsig" minHeight="40" closable="false">
             <h:form prependId="false" id="frAgregarRodalAsig">
                 <p:panel id="pnDlgRodAsigView" style="margin-bottom:10px; width: 220px">
                     <h:panelGrid columns="1" >
@@ -171,7 +171,7 @@
                                 filterBy="#{aut.intervencion.nombre}" >
                                 <p:outputLabel value="#{aut.intervencion.nombre}" />
                             </p:column> 
-                            <p:column headerText="Uso Suelo" 
+                            <p:column headerText="Modalidad" 
                                 filterMatchMode="contains"
                                 sortBy="#{aut.usoSuelo.nombre}" 
                                 filterBy="#{aut.usoSuelo.nombre}" >
@@ -214,8 +214,10 @@
                             </p:outputLabel>
                             <p:outputLabel value="Intervención: " for="aut_interv"/>
                             <p:outputLabel id="aut_interv" value="#{mbGuia.autSelected.intervencion.nombre}"/>
-                            <p:outputLabel value="Uso del suelo: " for="aut_uso"/>
+                            <p:outputLabel value="Modalidad: " for="aut_uso"/>
                             <p:outputLabel id="aut_uso" value="#{mbGuia.autSelected.usoSuelo.nombre}"/>
+                            <p:outputLabel value="Cuenca forestal: " for="aut_cuenca"/>
+                            <p:outputLabel id="aut_cuenca" value="#{mbGuia.autSelected.cuencaForestal.nombre}"/>
                             <p:outputLabel value="Número Exp.: " for="aut_numExp"/>
                             <p:outputLabel id="aut_numExp" value="#{mbGuia.autSelected.numExp}"/>
                             <p:outputLabel value="Fecha ingreso: " for="aut_fechaIng"/>
@@ -244,20 +246,20 @@
                             <p:outputLabel id="aut_obs" value="#{mbGuia.autSelected.obs}"/>
                         </h:panelGrid>
                         <h:panelGrid columns="1" >
-                            <p:commandButton title="Ver los rodales disponibles de la fuente seleccionada"
+                            <p:commandButton title="Ver los #{config.Rodales} disponibles de la fuente seleccionada"
                                              rendered="#{config.GestionaRodales eq 'si' 
                                                          and not mbGuia.autSelected.asignadaDesc 
                                                          and mbGuia.guia.tipo.descuentaAutoriz}"
                                              styleClass="save" icon="fa fa-fw fa-search" 
-                                             value="Rodales disponibles" action="#{mbGuia.prepareViewRodalesDisponibles()}" 
+                                             value="#{config.Rodales} disponibles" action="#{mbGuia.prepareViewRodalesDisponibles()}" 
                                              oncomplete="PF('dlgVerRodales').show();" update="dtViewRodales" >
                             </p:commandButton>
-                            <p:commandButton title="Ver los rodales aignados a la guía" 
+                            <p:commandButton title="Ver los #{config.Rodales} aignados a la guía" 
                                              rendered="#{config.GestionaRodales eq 'si' 
                                                          and mbGuia.autSelected.asignadaDesc 
                                                          and mbGuia.guia.tipo.descuentaAutoriz}"
                                              styleClass="save" icon="fa fa-fw fa-search" 
-                                             value="Rodales asignados" 
+                                             value="#{config.Rodales} asignados" 
                                              oncomplete="PF('dlgVerRodalesAsig').show();" update="dtViewRodalesAsig" >
                             </p:commandButton>
                         </h:panelGrid>

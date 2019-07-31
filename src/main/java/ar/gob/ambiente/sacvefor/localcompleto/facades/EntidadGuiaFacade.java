@@ -185,7 +185,21 @@ public class EntidadGuiaFacade extends AbstractFacade<EntidadGuia> {
         Query q = em.createQuery(queryString)
                 .setParameter("tipoEntidadGuia", tipoEntidadGuia);
         return q.getResultList();
-    }         
+    }       
+    
+    /**
+     * Método para obtener las EntidadGuia según el idRue,
+     * más allá de su tipo
+     * @param idRue Long identificador de la persona en el RUE a buscar
+     * @return List<EntidadGuia> listado de las entidades guía consultadas
+     */
+    public List<EntidadGuia> findPersonasRue (Long idRue){
+        String queryString = "SELECT entidad FROM EntidadGuia entidad "
+                + "WHERE entidad.idRue = :idRue";
+        Query q = em.createQuery(queryString)
+                .setParameter("idRue", idRue);
+        return q.getResultList();
+    }
     
     /**
      * Método para obtener todas las revisiones de la entidad

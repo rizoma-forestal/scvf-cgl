@@ -81,8 +81,16 @@ public class Autorizacion implements Serializable {
     @Audited(targetAuditMode = NOT_AUDITED)
     @ManyToOne
     @JoinColumn(name="param_usosuelo_id", nullable=false)
-    @NotNull(message = "Debe existir una usoSuelo")
+    @NotNull(message = "Debe existir un usoSuelo")
     private Parametrica usoSuelo;
+    
+    /**
+     * Variable privada: Paramétrica cuyo tipo es "Cuenca Forestal"
+     */
+    @Audited(targetAuditMode = NOT_AUDITED)
+    @ManyToOne
+    @JoinColumn(name="param_cuenca_id", nullable=true)
+    private Parametrica cuencaForestal;    
 
     /**
      * Variable privada: Listado de Zonas asinganadas al predio
@@ -284,6 +292,14 @@ public class Autorizacion implements Serializable {
     /**********************
      * Métodos de acceso **
      **********************/
+    public Parametrica getCuencaForestal() {
+        return cuencaForestal;
+    }
+
+    public void setCuencaForestal(Parametrica cuencaForestal) {
+        this.cuencaForestal = cuencaForestal;
+    }
+
     public List<Rodal> getRodales() {
         return rodales;
     }

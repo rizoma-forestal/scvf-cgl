@@ -135,6 +135,9 @@ CtrlTipoParamEstGuia=EST_GUIAS
 CtrlGuiaCancelada=CANCELADA
 # Si el inmueble puede subdividirse en rodales
 GestionaRodales=si
+# Denominación de los rodales (ej: rodal o cuartel)
+Rodal=Cuartel
+Rodales=Cuarteles
 
 # ------------- #
 # Títulos Menús #
@@ -187,6 +190,7 @@ Reportes=Reportes
 RepProductosMovidos=Productos removidos
 RepProductosAutorizados=Productos autorizados
 RepSuperficiesAutorizaciones=Superficies autorizadas
+RepCuposYSaldos=Cupos y Saldos
 
 # Seguridad
 Usuarios=Usuarios
@@ -223,6 +227,7 @@ TipoTasa=TIPO_TASA
 TipoFuente=TIPO_FUENTE
 TipoEntidadGuia=TIPO_ENT_GUIA
 OrigenPredio=ORIGEN_PREDIO
+CuencaForestal=CUENCA_FORESTAL
 
 # ----------------------- #
 # Roles de usuarios local #

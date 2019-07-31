@@ -2,12 +2,14 @@
 package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.EntidadGuia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Usuario;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.AutorizacionFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.EntidadGuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.GuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.PersonaFacade;
@@ -221,6 +223,12 @@ public class MbPersona implements Serializable {
      */  
     @EJB
     private GuiaFacade guiaFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de EntidadGuia
+     */
+    @EJB
+    private EntidadGuiaFacade entGuiaFacade;
     
     //////////////////////////////////////////////////////
     // Clientes REST para la gestión del API de Personas//
@@ -1054,6 +1062,7 @@ public class MbPersona implements Serializable {
     public void saveProponente(){
         String mensaje = "";
         boolean valida = true;
+        List<EntidadGuia> lstEntGuias;
         Parametrica rolProp = obtenerRol(ResourceBundle.getBundle("/Config").getString("Proponente"));
         try{
             Persona perExitente = perFacade.getExistente(persona.getCuit(), rolProp);
@@ -1077,6 +1086,17 @@ public class MbPersona implements Serializable {
                 // si no hubo errores en el guardado definitivo del martillo, persisto la persona
                 if(persona.getId() != null){
                     perFacade.edit(persona);
+                    // si hay una entidades guía vinculadas, actualizo los datos correspondientes
+                    lstEntGuias = entGuiaFacade.findPersonasRue(persona.getIdRue());
+                    if(lstEntGuias != null){
+                        for(EntidadGuia eg : lstEntGuias){
+                            eg.setCuit(persona.getCuit());
+                            eg.setEmail(persona.getEmail());
+                            eg.setNombreCompleto(persona.getNombreCompleto());
+                            eg.setTipoPersona(persona.getTipo());
+                            entGuiaFacade.edit(eg);
+                        }
+                    }
                     JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Proponente") + " fue guardado con exito");
                 }else{
                     // seteo la fecha de alta, habilitado y Rols
@@ -1201,6 +1221,7 @@ public class MbPersona implements Serializable {
     public void saveDestinatario(){
         boolean valida = true;
         String mensaje = "";
+        List<EntidadGuia> lstEntGuias;
         Parametrica rolDest = obtenerRol(ResourceBundle.getBundle("/Config").getString("Destinatario"));
         try{
             Persona perExitente = perFacade.getExistente(persona.getCuit(), rolDest);
@@ -1229,6 +1250,17 @@ public class MbPersona implements Serializable {
                 // persisto la persona según sea edición o insercion
                 if(persona.getId() != null){
                     perFacade.edit(persona);
+                    // si hay una entidades guía vinculadas, actualizo los datos correspondientes
+                    lstEntGuias = entGuiaFacade.findPersonasRue(persona.getIdRue());
+                    if(lstEntGuias != null){
+                        for(EntidadGuia eg : lstEntGuias){
+                            eg.setCuit(persona.getCuit());
+                            eg.setEmail(persona.getEmail());
+                            eg.setNombreCompleto(persona.getNombreCompleto());
+                            eg.setTipoPersona(persona.getTipo());
+                            entGuiaFacade.edit(eg);
+                        }
+                    }
                     JsfUtil.addSuccessMessage("El " + ResourceBundle.getBundle("/Config").getString("Destinatario") + " fue guardado con exito");
                 }else{
                     // seteo la fecha de alta, habilitado y Rols

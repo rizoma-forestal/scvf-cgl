@@ -376,6 +376,7 @@ public class MbInmueble {
      */      
     public void save(){
         boolean valida = true;
+        String message = "";
         
         try{
             Inmueble inmExitente = inmFacade.getExistenteByCatastro(inmueble.getIdCatastral());
@@ -387,6 +388,15 @@ public class MbInmueble {
                 }else{
                     // si no edita no habilito de ninguna manera
                     valida = false;
+                    message += " El Inmueble que está tratando de persisitir ya existe, por favor verifique los datos ingresados.";
+                }
+            }
+            // valido el origen del predio si está configurado para discriminar tasas según él
+            if(ResourceBundle.getBundle("/Config").getString("DiscTasaOrigen").equals("si")){
+                if(inmueble.getOrigen() == null){
+                    // si no se asignó un origen al inmueble no valido
+                    valida = false;
+                    message += " Debe seleccionar el origen del " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " que corresponda.";
                 }
             }
             if(valida){
@@ -413,7 +423,7 @@ public class MbInmueble {
                     edit = false;
                 }
             }else{
-                JsfUtil.addErrorMessage("El Inmueble que está tratando de persisitir ya existe, por favor verifique los datos ingresados.");
+                JsfUtil.addErrorMessage(message);
             }
             limpiarForm();
         }catch(Exception ex){
@@ -562,45 +572,27 @@ public class MbInmueble {
     
     /**
      * Método para agregar un rodal al inmueble
-     * Valida que el número de orden del rodal a registrar no esté asignado ya al inmueble y que sea correlativo del mayor
+     * Valida que no haya un rodal vinculado al inmueble con el mismo número
      */
     public void agregarRodal(){
         boolean valida = true;
-        // valido que no sea 0
-        if(rodal.getNumOrden() <= 0){
-            valida = false;
-            JsfUtil.addErrorMessage("El número de orden del rodal debe ser mayor que 0.");
-        }
-        // valido que sea correlativo
-        if(inmueble.getRodales().isEmpty()){
-            if(rodal.getNumOrden() > 1){
-                valida = false;
-                JsfUtil.addErrorMessage("Los números de orden de los rodales deben ser correlativos, corresponde 1.");
-            }
-        }else{
-            int num = 0;
+        // si tiene rodales valido que el número no sea repetido
+        if(!inmueble.getRodales().isEmpty()){
             for(Rodal r : inmueble.getRodales()){
-                if(r.getNumOrden() > num){
-                    num = r.getNumOrden();
+                if(r.getNumOrden().equals(rodal.getNumOrden().toUpperCase())){
+                    valida = false;
                 }
             }
-            if(rodal.getNumOrden() != num + 1){
-                valida = false;
-                JsfUtil.addErrorMessage("Los números de orden de los rodales deben ser correlativos, corresponde " + String.valueOf(num + 1) + ".");
-            }
         }
-        // valido que el número de orden del rodal no esté ya incluido
-        for(Rodal rod : inmueble.getRodales()){
-            if(rodal.getNumOrden() == rod.getNumOrden()){
-                valida = false;
-                JsfUtil.addErrorMessage("El rodal que está queriendo agregar ya está asignado al " + ResourceBundle.getBundle("/Config").getString("Inmueble") + ".");
-            }
-        }
-        
         try{
             if(valida){
+                // seteo mayúsculas en el número del rodal
+                String num = rodal.getNumOrden();
+                rodal.setNumOrden(num.toUpperCase());
                 inmueble.getRodales().add(rodal);
                 limpiarRodal();
+            }else{
+                JsfUtil.addErrorMessage("El número asignado al Rodal ya existe, por favor ingrese otro número.");
             }
         }catch(Exception ex){
             JsfUtil.addErrorMessage(ex, "Hubo un error al agergar el Rodal al " + ResourceBundle.getBundle("/Config").getString("Inmueble") + ": " + ex.getMessage());

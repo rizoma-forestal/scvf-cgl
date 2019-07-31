@@ -1,12 +1,10 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.facades;
 
-import ar.gob.ambiente.sacvefor.localcompleto.entities.AutSupConsulta;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.EstadoAutorizacion;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
-import ar.gob.ambiente.sacvefor.localcompleto.entities.ProdConsulta;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Rodal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -160,101 +158,252 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
     }
     
     /**
-     * Método para obtener los datos de un producto autorizado para la extracción durante un período para toda la provincia
-     * @param inicio Date fecha límite de inicio del período dentro del cual se autorizaron los productos consultados
-     * @param fin Date fecha límite de final del período dentro del cual se autorizaron los productos consultados
-     * @param idProd Long identificador único del producto que se está consultando
-     * @return ProdConsulta ProdConsulta que encapsula los datos del producto consultado.
-     */
-    public ProdConsulta getProdQuery(Date inicio, Date fin, Long idProd){
-        String queryString = "SELECT i.idprod, i.nombrevulgar, i.clase, i.unidad, SUM(i.total) AS total "
-                + "FROM itemproductivo i "
-                + "INNER JOIN autorizacion a ON a.id = i.autorizacion_id "
-                + "INNER JOIN estadoautorizacion est ON est.id = a.estado_id "
-                + "WHERE a.fechaalta >= ?1 "
-                + "AND a.fechaalta <= ?2 "
-                + "AND i.idprod = ?3 "
-                + "AND est.habilitaemisionguia = TRUE "
-                + "GROUP BY i.idprod, i.nombrevulgar, i.clase, i.unidad"; 
-        Query q = em.createNativeQuery(queryString, ProdConsulta.class)
-                .setParameter(1, inicio)
-                .setParameter(2, fin)
-                .setParameter(3, idProd);
-        return (ProdConsulta)q.getSingleResult();
-    }  
-    
-    /**
-     * Método para obtener los datos de un producto autorizado para la extracción durante un período para un departamento
-     * @param inicio Date fecha límite de inicio del período dentro del cual se autorizaron los productos consultados
-     * @param fin Date fecha límite de final del período dentro del cual se autorizaron los productos consultados
-     * @param depto String nombre del departamento de origen de los productos autorizados
-     * @param idProd Long identificador único del producto que se está consultando
-     * @return ProdConsulta ProdConsulta que encapsula los datos del producto consultado.
-     */
-    public ProdConsulta getProdDeptoQuery(Date inicio, Date fin, String depto, Long idProd){
-        String queryString = "SELECT i.idprod, i.nombrevulgar, i.clase, i.unidad, SUM(i.total) AS total "
-                + "FROM itemproductivo i "
-                + "INNER JOIN vi_autcondeptos a ON a.id = i.autorizacion_id "
-                + "INNER JOIN estadoautorizacion est ON est.id = a.estado_id "
-                + "WHERE a.fechaalta >= ?1 "
-                + "AND a.fechaalta <= ?2 "
-                + "AND a.departamento = ?3 "
-                + "AND i.idprod = ?4 "
-                + "AND est.habilitaemisionguia = TRUE "
-                + "GROUP BY i.idprod, i.nombrevulgar, i.clase, i.unidad"; 
-        Query q = em.createNativeQuery(queryString, ProdConsulta.class)
-                .setParameter(1, inicio)
-                .setParameter(2, fin)
-                .setParameter(3, depto)
-                .setParameter(4, idProd);
-        return (ProdConsulta)q.getSingleResult();
-    }      
-    
-    /**
-     * Método para obtener el resumen de superficies vinculadas a las autorizaciones según el tipo de intervención:
-     * total del predio, solicitada y autorizada.
-     * @param inicio Date fecha límite de inicio del período dentro del cual se registraron las autorizaciones consultadas
+     * Método para obtener un listado de los productos según la clase y el tipo de intervención, 
+     * con la autorización, el cupo otorgado, su saldo disponible y su cuenca asociada.
+     * @param inicio Date fecha límite de inicio del período dentro del cual se registraron las autorizaciones de los productos consultados
      * @param fin Date fecha límite de fin del período dentro del cual se registraron las autorizaciones consultadas
-     * @return List<AutSupConsulta> listado del detalle de las superficies por tipo de intervención
+     * @param idInterv Long identificador de la paramétrica que indica el tipo de intervención
+     * @return List<Object[]> matriz con los datos obtenidos
      */
-    public List<AutSupConsulta> getSupGral(Date inicio, Date fin){
-        String queryString = "SELECT interv.id idtipoint, SUM(a.suptotal) suptotal, SUM(a.supsolicitada) supsol, SUM(a.supautorizada) supaut, interv.nombre as tipoint "
-                + "FROM vi_autcondeptos a "
-                + "INNER JOIN parametrica interv ON a.param_intervencion_id = interv.id "
-                + "INNER JOIN estadoautorizacion est ON est.id = a.estado_id "
-                + "WHERE a.fechaalta >= ?1 "
-                + "AND a.fechaalta <= ?2 "
+    public List<Object[]> getCuposSaldos(Date inicio, Date fin, Long idInterv){
+        String queryString = "SELECT aut.numero, i.clase, SUM(i.total) AS cupo, SUM(i.saldo) AS saldo, i.unidad, cuenca.nombre AS cuenca, inm.departamento "
+                + "FROM autorizacion aut "
+                + "INNER JOIN inmueblesxautorizaciones inmaut ON inmaut.autorizacion_fk = aut.id "
+                + "INNER JOIN inmueble inm ON inmaut.inmueble_fk = inm.id "
+                + "LEFT JOIN parametrica cuenca ON cuenca.id = aut.param_cuenca_id "
+                + "INNER JOIN parametrica interv ON interv.id = aut.param_intervencion_id "
+                + "INNER JOIN itemproductivo i ON i.autorizacion_id = aut.id "
+                + "INNER JOIN estadoautorizacion est ON est.id = aut.estado_id "
+                + "WHERE interv.id = ?3 "
+                + "AND aut.fechaalta >= ?1 "
+                + "AND aut.fechaalta <= ?2 "
                 + "AND est.habilitaemisionguia = TRUE "
-                + "GROUP BY interv.id";
-        Query q = em.createNativeQuery(queryString, AutSupConsulta.class)
+                + "GROUP BY aut.numero, i.clase, i.unidad, cuenca.nombre, inm.departamento "
+                + "ORDER BY aut.numero";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(3, idInterv)
                 .setParameter(1, inicio)
-                .setParameter(2, fin);   
-        return (List<AutSupConsulta>) q.getResultList();
+                .setParameter(2, fin);
+        return q.getResultList();
     }
     
     /**
-     * Método para obtener el resumen de superficies vinculadas a las autorizaciones según 
-     * el Departamento del predio y el tipo de intervención: total del predio, solicitada y autorizada.
+     * Método para obtener un listado de los productos según la clase, el tipo de intervención y el departamento del predio, 
+     * con la autorización, el cupo otorgado, su saldo disponible y su cuenca asociada.
+     * @param inicio Date fecha límite de inicio del período dentro del cual se registraron las autorizaciones de los productos consultados
+     * @param fin Date fecha límite de fin del período dentro del cual se registraron las autorizaciones consultadas
+     * @param idInterv Long identificador de la paramétrica que indica el tipo de intervención
+     * @param depto String nombre del departamento del inmueble autorizado
+     * @return List<Object[]> matriz con los datos obtenidos
+     */
+    public List<Object[]> getCuposSaldosByDepto(Date inicio, Date fin, Long idInterv, String depto){
+        String queryString = "SELECT aut.numero, i.clase, SUM(i.total) AS cupo, SUM(i.saldo) AS saldo, i.unidad, cuenca.nombre AS cuenca, inm.departamento "
+                + "FROM autorizacion aut "
+                + "INNER JOIN inmueblesxautorizaciones inmaut ON inmaut.autorizacion_fk = aut.id "
+                + "INNER JOIN inmueble inm ON inmaut.inmueble_fk = inm.id "
+                + "LEFT JOIN parametrica cuenca ON cuenca.id = aut.param_cuenca_id "
+                + "INNER JOIN parametrica interv ON interv.id = aut.param_intervencion_id "
+                + "INNER JOIN itemproductivo i ON i.autorizacion_id = aut.id "
+                + "INNER JOIN estadoautorizacion est ON est.id = aut.estado_id "
+                + "WHERE inm.departamento = ?4 "
+                + "AND interv.id = ?3 "
+                + "AND aut.fechaalta >= ?1 "
+                + "AND aut.fechaalta <= ?2 "
+                + "AND est.habilitaemisionguia = TRUE "
+                + "GROUP BY aut.numero, i.clase, i.unidad, cuenca.nombre, inm.departamento "
+                + "ORDER BY aut.numero";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(4, depto)
+                .setParameter(3, idInterv)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
+        return q.getResultList();
+    }
+
+    /**
+     * Método para obtener los productos autorizados según el tipo de intervención durante un período determinado.
+     * Muestra productor, autorización, inmueble, departamento, producto, cupo autorizado y saldo disponible.
+     * @param inicio Date fecha límite de inicio del período dentro del cual se autorizaron los productos consultados
+     * @param fin Date fecha límite de fin del período dentro del cual se autorizaron los productos consultados
+     * @param idInterv Long identificador de la paramétrica que indica el tipo de intervención
+     * @return List<Object[]> matriz con los datos obtenidos
+     */
+    public List<Object[]> getProdAut(Date inicio, Date fin, Long idInterv){
+        String queryString = "SELECT per.nombrecompleto, per.cuit, aut.numero, inm.nombre, inm.idcatastral, inm.departamento, "
+                + "i.clase, i.nombrevulgar, SUM(i.total) AS cupo, SUM(i.saldo) AS saldo, i.unidad, cuenca.nombre AS cuenca "
+                + "FROM autorizacion aut "
+                + "INNER JOIN inmueblesxautorizaciones inmaut ON inmaut.autorizacion_fk = aut.id "
+                + "INNER JOIN inmueble inm ON inmaut.inmueble_fk = inm.id "
+                + "LEFT JOIN parametrica cuenca ON cuenca.id = aut.param_cuenca_id "
+                + "INNER JOIN parametrica interv ON interv.id = aut.param_intervencion_id "
+                + "INNER JOIN itemproductivo i ON i.autorizacion_id = aut.id "
+                + "INNER JOIN estadoautorizacion est ON est.id = aut.estado_id "
+                + "INNER JOIN personasxautorizaciones peraut ON peraut.autorizacion_fk = aut.id "
+                + "INNER JOIN persona per ON per.id = peraut.persona_fk "
+                + "INNER JOIN parametrica rol ON rol.id = per.rol_id "
+                + "WHERE interv.id = ?3 "
+                + "AND aut.fechaalta >= ?1 "
+                + "AND aut.fechaalta <= ?2 "
+                + "AND est.habilitaemisionguia = TRUE "
+                + "AND rol.nombre = 'PROPONENTE' "
+                + "GROUP BY per.nombrecompleto, per.cuit, aut.numero, inm.nombre, inm.idcatastral, i.clase, nombrevulgar, "
+                + "i.unidad, cuenca.nombre, inm.departamento "
+                + "ORDER BY aut.numero";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(3, idInterv)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener los productos autorizados según el tipo de intervención y el departamento del inmueble autorizado, 
+     * durante un período determinado.
+     * Muestra productor, autorización, inmueble, departamento, producto, cupo autorizado y saldo disponible.
+     * @param inicio Date fecha límite de inicio del período dentro del cual se autorizaron los productos consultados
+     * @param fin Date fecha límite de fin del período dentro del cual se autorizaron los productos consultados
+     * @param idInterv Long identificador de la paramétrica que indica el tipo de intervención
+     * @param depto String nombre del departamento en el cual se encuentra el o los inmuebles autorizados
+     * @return List<Object[]> matriz con los datos obtenidos
+     */
+    public List<Object[]> getProdAutDepto(Date inicio, Date fin, Long idInterv, String depto){
+        String queryString = "SELECT per.nombrecompleto, per.cuit, aut.numero, inm.nombre, inm.idcatastral, inm.departamento, "
+                + "i.clase, i.nombrevulgar, SUM(i.total) AS cupo, SUM(i.saldo) AS saldo, i.unidad, cuenca.nombre AS cuenca "
+                + "FROM autorizacion aut "
+                + "INNER JOIN inmueblesxautorizaciones inmaut ON inmaut.autorizacion_fk = aut.id "
+                + "INNER JOIN inmueble inm ON inmaut.inmueble_fk = inm.id "
+                + "LEFT JOIN parametrica cuenca ON cuenca.id = aut.param_cuenca_id "
+                + "INNER JOIN parametrica interv ON interv.id = aut.param_intervencion_id "
+                + "INNER JOIN itemproductivo i ON i.autorizacion_id = aut.id "
+                + "INNER JOIN estadoautorizacion est ON est.id = aut.estado_id "
+                + "INNER JOIN personasxautorizaciones peraut ON peraut.autorizacion_fk = aut.id "
+                + "INNER JOIN persona per ON per.id = peraut.persona_fk "
+                + "INNER JOIN parametrica rol ON rol.id = per.rol_id "
+                + "WHERE inm.departamento = ?4 "
+                + "AND interv.id = ?3 "
+                + "AND aut.fechaalta >= ?1 "
+                + "AND aut.fechaalta <= ?2 "
+                + "AND est.habilitaemisionguia = TRUE "
+                + "AND rol.nombre = 'PROPONENTE' "
+                + "GROUP BY per.nombrecompleto, per.cuit, aut.numero, inm.nombre, inm.idcatastral, i.clase, nombrevulgar, "
+                + "i.unidad, cuenca.nombre, inm.departamento "
+                + "ORDER BY aut.numero";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(4, depto)
+                .setParameter(3, idInterv)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
+        return q.getResultList();
+    }
+
+    /**
+     * Método para obtener la sumas de superficies autorizadas para cada productor, sin especificar departamento
      * @param inicio Date fecha límite de inicio del período dentro del cual se registraron las autorizaciones consultadas
      * @param fin Date fecha límite de fin del período dentro del cual se registraron las autorizaciones consultadas
-     * @param depto String nombre del Departamento dentro del cual se encuentra el predio del que se autorizó la extracción
-     * @return List<AutSupConsulta> listado del detalle de las superficies por tipo de intervención y Departamento.
+     * @return List<Object[]> matriz con los datos obtenidos
      */
-    public List<AutSupConsulta> getSupGralDepto(Date inicio, Date fin, String depto){
-        String queryString = "SELECT interv.id idtipoint, SUM(a.suptotal) suptotal, SUM(a.supsolicitada) supsol, SUM(a.supautorizada) supaut, interv.nombre as tipoint "
+    public List<Object[]> getSupGralSinRodal(Date inicio, Date fin){
+        String queryString = "SELECT per.nombrecompleto, per.cuit, SUM(a.suptotal) suptotal, SUM(a.supsolicitada) supsol, SUM(a.supautorizada) supaut, a.departamento "
                 + "FROM vi_autcondeptos a "
                 + "INNER JOIN parametrica interv ON a.param_intervencion_id = interv.id "
                 + "INNER JOIN estadoautorizacion est ON est.id = a.estado_id "
+                + "INNER JOIN personasxautorizaciones peraut ON peraut.autorizacion_fk = a.id "
+                + "INNER JOIN persona per ON per.id = peraut.persona_fk "
+                + "INNER JOIN parametrica rol ON rol.id = per.rol_id "
+                + "WHERE a.fechaalta >= ?1 "
+                + "AND a.fechaalta <= ?2 "
+                + "AND est.habilitaemisionguia = TRUE "
+                + "AND rol.nombre = 'PROPONENTE' "
+                + "GROUP BY per.id, a.departamento";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener la sumas de superficies autorizadas para cada productor, especificando departamento
+     * @param inicio Date fecha límite de inicio del período dentro del cual se registraron las autorizaciones consultadas
+     * @param fin Date fecha límite de fin del período dentro del cual se registraron las autorizaciones consultadas
+     * @param depto String nombre del Departamento dentro del cual se encuentra el predio del que se autorizó la extracción
+     * @return List<Object[]> matriz con los datos obtenidos
+     */
+    public List<Object[]> getSupGralDeptoSinRodal(Date inicio, Date fin, String depto){
+        String queryString = "SELECT per.nombrecompleto, per.cuit, SUM(a.suptotal) suptotal, SUM(a.supsolicitada) supsol, SUM(a.supautorizada) supaut, a.departamento "
+                + "FROM vi_autcondeptos a "
+                + "INNER JOIN parametrica interv ON a.param_intervencion_id = interv.id "
+                + "INNER JOIN estadoautorizacion est ON est.id = a.estado_id "
+                + "INNER JOIN personasxautorizaciones peraut ON peraut.autorizacion_fk = a.id "
+                + "INNER JOIN persona per ON per.id = peraut.persona_fk "
+                + "INNER JOIN parametrica rol ON rol.id = per.rol_id "
                 + "WHERE a.fechaalta >= ?1 "
                 + "AND a.fechaalta <= ?2 "
                 + "AND a.departamento = ?3 "
                 + "AND est.habilitaemisionguia = TRUE "
-                + "GROUP BY interv.id, a.departamento";
-        Query q = em.createNativeQuery(queryString, AutSupConsulta.class)
+                + "AND rol.nombre = 'PROPONENTE' "
+                + "GROUP BY per.id, a.departamento";
+        Query q = em.createNativeQuery(queryString)
                 .setParameter(1, inicio)
                 .setParameter(2, fin)
-                .setParameter(3, depto);   
-        return (List<AutSupConsulta>) q.getResultList();
+                .setParameter(3, depto);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener la sumas de superficies autorizadas para cada productor por rodal, sin especificar departamento
+     * @param inicio Date fecha límite de inicio del período dentro del cual se registraron las autorizaciones consultadas
+     * @param fin Date fecha límite de fin del período dentro del cual se registraron las autorizaciones consultadas
+     * @return List<Object[]> matriz con los datos obtenidos
+     */
+    public List<Object[]> getSupGralConRodal(Date inicio, Date fin){
+        String queryString = "SELECT per.nombrecompleto, per.cuit, SUM(a.suptotal) suptotal, SUM(a.supsolicitada) supsol, SUM(a.supautorizada) supaut, a.departamento, rod.numorden "
+                + "FROM vi_autcondeptos a "
+                + "INNER JOIN parametrica interv ON a.param_intervencion_id = interv.id "
+                + "INNER JOIN estadoautorizacion est ON est.id = a.estado_id "
+                + "INNER JOIN personasxautorizaciones peraut ON peraut.autorizacion_fk = a.id "
+                + "INNER JOIN persona per ON per.id = peraut.persona_fk "
+                + "INNER JOIN parametrica rol ON rol.id = per.rol_id "
+                + "LEFT JOIN rodalesxautorizaciones rodaut ON rodaut.autorizacion_fk = a.id "
+                + "LEFT JOIN rodal rod ON rod.id = rodaut.rodal_fk "
+                + "WHERE a.fechaalta >= ?1 "
+                + "AND a.fechaalta <= ?2 "
+                + "AND est.habilitaemisionguia = TRUE "
+                + "AND rol.nombre = 'PROPONENTE' "
+                + "GROUP BY per.id, a.departamento, rod.numorden";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
+        return q.getResultList();
+    } 
+    
+    /**
+     * Método para obtener la sumas de superficies autorizadas para cada productor por rodal, especificando departamento
+     * @param inicio Date fecha límite de inicio del período dentro del cual se registraron las autorizaciones consultadas
+     * @param fin Date fecha límite de fin del período dentro del cual se registraron las autorizaciones consultadas
+     * @param depto String nombre del Departamento dentro del cual se encuentra el predio del que se autorizó la extracción
+     * @return List<Object[]> matriz con los datos obtenidos
+     */
+    public List<Object[]> getSupGralDeptoConRodal(Date inicio, Date fin, String depto){
+        String queryString = "SELECT per.nombrecompleto, per.cuit, SUM(a.suptotal) suptotal, SUM(a.supsolicitada) supsol, SUM(a.supautorizada) supaut, a.departamento, rod.numorden "
+                + "FROM vi_autcondeptos a "
+                + "INNER JOIN parametrica interv ON a.param_intervencion_id = interv.id "
+                + "INNER JOIN estadoautorizacion est ON est.id = a.estado_id "
+                + "INNER JOIN personasxautorizaciones peraut ON peraut.autorizacion_fk = a.id "
+                + "INNER JOIN persona per ON per.id = peraut.persona_fk "
+                + "INNER JOIN parametrica rol ON rol.id = per.rol_id "
+                + "LEFT JOIN rodalesxautorizaciones rodaut ON rodaut.autorizacion_fk = a.id "
+                + "LEFT JOIN rodal rod ON rod.id = rodaut.rodal_fk "
+                + "WHERE a.fechaalta >= ?1 "
+                + "AND a.fechaalta <= ?2 "
+                + "AND a.departamento = ?3 "
+                + "AND est.habilitaemisionguia = TRUE "
+                + "AND rol.nombre = 'PROPONENTE' "
+                + "GROUP BY per.id, a.departamento, rod.numorden";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(1, inicio)
+                .setParameter(2, fin)
+                .setParameter(3, depto);
+        return q.getResultList();
     }
     
     /**
@@ -272,6 +421,37 @@ public class AutorizacionFacade extends AbstractFacade<Autorizacion> {
         Query q = em.createQuery(queryString)
                 .setParameter("rodal", rodal)
                 .setParameter("fechaHoy", fechaHoy);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener los tipos de intervenciones autorizadas.
+     * Para autorizaciones habilitadas
+     * @return List<Parametrica> listado con las paramétricas solicitadas
+     */
+    public List<Parametrica> findTiposIntervAut(){
+        String queryString = "SELECT DISTINCT aut.intervencion "
+                + "FROM Autorizacion aut "
+                + "WHERE aut.estado.nombre = 'HABILITADO' "
+                + "ORDER BY aut.intervencion.nombre";
+        Query q = em.createQuery(queryString);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener los departamentos de los inmuebles a los cuales se
+     * los autorizó a extraer productos. El estado de la Autorización será "HABILITADO"
+     * @return 
+     */
+    public List<Object> findDeptoByOrigen(){
+        String queryString = "SELECT DISTINCT inm.departamento "
+                + "FROM inmueble inm "
+                + "INNER JOIN inmueblesxautorizaciones inmaut ON inmaut.inmueble_fk = inm.id "
+                + "INNER JOIN autorizacion aut ON aut.id = inmaut.autorizacion_fk "
+                + "INNER JOIN estadoautorizacion est ON est.id = aut.estado_id "
+                + "WHERE est.nombre = 'HABILITADO' "
+                + "ORDER BY inm.departamento";
+        Query q = em.createNativeQuery(queryString);
         return q.getResultList();
     }
     

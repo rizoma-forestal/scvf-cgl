@@ -10,7 +10,7 @@
             <p:outputLabel styleClass="titPanel" value="#{config.Inmuebles}" />
         </h:panelGrid>
         <!-- Diálogo para ver los rodales que el predio tiene disponibles -->
-        <p:dialog header="Rodales Disponibles" widgetVar="dlgVerRodDisp" minHeight="40" closable="false">
+        <p:dialog header="#{config.Rodales} Disponibles" widgetVar="dlgVerRodDisp" minHeight="40" closable="false">
             <h:form prependId="false" id="frAgregarRodal">
                 <p:panel id="pnDlgView" style="margin-bottom:10px; width: 220px">
                     <h:panelGrid columns="1" >
@@ -21,12 +21,12 @@
                                 <p:outputLabel value="#{rod.numOrden}"/>
                             </p:column>
                             <p:column style="width:30px" rendered="#{mbAutorizacion.autorizacion.estado.habilitaEdicion }" >
-                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-plus-circle" title="Asignar el Rodal a la Autorización" process="@this" 
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-plus-circle" title="Asignar el #{config.Rodal} a la Autorización" process="@this" 
                                                  update="frAgregarRodal" action="#{mbAutorizacion.asignarRodal()}" 
                                                  rendered="#{not rod.asignado}" >
                                     <f:setPropertyActionListener value="#{rod}" target="#{mbAutorizacion.rodalSelected}" /> 
                                 </p:commandButton>
-                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Desvincular el Rodal de la Autorización" process="@this" 
+                                <p:commandButton styleClass="fa" icon="fa fa-fw fa-minus-circle" title="Desvincular el #{config.Rodal} de la Autorización" process="@this" 
                                                  update="frAgregarRodal,messages" action="#{mbAutorizacion.desvincularRodal()}" 
                                                  rendered="#{rod.asignado}" >
                                     <f:setPropertyActionListener value="#{rod}" target="#{mbAutorizacion.rodalSelected}" /> 
@@ -83,7 +83,7 @@
             <!-- Vista de los datos del Inmueble [style="font-style: italic; font-size: small"] -->
             <p:panel id="pnForm" header="Datos del #{config.Inmueble} obtenido" style="margin-bottom:10px;" rendered="#{mbAutorizacion.inmueble ne null}">
                 <h:panelGrid columns="2" cellpadding="1">
-                    <p:outputLabel value="Si el #{config.Inmueble} tiene rodales disponibles, debe asignar al menos uno a la Autorización antes de vicular el inmueble." 
+                    <p:outputLabel value="Si el #{config.Inmueble} tiene #{config.Rodales} disponibles, debe asignar al menos uno a la Autorización antes de vicular el inmueble." 
                                    style="font-style: italic; font-size: small" 
                                    rendered="#{config.GestionaRodales eq 'si'}" />
                 </h:panelGrid>
@@ -111,10 +111,10 @@
 
                 </h:panelGrid>
                 <h:panelGrid columns="1" >
-                    <p:commandButton title="Ver los rodales disponibles del #{config.Inmueble} seleccionado" 
+                    <p:commandButton title="Ver los #{config.Rodales} disponibles del #{config.Inmueble} seleccionado" 
                                      rendered="#{config.GestionaRodales eq 'si' and mbAutorizacion.autorizacion.estado.habilitaEdicion}"
                                      styleClass="save" icon="fa fa-fw fa-search" 
-                                     value="Rodales disponibles" action="#{mbAutorizacion.prepareViewRodalesDisponibles()}" 
+                                     value="#{config.Rodales} disponibles" action="#{mbAutorizacion.prepareViewRodalesDisponibles()}" 
                                      oncomplete="PF('dlgVerRodDisp').show();" update="dtViewRales" >
                     </p:commandButton>
                     <p:commandButton title="Ver los rodales asignados" rendered="#{config.GestionaRodales eq 'si' and not mbAutorizacion.autorizacion.estado.habilitaEdicion}" 

@@ -43,6 +43,10 @@
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-search" 
                                              value="Buscar productos removidos" action="#{mbReporte.prepareBusqueda}" update="frListMovProd,messages"/>
                         </h:panelGrid>
+                        <h:panelGrid columns="1" rendered="#{mbReporte.busqSelected.id eq 3}" >
+                            <p:commandButton styleClass="save" icon="fa fa-fw fa-search" 
+                                             value="Listar Productos" action="#{mbReporte.listarPorAut()}" update="frListMovProd,messages"/>
+                        </h:panelGrid>
                     </p:panel>
                     
                     <!-- Formulario para buscar por departamento -->
@@ -107,7 +111,7 @@
                     </p:panel>
                     
                     <!-- Formulario para la totalidad de la madera removida -->
-                    <p:panel id="pnFrmBusqTotal" header="Totalidad de madera removida" rendered="#{mbReporte.busqSelected.id eq 3}" >
+                    <p:panel id="pnFrmBusqTotal" header="Totalidad de madera removida" rendered="#{mbReporte.busqSelected.id eq 4}" >
                         <h:panelGrid columns="1" >
                             <p:commandButton title="Consultar la totalidad de madera removida" styleClass="save" icon="fa fa-fw fa-search" 
                                              value="Consultar" action="#{mbReporte.totalProductosRemovidos()}" update="frListMovProd,messages"/>
@@ -127,8 +131,8 @@
                         </h:panelGrid>
                     </p:panel>
                     
-                    <!-- Listado -->
-                    <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;" 
+                    <!-- Listado productos removidos por departamento y por producto -->
+                    <p:panel id="pnTablaProd" header="Listado" style="margin-bottom:10px;" 
                              rendered="#{not empty mbReporte.lstProdMovidos}">
                         <p:dataTable id="dtProd" var="prod" styleClass="table"
                                      value="#{mbReporte.lstProdMovidos}"
@@ -152,7 +156,7 @@
                                 filterBy="#{prod.nombreVulgar}" >
                                 <p:outputLabel value="#{prod.nombreVulgar}"/>
                             </p:column>
-                            <p:column headerText="Clase" 
+                            <p:column headerText="#{config.Clase}" 
                                 filterMatchMode="contains"
                                 sortBy="#{prod.clase}" 
                                 filterBy="#{prod.clase}" >
@@ -169,6 +173,60 @@
                                 sortBy="#{prod.total}" 
                                 filterBy="#{prod.total}" >
                                 <p:outputLabel value="#{prod.total}" >
+                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    
+                    <!-- Listado productos removidos por autorizaciones -->
+                    <p:panel id="pnTablaProdRep" header="Listado" style="margin-bottom:10px;" 
+                             rendered="#{not empty mbReporte.lstProdReporte}">
+                        <p:dataTable id="dtProdRep" var="prodRep" styleClass="table"
+                                     value="#{mbReporte.lstProdReporte}"
+                                     filteredValue="#{mbReporte.lstProdCupoSaldoFilter}"
+                                     rows="5"
+                                     paginator="true"   
+                                     widgetVar="prodRepTable"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15" >
+                            <f:facet name="header">
+                                <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar filtros" 
+                                         onclick="PF('prodRepTable').clearFilters()" update="dtProdRep"/>
+                                <h:commandLink>
+                                    <p:outputLabel value="Exportar listado" />
+                                    <p:dataExporter type="xls" target="dtProdRep" fileName="Productos removidos por autorización" />
+                                </h:commandLink>    
+                            </f:facet>
+                            <p:column headerText="Autorización" 
+                                filterMatchMode="contains"
+                                sortBy="#{prodRep.numero}" 
+                                filterBy="#{prodRep.numero}" >
+                                <p:outputLabel value="#{prodRep.numero}"/>
+                            </p:column>
+                            <p:column headerText="Especie" 
+                                filterMatchMode="contains"
+                                sortBy="#{prodRep.nombreVulgar}" 
+                                filterBy="#{prodRep.nombreVulgar}" >
+                                <p:outputLabel value="#{prodRep.nombreVulgar}"/>
+                            </p:column>
+                            <p:column headerText="#{config.Clase}" 
+                                filterMatchMode="contains"
+                                sortBy="#{prodRep.clase}" 
+                                filterBy="#{prodRep.clase}" >
+                                <p:outputLabel value="#{prodRep.clase}"/>
+                            </p:column>
+                            <p:column headerText="Unidad" 
+                                filterMatchMode="contains"
+                                sortBy="#{prodRep.unidad}" 
+                                filterBy="#{prodRep.unidad}" >
+                                <p:outputLabel value="#{prodRep.unidad}"/>
+                            </p:column>
+                            <p:column headerText="Total movido" style="text-align: right !important;"
+                                filterMatchMode="contains"
+                                sortBy="#{prodRep.saldo}" 
+                                filterBy="#{prodRep.saldo}" >
+                                <p:outputLabel value="#{prodRep.saldo}" >
                                     <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                 </p:outputLabel>
                             </p:column>
