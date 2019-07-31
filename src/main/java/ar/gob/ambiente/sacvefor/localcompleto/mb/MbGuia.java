@@ -1766,7 +1766,7 @@ public class MbGuia {
                 JsfUtil.addSuccessMessage("Se ha registrado la Fuente de Productos, puede continuar seleccionado la/s guía/s para descontar");
             }
         }else{
-            JsfUtil.addErrorMessage("La Autorización seleccionada tiene rodales asignados, debe vincular a la Guía al menos uno.");
+            JsfUtil.addErrorMessage("La Autorización seleccionada tiene " + ResourceBundle.getBundle("/Config").getString("Rodales") + " asignados, debe vincular a la Guía al menos uno.");
         }
     }
     
@@ -4108,9 +4108,9 @@ public class MbGuia {
                 String stRodales = "";
                 for(Rodal r : guia.getRodales()){
                     if(stRodales.equals("")){
-                        stRodales = Integer.toString(r.getNumOrden());
+                        stRodales = r.getNumOrden();
                     }else{
-                        stRodales = stRodales + "; " + Integer.toString(r.getNumOrden());
+                        stRodales = stRodales + "; " + r.getNumOrden();
                     }
                 }
                 parameters.put("rodales", stRodales);

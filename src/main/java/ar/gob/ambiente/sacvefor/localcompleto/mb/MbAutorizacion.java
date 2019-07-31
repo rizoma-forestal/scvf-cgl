@@ -113,6 +113,11 @@ public class MbAutorizacion {
     private List<Parametrica> lstUsosSuelo;
     
     /**
+     * Variable privada: Cuenca forestal para la Autorización
+     */
+    private List<Parametrica> lstCuencas;
+    
+    /**
      * Variable privada: Listado de Guías vinculadas a la Autorización
      */
     private List<Guia> lstGuias;
@@ -357,8 +362,16 @@ public class MbAutorizacion {
 
     ///////////////////////
     // Métodos de acceso //
-    ///////////////////////    
-    public List<Rodal> getRodalesDisponibles() {    
+    ///////////////////////
+    public List<Parametrica> getLstCuencas() {    
+        return lstCuencas;
+    }
+
+    public void setLstCuencas(List<Parametrica> lstCuencas) {    
+        this.lstCuencas = lstCuencas;
+    }
+
+    public List<Rodal> getRodalesDisponibles() {
         return rodalesDisponibles;
     }
 
@@ -710,10 +723,16 @@ public class MbAutorizacion {
      */
     @PostConstruct
     public void init(){
+        // tipos de autorización
         TipoParam tipo = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoInterv"));
         lstIntervenciones = paramFacade.getHabilitadas(tipo);
+        // modalidades
         tipo = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("UsoSuelo"));
         lstUsosSuelo = paramFacade.getHabilitadas(tipo);
+        // cuencas 
+        tipo = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("CuencaForestal"));
+        lstCuencas = paramFacade.getHabilitadas(tipo);
+        
         // obtento el usuario
         ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
         sesion = (MbSesion)ctx.getSessionMap().get("mbSesion");
@@ -1261,7 +1280,7 @@ public class MbAutorizacion {
             // Si el inmueble tiene rodales disponibles y la Autorización no asignó ninguno, no valida
             if(!rodalesDisponibles.isEmpty() && autorizacion.getRodales().isEmpty()){
                 valida = false;
-                JsfUtil.addErrorMessage("Debe vincular alguno de los rodales disponibles del " + ResourceBundle.getBundle("/Config").getString("Inmueble"));
+                JsfUtil.addErrorMessage("Debe vincular alguno de los " + ResourceBundle.getBundle("/Config").getString("Rodales") + " disponibles del " + ResourceBundle.getBundle("/Config").getString("Inmueble"));
             }   
         }
         
@@ -1670,6 +1689,48 @@ public class MbAutorizacion {
             }
         }
         view = true;
+    }
+    
+    /**
+     * Método para extender la vigencia de una Autorización.
+     * Valida que la nueva fecha sea posterior a la anterior
+     * y que se hayan registrado los motivos del cambio
+     * Extiende su fecha de vencimiento y guarda los motivos del cambio.
+     * Finalmente recarga la vista por defecto (intrumentoView)
+     */
+    public void extenderVenc(){
+        boolean valida = true;
+        String message = "";
+        
+        // obtengo la autorización sin cambios
+        Autorizacion a = autFacade.find(autorizacion.getId());
+        // valido que la nueva fecha sea posterior a la original
+        if(!autorizacion.getFechaVencAutoriz().after(a.getFechaVencAutoriz())){
+            valida = false;
+            message += "La nueva fecha de vencimiento debe ser posterior a la original. ";
+        }
+        
+        // valido que las observaciones se hayan modificado
+        if(autorizacion.getObs().equals(a.getObs())){
+            valida = false;
+            message += "Debe ingresar los motivos de la extensión de vigencia.";
+        }
+        
+        // si valida actualizo 
+        if(valida){
+            autFacade.edit(autorizacion);
+            cargarFrame("instrumentoView.xhtml");
+        }else{
+            JsfUtil.addErrorMessage(message);
+        }
+    }
+    
+    /**
+     * Método para limpiar los datos del formulario de extensión de vencimiento.
+     * Recarga la Autorización
+     */
+    public void limpiarFormExtend(){
+        autorizacion = autFacade.find(autorizacion.getId());
     }
     
     

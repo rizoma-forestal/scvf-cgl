@@ -22,7 +22,9 @@
                     <p:panel id="pnFrmBusqueda" header="Búsqueda por período" >
                         <p:outputLabel value="Desde aquí se podrá generar un listado con las distintas superficies vinculadas a las Autorizaciones discriminadas por tipo de intervención. 
                                        Podrá definir el Departamento en el que están ubicados los predios consultados y 
-                                       deberá especificar el inicio y fin del período a consultar." style="font-style: italic; font-size: small" />
+                                       deberá especificar el inicio y fin del período a consultar. Si discrimina por #{config.Rodales} 
+                                       debe tener presente que se asume un #{config.Rodal} por Autorización." 
+                                       style="font-style: italic; font-size: small" />
                         <h:panelGrid id="pgBusqueda" columns="2" >
                             <p:outputLabel value="Departamento" for="cmbDepto"/>   
                             <p:selectOneMenu id="cmbDepto" value="#{mbReporte.deptoSelected}" converter="omnifaces.SelectItemsConverter"  >
@@ -30,12 +32,16 @@
                                 <f:selectItems value="#{mbReporte.lstDepartamentos}" 
                                                var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
                             </p:selectOneMenu>  
+                            <p:outputLabel value="Discrimina #{config.Rodales}" for="discRod"/>
+                            <p:selectBooleanCheckbox id="discRod" value="#{mbReporte.conRodal}" />
                             <p:outputLabel value="Inicio: " for="per_inicio"/>
                             <p:calendar id="per_inicio" value="#{mbReporte.inicioPeriodo}" 
                                         required="true" requiredMessage="Debe indicar el inicio del período a consultar" />
                             <p:outputLabel value="Fin: " for="per_fin"/>
                             <p:calendar id="per_fin" value="#{mbReporte.finPeriodo}" 
                                         required="true" requiredMessage="Debe indicar el fin del período a consultar" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
                             <p:commandButton title="Obtener las superficies de autorizaciones" styleClass="save" icon="fa fa-fw fa-search" 
                                              value="Buscar" action="#{mbReporte.listarSupAut()}" update="frListAutSup,messages"/>
                             <p:commandButton title="Limpiar formulario" action="#{mbReporte.limpiarPeriodo()}" icon="fa fa-fw fa-refresh" value="Limpiar" >
@@ -70,35 +76,53 @@
                                     <p:dataExporter type="xls" target="dtSup" fileName="Superficies autorizadas" />
                                 </h:commandLink>    
                             </f:facet>
-                            <p:column headerText="Superficie total (Has.)" style="text-align: right !important; width: 200px" 
+                            <p:column headerText="Nombre del Titular" 
                                 filterMatchMode="contains"
-                                sortBy="#{sup.suptotal}" 
-                                filterBy="#{sup.suptotal}" >
-                                <p:outputLabel value="#{sup.suptotal}" >
+                                sortBy="#{sup.nombreTitular}" 
+                                filterBy="#{sup.nombreTitular}" >
+                                <p:outputLabel value="#{sup.nombreTitular}"/>
+                            </p:column>
+                            <p:column headerText="CUIT del Titular" 
+                                filterMatchMode="contains"
+                                sortBy="#{sup.cuitTitular}" 
+                                filterBy="#{sup.cuitTitular}" >
+                                <p:outputLabel value="#{sup.cuitTitular}"/>
+                            </p:column>
+                            <p:column headerText="Superficie total (Has.)" style="text-align: right !important; width: 150px" 
+                                filterMatchMode="contains"
+                                sortBy="#{sup.supTotal}" 
+                                filterBy="#{sup.supTotal}" >
+                                <p:outputLabel value="#{sup.supTotal}" >
                                     <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Superficie solicitada (Has.)" style="text-align: right !important; width: 200px"
+                            <p:column headerText="Superficie solicitada (Has.)" style="text-align: right !important; width: 150px"
                                 filterMatchMode="contains"
-                                sortBy="#{sup.supsol}" 
-                                filterBy="#{sup.supsol}" >
-                                <p:outputLabel value="#{sup.supsol}" >
+                                sortBy="#{sup.supSol}" 
+                                filterBy="#{sup.supSol}" >
+                                <p:outputLabel value="#{sup.supSol}" >
                                     <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Superficie autorizada (Has.)" style="text-align: right !important; width: 200px" 
+                            <p:column headerText="Superficie autorizada (Has.)" style="text-align: right !important; width: 150px" 
                                 filterMatchMode="contains"
-                                sortBy="#{sup.supaut}" 
-                                filterBy="#{sup.supaut}" >
-                                <p:outputLabel value="#{sup.supaut}" >
+                                sortBy="#{sup.supAut}" 
+                                filterBy="#{sup.supAut}" >
+                                <p:outputLabel value="#{sup.supAut}" >
                                     <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Intervención autorizada" 
+                            <p:column headerText="Dpartamento" 
                                 filterMatchMode="contains"
-                                sortBy="#{sup.tipoint}" 
-                                filterBy="#{sup.tipoint}" >
-                                <p:outputLabel value="#{sup.tipoint}"/>
+                                sortBy="#{sup.depto}" 
+                                filterBy="#{sup.depto}" >
+                                <p:outputLabel value="#{sup.depto}"/>
+                            </p:column>
+                            <p:column headerText="#{config.Rodal}" rendered="#{mbReporte.conRodal}" 
+                                filterMatchMode="contains"
+                                sortBy="#{sup.numOrden}" 
+                                filterBy="#{sup.numOrden}" >
+                                <p:outputLabel value="#{sup.numOrden}"/>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

@@ -17,7 +17,7 @@
                     <p:outputLabel styleClass="titPanel" value="Listado de #{config.Autorizaciones}" />
                 </h:panelGrid>
                 
-                <p:dialog header="Rodales asignados" widgetVar="dlgVerRodales" minHeight="40" closable="false">
+                <p:dialog header="#{config.Rodales} asignados" widgetVar="dlgVerRodales" minHeight="40" closable="false">
                     <h:form prependId="false" id="frAgregarRodal">
                         <p:panel id="pnDlgView" style="margin-bottom:10px; width: 220px">
                             <h:panelGrid columns="1" >
@@ -153,7 +153,7 @@
                                         <f:convertNumber type="currency"  currencySymbol=""/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Rodales" rendered="#{config.GestionaRodales eq 'si'}" style="width: 50px" >
+                                <p:column headerText="#{config.Rodales}" rendered="#{config.GestionaRodales eq 'si'}" style="width: 60px" >
                                     <p:commandButton title="Ver rodales asignados" icon="fa fa-fw fa-search" 
                                                      oncomplete="PF('dlgVerRodales').show();" update="frAgregarRodal"/>
                                 </p:column>

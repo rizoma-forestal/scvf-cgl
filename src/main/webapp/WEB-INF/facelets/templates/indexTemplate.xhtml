@@ -111,6 +111,11 @@
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}" />
                             </p:submenu>
                             <p:submenu label="#{config.Reportes}" rendered="#{mbSesion.usuario.rol.nombre ne config.Administrador}" >
+                                <p:menuitem value="#{config.RepCuposYSaldos}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Reportes}/cuposYSaldos.xhtml" 
+                                            rendered="#{(mbSesion.usuario.rol.nombre eq config.RegAut 
+                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas 
+                                                        or mbSesion.usuario.rol.nombre eq config.Consulta)
+                                                        and config.emiteRemota ne 'si'}" />
                                 <p:menuitem value="#{config.RepProductosAutorizados}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.Reportes}/autProductos.xhtml" 
                                             rendered="#{(mbSesion.usuario.rol.nombre eq config.RegAut 
                                                         or mbSesion.usuario.rol.nombre eq config.Pruebas 

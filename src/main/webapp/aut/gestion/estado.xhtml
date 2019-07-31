@@ -36,7 +36,7 @@
                 </h:panelGrid>
                 <h:panelGrid columns="3" rendered="#{mbAutorizacion.editEstado}" >
                     <p:commandButton title="Actualizar el Estado de la Autorización" styleClass="save" icon="fa fa-fw fa-save" 
-                                     value="Guardar" action="#{mbAutorizacion.actualizarEstado()}" update="frEstado,messages"/>
+                                     value="Guardar" action="#{mbAutorizacion.actualizarEstado()}" update="frEstado,pMenuIndex,frame,messages"/>
                     <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
                         <p:ajax update="pnGral" resetValues="true" />
                     </p:commandButton>

@@ -11,7 +11,7 @@
             <p:outputLabel style="font-size: 25px !important; color: #8A0829" value="(CANCELADA)" rendered="#{mbGuia.guia.estado.nombre eq config.GuiaCancelada}" />
         </h:panelGrid>
         
-        <p:dialog header="Rodales asignados" widgetVar="dlgVerRodales" minHeight="40" closable="false">
+        <p:dialog header="#{config.Rodales} asignados" widgetVar="dlgVerRodales" minHeight="40" closable="false">
             <h:form prependId="false" id="frAgregarRodal">
                 <p:panel id="pnDlgView" style="margin-bottom:10px; width: 220px">
                     <h:panelGrid columns="1" >
@@ -253,8 +253,8 @@
                                 <f:convertNumber maxFractionDigits="4" type="currency"  currencySymbol=""/>
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Rodales" rendered="#{config.GestionaRodales eq 'si'}" style="width: 50px" >
-                            <p:commandButton title="Ver rodales asignados" icon="fa fa-fw fa-search"
+                        <p:column headerText="#{config.Rodales}" rendered="#{config.GestionaRodales eq 'si'}" style="width: 60px" >
+                            <p:commandButton title="Ver #{config.Rodales} asignados" icon="fa fa-fw fa-search"
                                              action="#{mbGuia.prepareViewRodalesAsignados()}"
                                              oncomplete="PF('dlgVerRodales').show();" update="frAgregarRodal"/>
                         </p:column>

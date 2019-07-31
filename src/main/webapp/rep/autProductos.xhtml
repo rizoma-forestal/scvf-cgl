@@ -30,12 +30,21 @@
                                 <f:selectItems value="#{mbReporte.lstDepartamentos}" 
                                                var="depto" itemLabel="#{depto.nombre}" itemValue="#{depto}"/>
                             </p:selectOneMenu>  
+                            <p:outputLabel value="Tipo de Intervención" for="cmbInterv"/>
+                            <p:selectOneMenu id="cmbInterv" value="#{mbReporte.intervSelected}" converter="omnifaces.SelectItemsConverter" 
+                                             required="true" requiredMessage="Debe seleccionar un Tipo de Intervención" >
+                                <f:selectItem itemLabel="Seleccione el Tipo de Intervención" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbReporte.lstTipoInterv}" 
+                                               var="tipoInt" itemLabel="#{tipoInt.nombre}" itemValue="#{tipoInt}"/>
+                            </p:selectOneMenu>
                             <p:outputLabel value="Inicio: " for="per_inicio"/>
                             <p:calendar id="per_inicio" value="#{mbReporte.inicioPeriodo}" 
                                         required="true" requiredMessage="Debe indicar el inicio del período a consultar" />
                             <p:outputLabel value="Fin: " for="per_fin"/>
                             <p:calendar id="per_fin" value="#{mbReporte.finPeriodo}" 
                                         required="true" requiredMessage="Debe indicar el fin del período a consultar" />
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" >
                             <p:commandButton title="Buscar los productos movidos durante el período configurado" styleClass="save" icon="fa fa-fw fa-search" 
                                              value="Buscar" action="#{mbReporte.listarProdAutorizados()}" update="frListMovProd,messages"/>
                             <p:commandButton title="Limpiar formulario" action="#{mbReporte.limpiarPeriodo()}" icon="fa fa-fw fa-refresh" value="Limpiar" >
@@ -55,7 +64,7 @@
                     <p:panel id="pnTabla" header="Listado" style="margin-bottom:10px;" 
                              rendered="#{not empty mbReporte.lstProdAut}">
                         <p:dataTable id="dtProd" var="prod" styleClass="table"
-                                     value="#{mbReporte.lstProdAut  }"
+                                     value="#{mbReporte.lstProdAut}"
                                      filteredValue="#{mbReporte.lstProdFilter}"
                                      rows="5"
                                      paginator="true"   
@@ -70,11 +79,41 @@
                                     <p:dataExporter type="xls" target="dtProd" fileName="Productos autorizados" />
                                 </h:commandLink>    
                             </f:facet>
-                            <p:column headerText="Especie" 
+                            <p:column headerText="Nombre Titular" 
                                 filterMatchMode="contains"
-                                sortBy="#{prod.nombreVulgar}" 
-                                filterBy="#{prod.nombreVulgar}" >
-                                <p:outputLabel value="#{prod.nombreVulgar}"/>
+                                sortBy="#{prod.nombreCompleto}" 
+                                filterBy="#{prod.nombreCompleto}" >
+                                <p:outputLabel value="#{prod.nombreCompleto}"/>
+                            </p:column>
+                            <p:column headerText="CUIT Titular" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.cuit}" 
+                                filterBy="#{prod.cuit}" >
+                                <p:outputLabel value="#{prod.cuit}"/>
+                            </p:column>
+                            <p:column headerText="N° Autorización" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.numAut}" 
+                                filterBy="#{prod.numAut}" >
+                                <p:outputLabel value="#{prod.numAut}"/>
+                            </p:column>
+                            <p:column headerText="Nombre inmueble" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.nombreInm}" 
+                                filterBy="#{prod.nombreInm}" >
+                                <p:outputLabel value="#{prod.nombreInm}"/>
+                            </p:column>
+                            <p:column headerText="id Catastral" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.idCastastral}" 
+                                filterBy="#{prod.idCastastral}" >
+                                <p:outputLabel value="#{prod.idCastastral}"/>
+                            </p:column>
+                            <p:column headerText="Departamento" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.depto}" 
+                                filterBy="#{prod.depto}" >
+                                <p:outputLabel value="#{prod.depto}"/>
                             </p:column>
                             <p:column headerText="#{config.Clase}" 
                                 filterMatchMode="contains"
@@ -82,19 +121,39 @@
                                 filterBy="#{prod.clase}" >
                                 <p:outputLabel value="#{prod.clase}"/>
                             </p:column>
+                            <p:column headerText="Especie" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.especie}" 
+                                filterBy="#{prod.especie}" >
+                                <p:outputLabel value="#{prod.especie}"/>
+                            </p:column>
+                            <p:column headerText="Total autorizado" style="text-align: right !important;"
+                                filterMatchMode="contains"
+                                sortBy="#{prod.cupo}" 
+                                filterBy="#{prod.cupo}" >
+                                <p:outputLabel value="#{prod.cupo}" >
+                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Saldo disponible" style="text-align: right !important;"
+                                filterMatchMode="contains"
+                                sortBy="#{prod.saldo}" 
+                                filterBy="#{prod.saldo}" >
+                                <p:outputLabel value="#{prod.saldo}" >
+                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
+                                </p:outputLabel>
+                            </p:column>
                             <p:column headerText="Unidad" 
                                 filterMatchMode="contains"
                                 sortBy="#{prod.unidad}" 
                                 filterBy="#{prod.unidad}" >
                                 <p:outputLabel value="#{prod.unidad}"/>
                             </p:column>
-                            <p:column headerText="Total autorizado" style="text-align: right !important;"
+                            <p:column headerText="Cuenca" 
                                 filterMatchMode="contains"
-                                sortBy="#{prod.total}" 
-                                filterBy="#{prod.total}" >
-                                <p:outputLabel value="#{prod.total}" >
-                                    <f:convertNumber type="currency"  currencySymbol="" minFractionDigits="2"/>
-                                </p:outputLabel>
+                                sortBy="#{prod.cuenca}" 
+                                filterBy="#{prod.cuenca}" >
+                                <p:outputLabel value="#{prod.cuenca}"/>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

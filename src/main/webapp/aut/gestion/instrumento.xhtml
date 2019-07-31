@@ -64,11 +64,18 @@
                                     required="true" requiredMessage="Debe especificar la fecha de vencimiento de la Autorización." />
                         <p:outputLabel value="Modalidad:" for="cmbUsoSuelo"/>
                         <p:selectOneMenu id="cmbUsoSuelo" value="#{mbAutorizacion.autorizacion.usoSuelo}" required="true" 
-                                         requiredMessage="Debe seleccionar el uso del suelo del predio." >
+                                         requiredMessage="Debe seleccionar la modalidad." >
                             <f:selectItem itemLabel="Seleccione la Modalidad" itemValue="" noSelectionOption="true"/>
                             <f:selectItems value="#{mbAutorizacion.lstUsosSuelo}" 
                                            var="uso" itemLabel="#{uso.nombre}" itemValue="#{uso}"/>
                         </p:selectOneMenu> 
+                        <p:outputLabel value="Cuenca forestal:" for="cmbCuenca"/>
+                        <p:selectOneMenu id="cmbCuenca" value="#{mbAutorizacion.autorizacion.cuencaForestal}" >
+                            <f:selectItem itemLabel="Seleccione la Cuenca forestal" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{mbAutorizacion.lstCuencas}" 
+                                           var="cuenca" itemLabel="#{cuenca.nombre}" itemValue="#{cuenca}"/>
+                        </p:selectOneMenu> 
+                        
                     </h:panelGrid>
                 </p:fieldset>
                 <p:fieldset toggleable="true" legend="Predio" style="margin-bottom:20px" >

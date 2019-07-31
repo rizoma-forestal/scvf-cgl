@@ -2,11 +2,14 @@
 package ar.gob.ambiente.sacvefor.localcompleto.entities;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * Entidad que encapsula las características de un rodal,
@@ -25,9 +28,13 @@ public class Rodal implements Serializable {
     private Long id;
     
     /**
-     * Variable privada: Número de orden del rodal
+     * Variable privada: Número de orden del rodal.
+     * Originalmente int, a pedido de Misiones se lo llevó a un String
      */
-    private int numOrden;
+    @Column (nullable=false, length=30)
+    @NotNull(message = "El campo numOrden no puede ser nulo")
+    @Size(message = "El campo numOrden no puede tener más de 30 caracteres", min = 1, max = 30)     
+    private String numOrden;
     
     /**
      * Variable privada: Flag que indica si el rodal listado 
@@ -46,11 +53,11 @@ public class Rodal implements Serializable {
         this.asignado = asignado;
     }
 
-    public int getNumOrden() {
+    public String getNumOrden() {
         return numOrden;
     }
 
-    public void setNumOrden(int numOrden) {
+    public void setNumOrden(String numOrden) {
         this.numOrden = numOrden;
     }
 

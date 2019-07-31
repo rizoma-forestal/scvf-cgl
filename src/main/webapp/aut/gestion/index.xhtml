@@ -29,6 +29,14 @@
                                             actionListener="#{mbAutorizacion.cargarFrame('productos.xhtml')}" />
                                 <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="#{config.Estado}"
                                             actionListener="#{mbAutorizacion.cargarFrame('estado.xhtml')}" />
+                                
+                                
+                                <p:menuitem disabled="#{mbAutorizacion.autorizacion.id eq null or mbAutorizacion.edit}" update="frame" ajax="true" value="Extender vigencia"
+                                            actionListener="#{mbAutorizacion.cargarFrame('extender.xhtml')}" 
+                                            rendered="#{mbAutorizacion.autorizacion.estado.codigo eq config.AutHabilitado
+                                                        and mbSesion.usuario.rol.nombre ne config.Consulta}" />
+                                
+                                
                             </p:submenu>
                             <p:submenu styleClass="hMenu" label="Auditorías" rendered="false" >
 

@@ -5,6 +5,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Guia;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ItemProductivo;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -181,6 +182,32 @@ public class ItemProductivoFacade extends AbstractFacade<ItemProductivo> {
                 + "AND item.habilitado = true";
         Query q = em.createQuery(queryString)
                 .setParameter("extraidos", extraidos);
+        return q.getResultList();
+    }
+    
+    /**
+     * Método para obtener los productos removidos durante un período determinado, 
+     * según la autorización que sirvió de fuente
+     * @param inicio Date fecha límite de inicio del período dentro del cual se emitieron las guías que transportaron los productos
+     * @param fin Date fecha límite de fin del período dentro del cual se emitieron las guías que transportaron los productos
+     * @return List<Object[]> matriz con los datos obtenidos
+     */
+    public List<Object[]> getExtraidosSegunAut(Date inicio, Date fin){
+        String queryString = "SELECT g.numfuente, item.nombrevulgar, item.clase, item.unidad, SUM(item.saldo) AS total "
+                + "FROM itemproductivo item "
+                + "INNER JOIN guia g ON g.id = item.guia_id "
+                + "INNER JOIN tipoguia tipo ON tipo.id = g.tipo_id "
+                + "INNER JOIN entidadguia entguia ON g.origen_id = entguia.id "
+                + "INNER JOIN estadoguia estguia ON estguia.id = g.estado_id "
+                + "WHERE tipo.habilitatransp = true "
+                + "AND g.fechaemisionguia >= ?1 "
+                + "AND g.fechaemisionguia <= ?2 "
+                + "AND (estguia.nombre = 'EMITIDA' OR estguia.nombre = 'CERRADA') "
+                + "GROUP BY g.numfuente, item.nombrevulgar, item.clase, item.unidad "
+                + "ORDER BY g.numfuente, item.nombrevulgar";
+        Query q = em.createNativeQuery(queryString)
+                .setParameter(1, inicio)
+                .setParameter(2, fin);
         return q.getResultList();
     }
     

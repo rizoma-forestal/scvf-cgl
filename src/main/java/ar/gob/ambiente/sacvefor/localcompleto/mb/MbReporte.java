@@ -1,14 +1,16 @@
 
 package ar.gob.ambiente.sacvefor.localcompleto.mb;
 
-import ar.gob.ambiente.sacvefor.localcompleto.entities.AutSupConsulta;
-import ar.gob.ambiente.sacvefor.localcompleto.entities.Autorizacion;
-import ar.gob.ambiente.sacvefor.localcompleto.entities.ItemProductivo;
+import ar.gob.ambiente.sacvefor.localcompleto.util.AutSupConsulta;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.AutorizacionFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.GuiaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.util.EntidadServicio;
 import ar.gob.ambiente.sacvefor.localcompleto.util.JsfUtil;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProdConsulta;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.ItemProductivoFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.util.ProdAutorizado;
+import ar.gob.ambiente.sacvefor.localcompleto.util.ProdReporte;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +38,17 @@ public class MbReporte {
     /**
      * Variable privada: listado de productos autorizados
      */
-    private List<ProdConsulta> lstProdAut;
+    private List<ProdAutorizado> lstProdAut;
+    
+    /**
+     * Variable privada: listado cupos y saldos de productos autorizados
+     */
+    private List<ProdReporte> lstProdReporte;
+    
+    /**
+     * Variable privada: listado para filtrar los cupos y saldos de productos autorizados
+     */
+    private List<ProdReporte> lstProdCupoSaldoFilter;
     
     /**
      * Variable privada: listado para mostrar los productos removidos por departamento
@@ -46,7 +58,7 @@ public class MbReporte {
     /**
      * Variable privada: listado para filtrar los productos removidos por departamento
      */
-    private List<ProdConsulta> lstProdFilter;    
+    private List<ProdAutorizado> lstProdFilter;    
     
     /**
      * Variable privada: Listado de entidades de servicio con el id y nombre para los Departamentos
@@ -57,6 +69,21 @@ public class MbReporte {
      * Variable privada: departamento seleccionado del combo para consultar
      */
     private EntidadServicio deptoSelected;
+    
+    /**
+     * Variable privada: flag que indica si el reporte de superficies autorizadas discrimina rodal o no
+     */
+    private boolean conRodal;
+    
+    /**
+     * Variable privada: tipo de intervención seleccionada
+     */
+    private EntidadServicio intervSelected;
+    
+    /**
+     * Variable privada: listado de tipos de intervenciones autorizadas
+     */
+    private List<EntidadServicio> lstTipoInterv;
     
     /**
      * Variable privada: boolean indica si la consulta realizada no brindó resultados
@@ -121,6 +148,52 @@ public class MbReporte {
      */      
     @EJB
     private AutorizacionFacade autFacade;
+    
+    /**
+     * Variable privada: EJB inyectado para el acceso a datos de ItemProductivo
+     */
+    @EJB
+    private ItemProductivoFacade itemFacade;
+
+    public boolean isConRodal() {
+        return conRodal;
+    }
+
+    public void setConRodal(boolean conRodal) {
+        this.conRodal = conRodal;
+    }
+
+    public List<ProdReporte> getLstProdCupoSaldoFilter() {
+        return lstProdCupoSaldoFilter;
+    }
+
+    public void setLstProdCupoSaldoFilter(List<ProdReporte> lstProdCupoSaldoFilter) {
+        this.lstProdCupoSaldoFilter = lstProdCupoSaldoFilter;
+    }
+
+    public List<EntidadServicio> getLstTipoInterv() {
+        return lstTipoInterv;
+    }
+
+    public void setLstTipoInterv(List<EntidadServicio> lstTipoInterv) {
+        this.lstTipoInterv = lstTipoInterv;
+    }
+
+    public EntidadServicio getIntervSelected() {
+        return intervSelected;
+    }
+
+    public void setIntervSelected(EntidadServicio intervSelected) {
+        this.intervSelected = intervSelected;
+    }
+
+    public List<ProdReporte> getLstProdReporte() {
+        return lstProdReporte;
+    }
+
+    public void setLstProdReporte(List<ProdReporte> lstProdReporte) {
+        this.lstProdReporte = lstProdReporte;
+    }
 
     public float getTotalProdRemovidos() {
         return totalProdRemovidos;
@@ -186,11 +259,11 @@ public class MbReporte {
         this.lstAutSupFilter = lstAutSupFilter;
     }
 
-    public List<ProdConsulta> getLstProdAut() {
+    public List<ProdAutorizado> getLstProdAut() {
         return lstProdAut;
     }
 
-    public void setLstProdAut(List<ProdConsulta> lstProdAut) {
+    public void setLstProdAut(List<ProdAutorizado> lstProdAut) {
         this.lstProdAut = lstProdAut;
     }
 
@@ -210,11 +283,11 @@ public class MbReporte {
         this.lstProdMovidos = lstProdMovidos;
     }
 
-    public List<ProdConsulta> getLstProdFilter() {
+    public List<ProdAutorizado> getLstProdFilter() {
         return lstProdFilter;
     }
 
-    public void setLstProdFilter(List<ProdConsulta> lstProdFilter) {
+    public void setLstProdFilter(List<ProdAutorizado> lstProdFilter) {
         this.lstProdFilter = lstProdFilter;
     }
 
@@ -262,20 +335,32 @@ public class MbReporte {
         lstBusqueda = new ArrayList<>();
         lstBusqueda.add(new EntidadServicio(Long.valueOf(1), "por Departamento de Origen"));
         lstBusqueda.add(new EntidadServicio(Long.valueOf(2), "por Producto removido"));
-        lstBusqueda.add(new EntidadServicio(Long.valueOf(3), "total de madera removida"));
+        lstBusqueda.add(new EntidadServicio(Long.valueOf(3), "por Autorizaciones"));
+        lstBusqueda.add(new EntidadServicio(Long.valueOf(4), "total de madera removida"));
         
-        // pueblo el combo de departamentos
+        // pueblo el combo de departamentos y el combo de tipos de intervención
         try{
             // obtengo los departamentos de las guías emitidas
-            List<String> deptos = guiaFacade.findDeptoByOrigen();
+            List<Object> deptos = autFacade.findDeptoByOrigen();
             // pueblo el listado de EntidadServicio para el combo
             int i = 0;
             lstDepartamentos = new ArrayList<>();
-            for(String depto : deptos){
+            for(Object depto : deptos){
                 i += 1;
-                EntidadServicio dptSrv = new EntidadServicio(Long.valueOf(i), depto);
+                EntidadServicio dptSrv = new EntidadServicio(Long.valueOf(i), depto.toString());
                 lstDepartamentos.add(dptSrv);
             }
+            
+            // obtengo los tipos de intervención autorizadas
+            List<Parametrica> tipoInts = autFacade.findTiposIntervAut();
+            // pueblo el listado de EntidadServicio para el combo
+            lstTipoInterv = new ArrayList<>();
+            for (Parametrica ti : tipoInts){
+                EntidadServicio tipo = new EntidadServicio(ti.getId(), ti.getNombre());
+                lstTipoInterv.add(tipo);
+            }
+
+            
         }catch(ClientErrorException ex){
             JsfUtil.addErrorMessage("Hubo un error cargando el listado de Departamentos de la Provincia para su selección.");
             LOG.fatal("Hubo un error cargando los Departamentos. " + ex.getMessage());
@@ -289,6 +374,7 @@ public class MbReporte {
     public void busqChangeListener(){
         lstProdMovidos = new ArrayList<>();
         lstProdABuscar = new ArrayList<>();
+        lstProdReporte = new ArrayList<>();
         totalProdRemovidos = -1;
     }
     
@@ -304,6 +390,52 @@ public class MbReporte {
             LOG.fatal("Hubo un error cargando los Productos removidos para el listado de reporte. " + ex.getMessage());
         }
     }    
+    
+    /**
+     * Método para listar los productos removidos según la Autorización
+     * según las fechas que definen el período durante el cual se emitieron las guías
+     * agrupados por según el número de la autorización, la especie local, la clase, unidad y el total
+     */
+    public void listarPorAut(){
+        List<Object[]> result;
+        lstProdReporte = new ArrayList<>();
+        sinResultados = false;
+        //pueblo el listado
+        result = itemFacade.getExtraidosSegunAut(inicioPeriodo, finPeriodo);
+        
+        if(result.isEmpty()){
+            // si no hay resultados seteo el flag
+            sinResultados = true;
+        }else{
+            for (Object[] data : result){
+                int i = 0;
+                ProdReporte cupoSaldo = new ProdReporte();
+                for (Object f : data){
+                    if(f != null){
+                        switch (i){
+                            case 0:
+                                cupoSaldo.setNumero(f.toString());
+                                break;
+                            case 1:
+                                cupoSaldo.setNombreVulgar(f.toString());
+                                break;
+                            case 2:
+                                cupoSaldo.setClase(f.toString());
+                                break;
+                            case 3:
+                                cupoSaldo.setUnidad(f.toString());
+                                break;
+                            default:
+                                cupoSaldo.setSaldo(Float.parseFloat(f.toString()));
+                                break;
+                        }   
+                    }
+                    i += 1;
+                }
+                lstProdReporte.add(cupoSaldo);
+            }
+        }
+    }
     
     /**
      * Método para listar los productos removidos por departamento.
@@ -372,63 +504,184 @@ public class MbReporte {
     }    
     
     /**
-     * Método para obtener un listado con todos los productos autoririzados según las Autorizaciones registradas
+     * Método para obtener un listado con todos los productos autorizados según las Autorizaciones registradas
      * durante el período de tiempo definido por el usuario, sea por departamento o para toda la provincia.
-     * Obtiene todas las Autorizaciones de ellas sus items, por cada uno va obeteniendo y guardando los id de los productos en un listado.
+     * Obtiene un listado de objetos y lo recorre instanciando cada ProdAutorizado y agregandolo al listado
      * Finalmente, recorre el listado de productos y consulta los totales autorizados según corresponda.
      */
     public void listarProdAutorizados(){
-        // listado para los códigos de productos
-        List<Long> lstCodProd = new ArrayList<>();
-        // intancio el listado 
+        List<Object[]> result;
         lstProdAut = new ArrayList<>();
-        // completo el listado de autorizaciones según el inicio y fin del príodo definido de su habilitación 
-        // y si es para toda la provincia o para un departamento
-        List<Autorizacion> lstAut;
+        sinResultados = false;
+        // sigo según haya o no un departamento seleccionado
         if(deptoSelected != null){
-            lstAut = autFacade.getByFechaAltaDepto(inicioPeriodo, finPeriodo, deptoSelected.getNombre());
+            result = autFacade.getProdAutDepto(inicioPeriodo, finPeriodo, intervSelected.getId(), deptoSelected.getNombre());
         }else{
-            lstAut = autFacade.getByFechaAlta(inicioPeriodo, finPeriodo);
+            result = autFacade.getProdAut(inicioPeriodo, finPeriodo, intervSelected.getId());
         }
-        // recorro las guías y sus items para guardar los productos incluidos en ellas
-        for(Autorizacion a : lstAut){
-            for (ItemProductivo i : a.getItems()){
-                if(!lstCodProd.contains(i.getIdProd())){
-                    // solo guardo el id del producto una vez
-                    lstCodProd.add(i.getIdProd());
+        if(result.isEmpty()){
+            sinResultados = true;
+        }else{
+            for (Object[] data : result){
+                int i = 0;
+                ProdAutorizado prodAut = new ProdAutorizado();
+                for (Object f : data){
+                    if(f != null){
+                        switch (i){
+                            case 0:
+                                prodAut.setNombreCompleto(f.toString());
+                                break;
+                            case 1:
+                                prodAut.setCuit(Long.valueOf(f.toString()));
+                                break;
+                            case 2:
+                                prodAut.setNumAut(f.toString());
+                                break;
+                            case 3:
+                                prodAut.setNombreInm(f.toString());
+                                break;
+                            case 4:
+                                prodAut.setIdCastastral(f.toString());
+                                break;
+                            case 5:
+                                prodAut.setDepto(f.toString());
+                                break;
+                            case 6:
+                                prodAut.setClase(f.toString());
+                                break;
+                            case 7:
+                                prodAut.setEspecie(f.toString());
+                                break;
+                            case 8:
+                                prodAut.setCupo(Float.parseFloat(f.toString()));
+                                break;
+                            case 9:
+                                prodAut.setSaldo(Float.parseFloat(f.toString()));
+                                break;
+                            case 10:
+                                prodAut.setUnidad(f.toString());
+                                break;
+                            default:
+                                prodAut.setCuenca(f.toString());
+                        }
+                    }
+                    i += 1;
                 }
-            }    
-        }
-        // recorro el listado de códigos de productos y por cada uno consulto y agrego al listado de productos movidos
-        for(Long idProd : lstCodProd){
-            if(deptoSelected != null){
-                // si hay departamento seleccionado consulto por departamento
-                ProdConsulta prod = autFacade.getProdDeptoQuery(inicioPeriodo, finPeriodo, deptoSelected.getNombre(), idProd);
-                lstProdAut.add(prod);
-            }else{
-                // si no, consulto para toda la provincia
-                ProdConsulta prod = autFacade.getProdQuery(inicioPeriodo, finPeriodo, idProd);
-                lstProdAut.add(prod);
+                lstProdAut.add(prodAut);
             }
         }
-        
-        // seteo el flag si no hubo resultados
-        if(lstProdAut.isEmpty()) sinResultados = true;
+    }
+    
+    /**
+     * Método para listar cupos, descuentos por extracción y saldos de productos,
+     * según las fechas para la autorización, el tipo de intervención y el departamento
+     * agrupados por según la clase, unidad, cuenca, departamento y autorización
+     */
+    public void listarCuposYSaldos(){
+        List<Object[]> result;
+        lstProdReporte = new ArrayList<>();
+        sinResultados = false;
+        // sigo según haya o no un departamento seleccionado
+        if(deptoSelected != null){
+            result = autFacade.getCuposSaldosByDepto(inicioPeriodo, finPeriodo, intervSelected.getId(), deptoSelected.getNombre());
+        }else{
+            result = autFacade.getCuposSaldos(inicioPeriodo, finPeriodo, intervSelected.getId());
+        }
+        if(result.isEmpty()){
+            sinResultados = true;
+        }else{
+            for (Object[] data : result){
+                int i = 0;
+                ProdReporte cupoSaldo = new ProdReporte();
+                for (Object f : data){
+                    if(f != null){
+                        switch (i){
+                            case 0:
+                                cupoSaldo.setNumero(f.toString());
+                                break;
+                            case 1:
+                                cupoSaldo.setClase(f.toString());
+                                break;
+                            case 2:
+                                cupoSaldo.setCupo(Float.parseFloat(f.toString()));
+                                break;
+                            case 3:
+                                cupoSaldo.setSaldo(Float.parseFloat(f.toString()));
+                                break;
+                            case 4:
+                                cupoSaldo.setUnidad(f.toString());
+                                break;
+                            case 5:
+                                cupoSaldo.setCuenca(f.toString());
+                                break;
+                            default:
+                                cupoSaldo.setDepartamento(f.toString());
+                                break;
+                        }   
+                    }
+                    i += 1;
+                }
+                lstProdReporte.add(cupoSaldo);
+            }
+        }
     }
     
     /**
      * Método para obtener un listado de superficies (total, solicitada y autorizada) según el tipo de intervención y el departamento
      */
     public void listarSupAut(){
-        // según haya seleccionado o no un departamento, hago la consulta correspondiente.
-        if(deptoSelected != null){
-            lstAutSup = autFacade.getSupGralDepto(inicioPeriodo, finPeriodo, deptoSelected.getNombre());
+        List<Object[]> result;
+        lstAutSup = new ArrayList<>();
+        sinResultados = false;        
+        // según haya seleccionado o no un departamento o la opción para discriminar rodal, hago la consulta correspondiente.
+        if(deptoSelected == null && !conRodal){
+            result = autFacade.getSupGralSinRodal(inicioPeriodo, finPeriodo);
+        }else if(deptoSelected != null && !conRodal){
+            result = autFacade.getSupGralDeptoSinRodal(inicioPeriodo, finPeriodo, deptoSelected.getNombre());
+        }else if(deptoSelected == null && conRodal){
+            result = autFacade.getSupGralConRodal(inicioPeriodo, finPeriodo);
         }else{
-            lstAutSup = autFacade.getSupGral(inicioPeriodo, finPeriodo);
+            result = autFacade.getSupGralDeptoConRodal(inicioPeriodo, finPeriodo, deptoSelected.getNombre());
         }
-        
-        // seteo el flag si no hubo resultados
-        if(lstAutSup.isEmpty()) sinResultados = true;
+        // si no hubo resultados seteo el flag
+        if(result.isEmpty()){
+            sinResultados = true;
+        }else{
+            // recorro el listado
+            for (Object[] data : result){
+                int i = 0;
+                AutSupConsulta supCons = new AutSupConsulta();
+                for (Object f : data){
+                    if(f != null){
+                        switch (i){
+                            case 0:
+                                supCons.setNombreTitular(f.toString());
+                                break;
+                            case 1:
+                                supCons.setCuitTitular(Long.valueOf(f.toString()));
+                                break;
+                            case 2:
+                                supCons.setSupTotal(Float.parseFloat(f.toString()));
+                                break;
+                            case 3:
+                                supCons.setSupSol(Float.parseFloat(f.toString()));
+                                break;
+                            case 4:
+                                supCons.setSupAut(Float.parseFloat(f.toString()));
+                                break;
+                            case 5:
+                                supCons.setDepto(f.toString());
+                                break;
+                            default:
+                                supCons.setNumOrden(f.toString());
+                                break;
+                        }   
+                    }
+                    i += 1;
+                }
+                lstAutSup.add(supCons);
+            }
+        }
     }
     
     /**
@@ -446,6 +699,9 @@ public class MbReporte {
             lstProdMovidos.clear();
         }
         if(lstAutSup != null){
+            lstAutSup.clear();
+        }
+        if(lstProdReporte != null){
             lstAutSup.clear();
         }
     }
