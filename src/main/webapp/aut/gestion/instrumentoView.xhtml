@@ -37,8 +37,9 @@
                         <p:outputLabel value="#{mbAutorizacion.autorizacion.intervencion.nombre}" style=" font-weight: bold" />
                         <p:outputLabel value="Modalidad: " />
                         <p:outputLabel value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold" />
-                        <p:outputLabel value="Cuenca forestal: " />
-                        <p:outputLabel value="#{mbAutorizacion.autorizacion.cuencaForestal.nombre}" style=" font-weight: bold" />
+                        <p:outputLabel value="Cuenca forestal: " rendered="#{mbAutorizacion.autorizacion.cuencaForestal ne null}" />
+                        <p:outputLabel value="#{mbAutorizacion.autorizacion.cuencaForestal.nombre}" style=" font-weight: bold" 
+                                       rendered="#{mbAutorizacion.autorizacion.cuencaForestal ne null}" />
                         <p:outputLabel value="Fecha vencimiento: " />
                         <p:outputLabel value="#{mbAutorizacion.autorizacion.fechaVencAutoriz}" style=" font-weight: bold" >
                             <f:convertDateTime pattern="dd/MM/yyyy" />

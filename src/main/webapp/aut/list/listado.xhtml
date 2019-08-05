@@ -73,6 +73,9 @@
                             <p:outputLabel id="interv" value="#{mbAutorizacion.autorizacion.intervencion.nombre}" style=" font-weight: bold"/>
                             <p:outputLabel value="Modalidad: " for="uso"/>
                             <p:outputLabel id="uso" value="#{mbAutorizacion.autorizacion.usoSuelo.nombre}" style=" font-weight: bold"/>
+                            <p:outputLabel value="Cuenca forestal: " rendered="#{mbAutorizacion.autorizacion.cuencaForestal ne null}" />
+                            <p:outputLabel value="#{mbAutorizacion.autorizacion.cuencaForestal.nombre}" style=" font-weight: bold" 
+                                           rendered="#{mbAutorizacion.autorizacion.cuencaForestal ne null}" />
                             <p:outputLabel value="Número Exp.: " for="numExp"/>
                             <p:outputLabel id="numExp" value="#{mbAutorizacion.autorizacion.numExp}" style=" font-weight: bold"/>
                             <p:outputLabel value="Fecha ingreso: " for="fechaIng"/>
