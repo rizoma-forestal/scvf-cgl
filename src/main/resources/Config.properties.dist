@@ -110,6 +110,8 @@ CondDerInspInt=DESTINO INTERNO
 # Si al liquidar tasas discrimina según el tipo de intervención autorizada.
 IntervPCUS=CAMBIO USO DEL SUELO
 IntervPM=PLAN MANEJO SOSTENIBLE
+TasaPCUS=RENTAS-PCUS
+TasaPM=RENTAS-PM
 
 # Mostrar destino asignado a los productos en una guía de extracción
 DiscTasaDestExt=si
@@ -122,6 +124,10 @@ MuestraAutGuias=si
 MuestraPredioGuias=si
 # Muestra destino externo/interno
 MuestraDestinoGuias=si
+# Muestra el tipo de intervención en la Guía (PCUS, PM)
+MuestraTipoIntGuias=si
+# Muestra guía de extracción en remito
+MuestraExtEnRemito=si
 # Si el inmueble puede subdividirse en rodales
 GestionaRodales=si
 # Si el técnico es opcional

@@ -4060,12 +4060,14 @@ public class MbGuia {
      * @param aut Autorizacion autorización fuente de los productos de la guía para tomar de allí el martillo del inmueble
      */
     public void imprimirGuia(List<Guia> guias, Autorizacion aut){
+        boolean esTransporte = false;
         try{
             final Map<String,Object> parameters = new HashMap<>();
             JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(guias);
             String reportPath;
             if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
                 reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaTransp.jasper");
+                esTransporte = true;
             }else if(guia.getTipo().isHabilitaTransp() && guia.getTipo().isMovInterno()){
                 reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "guiaAcopio.jasper");
             }else{     
@@ -4084,6 +4086,14 @@ public class MbGuia {
             // si muestra los datos catastrales del predio, lo agrego como parámetro
             if(ResourceBundle.getBundle("/Config").getString("MuestraPredioGuias").equals("si")){
                 parameters.put("inmCatastro", aut.getInmuebles().get(0).getIdCatastral());
+            }
+            // si muestra el tipo de intervención, lo agrego como parámetro MuestraTipoInterv
+            if(ResourceBundle.getBundle("/Config").getString("MuestraTipoIntGuias").equals("si")){
+                parameters.put("tipoInterv", aut.getIntervencion().getNombre());
+            }
+            // si muestra la guía de extracción en el remito, lo agrego como parámetro
+            if(esTransporte && ResourceBundle.getBundle("/Config").getString("MuestraExtEnRemito").equals("si")){
+                parameters.put("guiaExt", guia.getGuiasfuentes().get(0).getCodigo());
             }
             // si muestra el destino de los productos lo agrego como parámetro
             if(ResourceBundle.getBundle("/Config").getString("MuestraDestinoGuias").equals("si")){
