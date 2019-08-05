@@ -128,8 +128,6 @@ MuestraDestinoGuias=si
 MuestraTipoIntGuias=si
 # Muestra guía de extracción en remito
 MuestraExtEnRemito=si
-# Si el inmueble puede subdividirse en rodales
-GestionaRodales=si
 # Si el técnico es opcional
 TecnicoOpcional=si
 
