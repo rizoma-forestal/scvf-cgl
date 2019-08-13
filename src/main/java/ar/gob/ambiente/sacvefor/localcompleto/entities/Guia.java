@@ -334,6 +334,7 @@ public class Guia implements Serializable {
         guiasfuentes = new ArrayList<>();
         formProvisorios = new ArrayList<>();
         rodales = new ArrayList<>();
+        obrajeros = new ArrayList<>();
     }
 
     @XmlTransient
