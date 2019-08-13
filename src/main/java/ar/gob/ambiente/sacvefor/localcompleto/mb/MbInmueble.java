@@ -391,14 +391,14 @@ public class MbInmueble {
                     message += " El Inmueble que está tratando de persisitir ya existe, por favor verifique los datos ingresados.";
                 }
             }
-            // valido el origen del predio si está configurado para discriminar tasas según él
-            if(ResourceBundle.getBundle("/Config").getString("DiscTasaOrigen").equals("si")){
-                if(inmueble.getOrigen() == null){
-                    // si no se asignó un origen al inmueble no valido
-                    valida = false;
-                    message += " Debe seleccionar el origen del " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " que corresponda.";
-                }
-            }
+//            // valido el origen del predio si está configurado para discriminar tasas según él
+//            if(ResourceBundle.getBundle("/Config").getString("DiscTasaOrigen").equals("si")){
+//                if(inmueble.getOrigen() == null){
+//                    // si no se asignó un origen al inmueble no valido
+//                    valida = false;
+//                    message += " Debe seleccionar el origen del " + ResourceBundle.getBundle("/Config").getString("Inmueble") + " que corresponda.";
+//                }
+//            }
             if(valida){
                 // procedo al guardado definitivo de la imagen del martillo
                 if(saveMartillo()){

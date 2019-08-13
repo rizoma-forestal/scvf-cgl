@@ -111,7 +111,8 @@
                                                var="inmOrigen" itemLabel="#{inmOrigen.nombre} - Catastro: #{inmOrigen.idCatastral}"  itemValue="#{inmOrigen}"/>
                             </p:selectOneMenu>
                             <p:outputLabel value="Origen del #{config.Inmueble}" for="cmbOrigenes"/>
-                            <p:selectOneMenu id="cmbOrigenes" value="#{mbInmueble.inmueble.origen}" >
+                            <p:selectOneMenu id="cmbOrigenes" value="#{mbInmueble.inmueble.origen}" 
+                                             required="#{config.DiscTasaOrigen eq 'si'}" requiredMessage="Debe seleccionar el origen del #{config.Inmueble} que corresponda" >
                                 <f:selectItem itemLabel="Seleccione el origen del #{config.Inmueble}" itemValue="" noSelectionOption="true"/>
                                 <f:selectItems value="#{mbInmueble.lstOrigenInm}" 
                                                var="origenInm" itemLabel="#{origenInm.nombre}" itemValue="#{origenInm}"/>
