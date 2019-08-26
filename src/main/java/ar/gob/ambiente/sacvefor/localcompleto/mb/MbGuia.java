@@ -2096,7 +2096,8 @@ public class MbGuia {
                         guia.setDestino(entDestino);
                         // actualizo la guía
                         guiaFacade.edit(guia);
-                        
+                        // reimprimo la guía actualizada
+                        reimprimir();
                         // actualizo el nuevo destino en el el CCV. Obtengo el token si no está seteado o está vencido
                         if(tokenCtrl == null){
                             getTokenCtrl();
@@ -2796,8 +2797,6 @@ public class MbGuia {
         List<Guia> guias = new ArrayList<>();
         // encripto el código para generar el qr en el reporte y lo asigno a la guía
         Date fechaEmision = new Date(System.currentTimeMillis());
-        String codQr = "guía:" + guia.getCodigo() + "|fuente:" + guia.getNumFuente();
-        guia.setCodQr(codQr);
         // asigno la fecha de emisión
         guia.setFechaEmisionGuia(fechaEmision);
         // asigno la fecha de vencimiento, si el tipo de Guía tiene vigencia asignada.
@@ -3240,13 +3239,11 @@ public class MbGuia {
         String msg = "";
         // valido que la fecha de vencimiento sea mayor a la original
         Guia g = guiaFacade.find(guia.getId());
-        if(guia.getFechaVencimiento().after(g.getFechaVencimiento())){
-            // encripto el código para generar el qr en el reporte y lo asigno a la guía
-            Date fechaExtend = new Date(System.currentTimeMillis());
-            String codLiso = guia.getCodigo() + "_" + fechaExtend.toString();
-            guia.setCodQr(CriptPass.encriptar(codLiso));        
+        if(guia.getFechaVencimiento().after(g.getFechaVencimiento())){      
             // actualiza la guía localmente
             guiaFacade.edit(guia);
+            // reimprimo la guía actualizada
+            reimprimir();
             // solo actualizo en CTRL si la guía es de transporte y no de movimiento interno
             if(guia.getTipo().isHabilitaTransp() && !guia.getTipo().isMovInterno()){
                 try{
@@ -3359,7 +3356,7 @@ public class MbGuia {
      * y luego imprimo el pdf con las copias generadas mediante imprimirCopias().
      * Y si todo salió bien mando a imprimir las copias
      */
-    public void emitirExtend(){
+    public void reimprimir(){
         List<Guia> copias = new ArrayList<>(); 
         // obtengo la autorización vinculada a la Guías
         Autorizacion aut = autFacade.getExistente(guia.getNumFuente()); 
@@ -4055,7 +4052,7 @@ public class MbGuia {
     /**
      * Método para generar un pdf con las copias de una guía.
      * Agrega los parámetros que correspondan según la configuración del CGL
-     * Llamado por emitir() y emitirExtend()
+ Llamado por emitir() y reimprimir()
      * @param guias List<Guia> listado con las copias de las guías a imprimir
      * @param aut Autorizacion autorización fuente de los productos de la guía para tomar de allí el martillo del inmueble
      */
@@ -4150,10 +4147,43 @@ public class MbGuia {
      * Llamado por generarVolante()
      */
     private void imprimirVolante() {
+        final Map<String,Object> parameters = new HashMap<>();
+        // si está configurado parámetros para el volante (solicitados por Misiones) los agrego
+        if(ResourceBundle.getBundle("/Config").getString("ParametrosVolante").equals("si")){
+            float totDerInsp = 0;
+            float totAforo = 0;
+            // origen del predio
+            Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
+            parameters.put("origenPredio", aut.getInmuebles().get(0).getOrigen().getNombre());
+            // destino
+            if(guia.isDestinoExterno()){
+                parameters.put("destino", "Externo");
+            }else{
+                parameters.put("destino", "Interno");
+            }
+            // cuit titular
+            parameters.put("cuit", guia.getOrigen().getCuit());
+            // nombre o razón social
+            parameters.put("nombreRaz", guia.getOrigen().getNombreCompleto());
+            // total tasas
+            for(DetalleTasas det : liquidaciones.get(0).getDetalles()){
+                // recorro el listado de tasas
+                for(TasaModel tasa : det.getTasas()){
+                    if(tasa.getHeader().equals("DERECHO INSPECCION EXTERNO") || tasa.getHeader().equals("DERECHO INSPECCION INTERNO")){
+                        totDerInsp += tasa.getSubTotal();
+                    }else{
+                        totAforo += tasa.getSubTotal();
+                    }
+                }
+            }
+            // seteo los totales de inspección y aforo
+            parameters.put("totDerInsp", totDerInsp);
+            parameters.put("totAforo", totAforo);
+        }
         try{
             JRBeanCollectionDataSource beanCollectionDataSource = new JRBeanCollectionDataSource(liquidaciones);
             String reportPath = FacesContext.getCurrentInstance().getExternalContext().getRealPath(RUTA_VOLANTE + "volante.jasper");
-            jasperPrint =  JasperFillManager.fillReport(reportPath, new HashMap(), beanCollectionDataSource);
+            jasperPrint =  JasperFillManager.fillReport(reportPath, parameters, beanCollectionDataSource);
             HttpServletResponse httpServletResponse = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
             httpServletResponse.addHeader("Content-disposition", "attachment; filename=volante_pago_" + liquidaciones.get(0).getCodGuia() + ".pdf");
             ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
@@ -4265,12 +4295,12 @@ public class MbGuia {
     /**
      * Método privado para generar el listado con las copias de la guía a imprimir.
      * Recibe la Autorización, el listado de items productivos y el listado de guías a seteas, tantas como copias estén configuradas
-     * Genera el código QR. Agrupo los itmes productivos si la guía toma productos de otra guía.
-     * Setea los martillos (el de obrajero solo si está configurado así)
-     * Valida la existencia de obrajero y, de tenerlo, del correspondiente martillo.
-     * En caso de no tener obrajero o que este no tenga martillo, se setean las rutas de archivos suplentes
-     * Recorre la cantidad de copias a imprimir según el tipo de guía y va generando una por una.
-     * Llamado por emitir() y emitirExtend()
+ Agrupo los itmes productivos si la guía toma productos de otra guía.
+ Setea los martillos (el de obrajero solo si está configurado así)
+ Valida la existencia de obrajero y, de tenerlo, del correspondiente martillo. Genera y setea el QR de la guía
+ En caso de no tener obrajero o que este no tenga martillo, se setean las rutas de archivos suplentes
+ Recorre la cantidad de copias a imprimir según el tipo de guía y va generando una por una.
+ Llamado por emitir() y reimprimir()
      * @param aut Autorización desde la cual se toman los productos
      * @param itemsAgr Listado de Items agrupados
      * @param guias Listado de las guías a poblar como paso previo a la generación del pdf
@@ -4281,6 +4311,10 @@ public class MbGuia {
         String rutaMartillo = aut.getInmuebles().get(0).getRutaArchivo() + aut.getInmuebles().get(0).getNombreArchivo();
         // obtengo la ruta al martillo del obrajero si corresponde
         String rutaMartilloObrj = null;
+        // genero y seteo el qr de la guía
+        String codQr = "guía:" + guia.getCodigo() + "|fuente:" + guia.getNumFuente() + "|vencimiento:" + guia.getFechaVencimiento().toString();
+        guia.setCodQr(codQr);
+        
         if(ResourceBundle.getBundle("/Config").getString("TieneObrajeros").equals("si")){
             // seteo la ruta al archivo "sinObrajero.jpg"
             String rutaSinObrj = ResourceBundle.getBundle("/Config").getString("RutaArchivos") + 
