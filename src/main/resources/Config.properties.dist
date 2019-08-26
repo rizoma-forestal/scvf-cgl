@@ -130,6 +130,8 @@ MuestraTipoIntGuias=si
 MuestraExtEnRemito=si
 # Si el técnico es opcional
 TecnicoOpcional=si
+# Si el reporte de liquidación de tasas lleva parámetros
+ParametrosVolante=si
 
 # ------------------------------------------------------------ #
 # Tipos de Parámetros y estados de Cotrol y Verificación (CCV) #

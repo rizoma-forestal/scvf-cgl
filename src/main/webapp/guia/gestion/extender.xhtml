@@ -13,8 +13,8 @@
             <p:growl id="messagesExtend" showDetail="false" />
             <p:panel id="pnExtension" styleClass="centro" header="Actualizar datos" >
                 <p:outputLabel value="Para extender el plazo de vencimiento de la guía deberá ingresar una nueva fecha de vencimiento 
-                               y los motivos por los cuales se extiende. Ambos campos son obligatorios. Una vez modificado el plazo de vencimiento 
-                               podrá volver a generar un archivo pdf de la guía actualizada." 
+                               y los motivos por los cuales se extiende. Ambos campos son obligatorios. Se generará automáticamente un 
+                               archivo pdf con los datos actualizados de la guía." 
                                    style="font-style: italic; font-size: small" />
                 <h:panelGrid columns="2" cellpadding="5">
                     <p:outputLabel value="Nuevo vencimiento: " />
@@ -39,11 +39,9 @@
                 
                 <h:panelGrid id="pgBotones" columns="3" >
                     <p:commandButton title="Extender la fecha de vencimiento para la guía" value="Aceptar" icon="fa fa-fw fa-save" 
-                                     action="#{mbGuia.extenderVenc()}" update="frExtension,messagesExtend"/>
+                                     action="#{mbGuia.extenderVenc()}" ajax="false" update="frExtension,messagesExtend"/>
                     <p:commandButton title="Limpiar los motivos de la extensión" value="Limpiar" icon="fa fa-fw fa-refresh" 
                                      action="#{mbGuia.limpiarFormExtend()}" resetValues="true" update="frExtension"/>
-                    <p:commandButton title="Emitir la guia con el nuevo vencimiento" value="Generar pdf" icon="fa fa-fw fa-file-pdf-o" 
-                                     action="#{mbGuia.emitirExtend()}" ajax="false" update="messagesExtend"/>
                 </h:panelGrid>
             </p:panel>
         </h:form>
