@@ -4312,7 +4312,10 @@ public class MbGuia {
         // obtengo la ruta al martillo del obrajero si corresponde
         String rutaMartilloObrj = null;
         // genero y seteo el qr de la guía
-        String codQr = "guía:" + guia.getCodigo() + "|fuente:" + guia.getNumFuente() + "|vencimiento:" + guia.getFechaVencimiento().toString();
+        String codQr = "guía:" + guia.getCodigo() + ""
+                + "|fuente:" + guia.getNumFuente() + ""
+                + "|vencimiento:" + new SimpleDateFormat("dd-MM-yyyy hh:mm").format(guia.getFechaVencimiento()) + ""
+                + "|estado:" + guia.getEstado().getNombre();
         guia.setCodQr(codQr);
         
         if(ResourceBundle.getBundle("/Config").getString("TieneObrajeros").equals("si")){
