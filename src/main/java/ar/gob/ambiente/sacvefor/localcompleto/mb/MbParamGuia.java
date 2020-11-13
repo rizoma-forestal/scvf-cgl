@@ -114,6 +114,16 @@ public class MbParamGuia {
      */
     private List<Parametrica> lstTiposTasas;
     
+    /**
+     * Variable privada: listado de casos de liquidación de tasas
+     */
+    private List<Parametrica> lstCasosLiq;
+    
+    /**
+     * Variable privada: listado de valores de discriminación de tasas
+     */
+    private List<Parametrica> lstValDisc;
+    
     ///////////////////////////////////////////////////
     // acceso a datos mediante inyección de recursos //
     ///////////////////////////////////////////////////
@@ -153,10 +163,26 @@ public class MbParamGuia {
      */
     public MbParamGuia() {
     }
-
+    
     ///////////////////////
     // métodos de acceso //
-    ///////////////////////
+    ///////////////////////    
+    public List<Parametrica> getLstCasosLiq() {
+        return lstCasosLiq;
+    }
+
+    public void setLstCasosLiq(List<Parametrica> lstCasosLiq) {
+        this.lstCasosLiq = lstCasosLiq;
+    }
+
+    public List<Parametrica> getLstValDisc() {
+        return lstValDisc;
+    }
+
+    public void setLstValDisc(List<Parametrica> lstValDisc) {    
+        this.lstValDisc = lstValDisc;
+    }
+
     public TipoGuiaTasa getTipoGuiaTasa() {
         return tipoGuiaTasa;
     }
@@ -294,7 +320,9 @@ public class MbParamGuia {
         lstTiposHab = tipoFacade.getHabilitados();
         tipoGuiaTasa = new TipoGuiaTasa();
         TipoParam tipoParamTasa = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoTasa"));
+        TipoParam tipoParamDiscTasa = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("DiscTasas"));
         lstTiposTasas = paramFacade.getHabilitadas(tipoParamTasa);
+        lstCasosLiq = paramFacade.getHabilitadas(tipoParamDiscTasa);
     }
 
     /**
@@ -438,6 +466,12 @@ public class MbParamGuia {
             }
         }
         
+        // valido que si la tasa discrimina liquidación tenga seteado el caso y el valor
+        if(tipoGuiaTasa.isDiscrimina()){
+            if(tipoGuiaTasa.getCasoLiquidacion() == null || tipoGuiaTasa.getMatchDisc() == null){
+                JsfUtil.addErrorMessage("La Tasa discrimina debe asignar un caso y un valor.");
+            }
+        }
         try{
             if(valida){
                 tipoGuia.getTasas().add(tipoGuiaTasa);
@@ -611,6 +645,15 @@ public class MbParamGuia {
         view = true;
         edit = false;
     }      
+    
+    /**
+     * Método para actualizar el listado de Valores ante los cuales liquidar la tasa según el caso de discriminación seleccionado
+     */    
+    public void casoDiscChangeListener(){
+        // obtiene el tipoParam según el nombre del caso de liquidación seleccionado
+        TipoParam tipoParamValDisc = tipoParamFacade.getExistente(tipoGuiaTasa.getCasoLiquidacion().getNombre());
+        lstValDisc = paramFacade.getHabilitadas(tipoParamValDisc);
+    } 
 
     
     //////////////////////
