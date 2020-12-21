@@ -33,6 +33,7 @@ public class ApplicationConfig extends Application {
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.LocalidadFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.PersonaFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.ProductoFacadeREST.class);
+        resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.ProductoTrazFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.RestSecurityFilter.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.TasasFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.UsuarioApiResource.class);

@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Entidad que guarda una referencia a la Especie obtenida del servicio de Taxonomía y
@@ -17,6 +19,7 @@ import javax.validation.constraints.Size;
  * @author rincostante
  */
 @Entity
+@XmlRootElement
 public class ProductoEspecieLocal implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -60,9 +63,25 @@ public class ProductoEspecieLocal implements Serializable {
     /**
      * Variable privada: condición de habilitada de la especie
      */
-    private boolean habilitado; 
+    private boolean habilitado;
+    
+    /**
+     * Variable privada: número entero que va de 1 a 6. Indica el rendimiento de la especie
+     * Utilizado para seleccionar el factor de transformación
+     * Agregada para la versión 2 de TRAZ
+     */
+    private int grupoEspecie;
 
     // métodos de acceso
+    @XmlTransient
+    public int getGrupoEspecie() {
+        return grupoEspecie;
+    }
+
+    public void setGrupoEspecie(int grupoEspecie) {
+        this.grupoEspecie = grupoEspecie;
+    }
+
     public Long getIdTax() {
         return idTax;
     }

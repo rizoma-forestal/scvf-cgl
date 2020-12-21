@@ -49,6 +49,29 @@ public class ProductoFacade extends AbstractFacade<Producto> {
     }      
     
     /**
+     * Método para obtener un Producto según la id de la especie local y la id de la clase
+     * Para homologar productos desde TRAZ
+     * @param id_especie Long identificador de le especie local
+     * @param id_clase Long identificador de la clase de producto
+     * @return Producto producto correspondiente
+     */
+    public Producto getExistenteXid_especieYid_clase(Long id_especie, Long id_clase){
+        List<Producto> lstProductos;
+        String queryString = "SELECT prod FROM Producto prod "
+                + "WHERE prod.clase.id = :id_clase "
+                + "AND prod.especieLocal.id = :id_especie";
+        Query q = em.createQuery(queryString)
+                .setParameter("id_especie", id_especie)
+                .setParameter("id_clase", id_clase);
+        lstProductos = q.getResultList();
+        if(lstProductos.isEmpty()){
+            return null;
+        }else{
+            return lstProductos.get(0);
+        }
+    }
+    
+    /**
      * Método sobreescrito que lista los Productos ordenadas por el nombre vulgar de la Especie
      * @return List<Producto> listado de productos ordenados por el nombre de la especie local
      */
