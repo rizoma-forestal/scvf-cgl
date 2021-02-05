@@ -223,6 +223,7 @@ OrigenPredio=ORIGEN_PREDIO
 CuencaForestal=CUENCA_FORESTAL
 DestinoGuias=DEST_GUIAS
 DiscTasas=DISC_TASA
+TipoMov=TIPO_MOV
 
 # ----------------------- #
 # Roles de usuarios local #

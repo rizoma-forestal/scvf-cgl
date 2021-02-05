@@ -162,12 +162,27 @@ public class EntidadGuia implements Serializable {
     private boolean habilitado;
     
     /**
+     * Variable privada: identificación del Establecimiento origen de las Guías de transporte
+     * de removido que descuenten productos de guías de fiscalización.
+     * Necesario por el servicio que obtenga guías de fiscalización según un Establecimiento determinado
+     * Requerido por las funcionalidades del TRAZ en su versión 2.0
+     */
+    private Long id_establecimiento;
+    
+    /**
      * Variable privada no persistido: Campo que mostrará la fecha de las revisiones
      */    
     @Transient
     private Date fechaRevision; 
+    public Long getId_establecimiento() {
+        return id_establecimiento;
+    }
 
     // métodos de acceso
+    public void setId_establecimiento(Long id_establecimiento) {
+        this.id_establecimiento = id_establecimiento;
+    }
+
     public String getEmail() {
         return email;
     }

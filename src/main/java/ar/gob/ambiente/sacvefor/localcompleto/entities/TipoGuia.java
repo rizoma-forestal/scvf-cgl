@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -96,10 +97,29 @@ public class TipoGuia implements Serializable {
     private int vigencia;
     
     /**
+     * Variable privada: Paramétrica que indica el tipo de movimiento del tipo de guía
+     * que podrá ser PRIMER MOVIMIENTO o REMOVIDO
+     * Esto permitirá la gestión de guías de fiscalización para removido
+     * y su disponibilidad para el registro de guías de transporte desde TRAZ
+     * Requerido por las funcionalidades del TRAZ en su versión 2.0
+     */
+    @ManyToOne
+    @JoinColumn(name="tipomovimiento_id")        
+    private Parametrica tipoMovimiento;
+    
+    /**
      * Constructor que instancia el listado de tasas de la guía
      */
     public TipoGuia(){
         tasas = new ArrayList<>();
+    }
+
+    public Parametrica getTipoMovimiento() {
+        return tipoMovimiento;
+    }
+
+    public void setTipoMovimiento(Parametrica tipoMovimiento) {
+        this.tipoMovimiento = tipoMovimiento;
     }
 
     public boolean isMovInterno() {

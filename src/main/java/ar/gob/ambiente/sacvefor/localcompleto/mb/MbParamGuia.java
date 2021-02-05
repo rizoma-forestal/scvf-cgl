@@ -124,6 +124,12 @@ public class MbParamGuia {
      */
     private List<Parametrica> lstValDisc;
     
+    /**
+     * Variable privada: listado de paramétricas que indican el tipo de movimiento
+     * a asignar a un tipo de guía (PRIMER MOVIMIENTO | REMOVIDO)
+     */
+    private List<Parametrica> lstTipoMovimientos;
+    
     ///////////////////////////////////////////////////
     // acceso a datos mediante inyección de recursos //
     ///////////////////////////////////////////////////
@@ -167,6 +173,14 @@ public class MbParamGuia {
     ///////////////////////
     // métodos de acceso //
     ///////////////////////    
+    public List<Parametrica> getLstTipoMovimientos() {    
+        return lstTipoMovimientos;
+    }
+
+    public void setLstTipoMovimientos(List<Parametrica> lstTipoMovimientos) {
+        this.lstTipoMovimientos = lstTipoMovimientos;
+    }
+
     public List<Parametrica> getLstCasosLiq() {
         return lstCasosLiq;
     }
@@ -321,8 +335,10 @@ public class MbParamGuia {
         tipoGuiaTasa = new TipoGuiaTasa();
         TipoParam tipoParamTasa = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoTasa"));
         TipoParam tipoParamDiscTasa = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("DiscTasas"));
+        TipoParam tipoParamMov = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoMov"));
         lstTiposTasas = paramFacade.getHabilitadas(tipoParamTasa);
         lstCasosLiq = paramFacade.getHabilitadas(tipoParamDiscTasa);
+        lstTipoMovimientos = paramFacade.getHabilitadas(tipoParamMov);
     }
 
     /**

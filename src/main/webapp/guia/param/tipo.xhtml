@@ -124,7 +124,9 @@
                     <p:panel id="pnFrmView" header="Detalle" rendered="#{mbParamGuia.view}" >
                         <h:panelGrid id="pgDatosGrales" columns="2" >
                             <p:outputLabel value="Nombre: " for="v_nombre"/>
-                            <p:outputLabel id="v_nombre" value="#{mbParamGuia.tipoGuia.nombre}"/>
+                            <p:outputLabel id="v_nombre" value="#{mbParamGuia.tipoGuia.nombre}"/>                            
+                            <p:outputLabel value="Tipo de movimiento: " for="v_tipo_mov"/>
+                            <p:outputLabel id="v_tipo_mov" value="#{mbParamGuia.tipoGuia.tipoMovimiento.nombre}"/>  
                             <p:outputLabel value="Habilita transporte: " for="v_habTransp"/>
                             <p:selectBooleanCheckbox disabled="true" id="v_habTransp" value="#{mbParamGuia.tipoGuia.habilitaTransp}" />
                             <p:outputLabel value="Movimiento interno: " for="v_movInterno" rendered="#{mbParamGuia.tipoGuia.habilitaTransp}" />
@@ -152,6 +154,13 @@
                             <p:outputLabel value="Nombre" for="nombre"/>
                             <p:inputText id="nombre" value="#{mbParamGuia.tipoGuia.nombre}" style="text-transform: uppercase; width: 250px"
                                      requiredMessage="Debe ingresar el Nombre" required="true"/>
+                            <p:outputLabel value="Tipo de movimiento" for="cmbTipoMov"/>   
+                            <p:selectOneMenu id="cmbTipoMov" value="#{mbParamGuia.tipoGuia.tipoMovimiento}" required="true" 
+                                             requiredMessage="Debe seleccionar un Tipo de Movimiento." >
+                                <f:selectItem itemLabel="Seleccione el Tipo de movimiento" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbParamGuia.lstTipoMovimientos}" 
+                                               var="tipo_mov" itemLabel="#{tipo_mov.nombre}" itemValue="#{tipo_mov}"/>
+                            </p:selectOneMenu> 
                         </h:panelGrid> 
                         <h:panelGrid id="pgTransp" columns="2">
                             <p:outputLabel value="Habilita transporte: " for="habTransp"/>
@@ -225,6 +234,12 @@
                                 sortBy="#{tipoGuia.nombre}" 
                                 filterBy="#{tipoGuia.nombre}" >
                                 <p:outputLabel value="#{tipoGuia.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Tipo Mov." 
+                                filterMatchMode="contains"
+                                sortBy="#{tipoGuia.tipoMovimiento.nombre}" 
+                                filterBy="#{tipoGuia.tipoMovimiento.nombre}" >
+                                <p:outputLabel value="#{tipoGuia.tipoMovimiento.nombre}"/>
                             </p:column>
                             <p:column filterBy="#{tipoGuia.habilitaTransp}" headerText="Hab. Transp." filterMatchMode="equals" >
                                 <f:facet name="filter">

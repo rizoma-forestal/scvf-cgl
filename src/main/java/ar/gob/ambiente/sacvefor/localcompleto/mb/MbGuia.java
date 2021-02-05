@@ -2450,6 +2450,8 @@ public class MbGuia {
         itemAsignado.setNombreVulgar(itemFuente.getNombreVulgar());
         itemAsignado.setIdEspecieTax(itemFuente.getIdEspecieTax());
         itemAsignado.setKilosXUnidad(itemFuente.getKilosXUnidad());
+        itemAsignado.setM3XUnidad(itemFuente.getM3XUnidad());
+        itemAsignado.setGrupoEspecie(itemFuente.getGrupoEspecie());
         itemAsignado.setCodigoProducto(itemFuente.getCodigoProducto());
         
         TipoParam tipoParamTipoItemActual = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoItem"));
@@ -2535,6 +2537,7 @@ public class MbGuia {
                             ip.setSaldo(ip.getSaldo() - itemAsignado.getTotal());
                         }
                         ip.setSaldoKg(ip.getSaldo() * ip.getKilosXUnidad());
+                        ip.setSaldoM3(ip.getSaldo() * ip.getM3XUnidad());
                         ip.setDescontado(true);
                         // actualizo el item fuente
                         itemFacade.edit(ip);
@@ -2545,6 +2548,10 @@ public class MbGuia {
                     itemAsignado.setTotalKg(itemAsignado.getTotal() * itemAsignado.getKilosXUnidad());
                     // seteo el equivalente en Kg. del saldo
                     itemAsignado.setSaldoKg(itemAsignado.getTotalKg());
+                    // actualizo el equivalente total en M3
+                    itemAsignado.setTotalM3(itemAsignado.getTotal() * itemAsignado.getM3XUnidad());
+                    // seteo el equivalente en M3 del saldo
+                    itemAsignado.setSaldoM3(itemAsignado.getTotalM3());
                     // actualizo el item asignado a la guía
                     itemFacade.edit(itemAsignado);
                     editandoItem = false;
@@ -2562,8 +2569,12 @@ public class MbGuia {
                     itemAsignado.setSaldo(itemAsignado.getTotal());
                     // seteo el equivalente total en Kg.
                     itemAsignado.setTotalKg(itemAsignado.getTotal() * itemAsignado.getKilosXUnidad());
+                    // seteo el equivalente total en M3
+                    itemAsignado.setTotalM3(itemAsignado.getTotal() * itemAsignado.getM3XUnidad());
                     // seteo el equivalente en Kg. del saldo
                     itemAsignado.setSaldoKg(itemAsignado.getTotalKg());
+                    // seteo el equivalente en M3 del saldo
+                    itemAsignado.setSaldoM3(itemAsignado.getTotalM3());
                     // seteo la guía
                     itemAsignado.setGuia(guia);
                     itemFacade.create(itemAsignado);
@@ -2605,6 +2616,8 @@ public class MbGuia {
                 itemOrigen.setSaldo(saldoActualizado);
                 // actualizo el saldo en Kg
                 itemOrigen.setSaldoKg(itemOrigen.getSaldo() * itemOrigen.getKilosXUnidad());
+                // actualizo el saldo en M3
+                itemOrigen.setSaldoM3(itemOrigen.getSaldo() * itemOrigen.getM3XUnidad());
                 // actualizo el itemOrigen
                 itemFacade.edit(itemOrigen);
                 // elimino el itemAsignado de la Guía
