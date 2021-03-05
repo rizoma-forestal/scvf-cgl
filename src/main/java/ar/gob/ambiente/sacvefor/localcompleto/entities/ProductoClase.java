@@ -2,8 +2,10 @@
 package ar.gob.ambiente.sacvefor.localcompleto.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -74,7 +76,7 @@ public class ProductoClase implements Serializable {
      */
     @OneToMany (mappedBy="claseOrigen", orphanRemoval = true)
     @Basic(fetch = FetchType.LAZY)    
-    private List<ProductoClase> subClases;
+    private List<ProductoClase> clasesDestino;
     
     /**
      * Variable privada: número entero que indica el grado de elaboración (1 – 2 – 3 – 4 – 5)
@@ -103,11 +105,33 @@ public class ProductoClase implements Serializable {
      * Agregada para la versión 2 de TRAZ
      */    
     private boolean definePiezas;
+    
+    /**
+     * Variable privada: listado de sub clases derivadas del proceso de transformación de una
+     * clase origen a una clase destino de un grado de elaboración mayor
+     * Agregada para la versión de 2 de TRAZ y para la transformación de productos en removido
+     */
+    @OneToMany (mappedBy="clasePrincipal")
+    private List<ProductoSubClase> subClases;
+    
+    public ProductoClase(){
+        subClases = new ArrayList<>();
+        clasesDestino = new ArrayList<>();
+    }
 
     // métodos de acceso   
     @XmlTransient
     public int getNivelTransformacion() {
         return nivelTransformacion;
+    }
+
+    @XmlTransient
+    public List<ProductoSubClase> getSubClases() {
+        return subClases;
+    }
+
+    public void setSubClases(List<ProductoSubClase> subClases) {
+        this.subClases = subClases;
     }
 
     public void setNivelTransformacion(int nivelTransformacion) {
@@ -124,12 +148,12 @@ public class ProductoClase implements Serializable {
     }
 
     @XmlTransient
-    public List<ProductoClase> getSubClases() {
-        return subClases;
+    public List<ProductoClase> getClasesDestino() {
+        return clasesDestino;
     }
 
-    public void setSubClases(List<ProductoClase> subClases) {
-        this.subClases = subClases;
+    public void setClasesDestino(List<ProductoClase> clasesDestino) {
+        this.clasesDestino = clasesDestino;
     }
 
     @XmlTransient

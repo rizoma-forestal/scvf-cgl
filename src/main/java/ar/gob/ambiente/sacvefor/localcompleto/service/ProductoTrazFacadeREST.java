@@ -2,15 +2,19 @@ package ar.gob.ambiente.sacvefor.localcompleto.service;
 
 import ar.gob.ambiente.sacvefor.localcompleto.annotation.Secured;
 import ar.gob.ambiente.sacvefor.localcompleto.dto.*;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.FactoresTransformacion;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Producto;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoClase;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoEspecieLocal;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoSubClase;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoUnidadMedida;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.FactoresTransFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ParametricaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoClaseFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoEspecieLocalFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoFacade;
+import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoSubClaseFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.ProductoUnidadMedidaFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.TipoParamFacade;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.UsuarioFacade;
@@ -21,11 +25,13 @@ import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilderException;
@@ -47,6 +53,8 @@ public class ProductoTrazFacadeREST {
     @EJB
     private ProductoClaseFacade claseFacade;
     @EJB
+    private ProductoSubClaseFacade subClaseFacade;
+    @EJB
     private ProductoEspecieLocalFacade especieFacade; 
     @EJB
     private TipoParamFacade tipoParamFacade;
@@ -54,6 +62,8 @@ public class ProductoTrazFacadeREST {
     private ParametricaFacade paramFacade;
     @EJB
     private UsuarioFacade usFacade;
+    @EJB
+    private FactoresTransFacade factoresFacade;
     
     /************
      * ESPECIES * 
@@ -451,9 +461,7 @@ public class ProductoTrazFacadeREST {
             // recorro el listado y seteo las ClaseProdGenericoResponseDTO
             for(ProductoClase clase : clases){
                 claseGenDTO = new ClaseProdGenericoResponseDTO();
-                claseGenDTO.setId(clase.getId());
-                claseGenDTO.setNombre(clase.getNombre());
-                claseGenDTO.setNombre_unidad(clase.getUnidad().getNombre());
+                setearClaseGenericaResponse(claseGenDTO, clase);
                 clasesGenDTO.add(claseGenDTO);
             }
         }
@@ -541,6 +549,232 @@ public class ProductoTrazFacadeREST {
     }
     
     /**
+     * Método para obtener las clases de subproductos derivadas la clase y la especie del producto de la clase origen
+     * @param id_especie_local Long identificador de la especie local del producto de la clase origen
+     * @param id_clase_origen Long identificador de la clase origen
+     * @return Response con el listado de ClaseProdGenericoResponseDTO
+     */
+    @GET
+    @Path("/clases/derivadas")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getSubClasesByIdClaseOrigenAndIdEspecieLocal(
+            @QueryParam("id_especie_local") Long id_especie_local,
+            @QueryParam("id_clase_origen") Long id_clase_origen){
+        try{
+            // verifica la existencia del producto origen
+            Producto prod = prodFacade.getExistenteXid_especieYid_clase(id_especie_local, id_clase_origen);
+            if(prod != null){
+                // si el producto origen se validó se obtienen los subproductos
+                List<ClaseProdGenericoResponseDTO> clasesDTO = new ArrayList<>();
+                ClaseProdGenericoResponseDTO claseGenDTO;
+                List<Producto> sub_prods = prodFacade.getSubProductosHabilitadosByIdClaseAndIdEspecie(id_clase_origen, id_especie_local);
+                if(sub_prods != null){
+                    // si hay retorno se mapea
+                    for(Producto sub_prod : sub_prods){
+                        claseGenDTO = new ClaseProdGenericoResponseDTO();
+                        setearClaseGenericaResponse(claseGenDTO, sub_prod.getClase());
+                        clasesDTO.add(claseGenDTO);
+                    }
+                }
+                return Response.ok(clasesDTO).build();
+            }else{
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("No hay un producto origen con los id de especie local y clase recibidos")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al obtener las subclases para TRAZ del producto con la especie: " + id_especie_local + " y la clase: " 
+                    + id_clase_origen + ". " + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al obtener las subclases. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /**
+     * Método para obtener la secuencia de clases origenes a partir de un producto transformado
+     * Validando que pertenezcan a productos de la misma especie
+     * @param id_especie_local identificador de la especie de todos los productos
+     * @param id_clase_destino identificador de la clade destino desde la cual se inicia la secuencia
+     * @return Response con el listado de ClaseProdGenericoResponseDTO
+     */
+    @GET
+    @Path("/clases/secuencias")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)    
+    public Response getClasesSecuenciaTransfOrigenFin(
+            @QueryParam("id_especie_local") Long id_especie_local,
+            @QueryParam("id_clase_destino") Long id_clase_destino){
+        try{
+            // verifica la existencia del producto destino
+            Producto prod = prodFacade.getExistenteXid_especieYid_clase(id_especie_local, id_clase_destino);
+            if(prod != null && prod.getClase().getClaseOrigen() != null){
+                // si el producto destino se validó continua
+                List<ProductoClase> clases = new ArrayList<>();
+                // setea la clase inicial
+                clases.add(prod.getClase());
+                // guardo el último grado
+                int grado_ultimo = prod.getClase().getGradoElaboracion();
+                int iSecuencia;
+                for(int i = grado_ultimo; i >= 0; i --){
+                    iSecuencia = clases.size() - 1;
+                    if(clases.get(iSecuencia).getClaseOrigen() != null){
+                        // si hay clase origen continúo obteniendo el producto anterior
+                        Producto p = prodFacade.getExistenteXid_especieYid_clase(id_especie_local, clases.get(iSecuencia).getClaseOrigen().getId());
+                        // guarda la clase del producto anterior
+                        clases.add(p.getClase());
+                    }
+                }
+                // una vez obtenida la secuencia en clases se setea el listado de ResponseDTO
+                List<ClaseProdGenericoResponseDTO> clasesGenDTO = new ArrayList<>();
+                ClaseProdGenericoResponseDTO claseGenDTO;
+                for(ProductoClase clase : clases){
+                    claseGenDTO = new ClaseProdGenericoResponseDTO();
+                    setearClaseGenericaResponse(claseGenDTO, clase);
+                    clasesGenDTO.add(claseGenDTO);
+                }
+                return Response.ok(clasesGenDTO).build();
+            }else{
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("No hay un producto destino con los id de especie local y clase recibidos o su clase no tiene origen")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+            }
+            
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al obtener la secuencia de transformación para la especie: " + id_especie_local + " hasta la clase: " 
+                    + id_clase_destino + ". " + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al obtener las subclases. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /*************
+     * SUBCLASES * 
+     *************/   
+    
+    /**
+     * Método para la creación o edición de una sub clase de producto desde TRAZ
+     * @param entity SubClaseProdRequestDTO con los atributos a persistir
+     * @return Response con el SubClaseProdResponseDTO
+     */
+    @POST
+    @Path("subclases")
+    @Secured
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @Produces(value = MediaType.APPLICATION_JSON)    
+    public Response createEditSubClase(SubClaseProdRequestDTO entity){
+        try{
+            // registra o edita según el caso
+            if(entity.getId() == null){
+                // valida que exista la clase principal
+                ProductoClase cPrincipal = claseFacade.find(entity.getId_clase_principal());
+                if(cPrincipal == null){
+                return Response
+                        .status(Response.Status.NO_CONTENT)
+                        .entity("No hay una clase principal con el id: " + entity.getId_clase_principal())
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+                }
+                // valida que exista la clase derivada
+                ProductoClase cDerivada = claseFacade.find(entity.getId_clase_derivada());
+                if(cDerivada == null){
+                return Response
+                        .status(Response.Status.NO_CONTENT)
+                        .entity("No hay una clase derivada con el id: " + entity.getId_clase_derivada())
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+                }
+                // valida que no exista una subclase para la principal con la derivada recibida
+                ProductoSubClase scExistente = subClaseFacade.getSubClaseByIdPrincipalAndIdDerivada(
+                        entity.getId_clase_principal(), entity.getId_clase_derivada());
+                if(scExistente != null){
+                return Response
+                        .status(Response.Status.NO_CONTENT)
+                        .entity("Ya hay una subclase para la clase princial con el id: " + entity.getId_clase_principal() + 
+                                " y la derivada con el id: " + entity.getId_clase_derivada())
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+                }
+                // si todo se validó se registra
+                ProductoSubClase subClase = new ProductoSubClase();
+                subClase.setClasePrincipal(cPrincipal);
+                subClase.setClaseDerivada(cDerivada);
+                subClase.setFactorRelativo(entity.getFactor_relativo());
+                subClaseFacade.create(subClase);
+                
+                SubClaseProdResponseDTO subClaseDTO = new SubClaseProdResponseDTO();
+                subClaseDTO.setId(subClase.getId());
+                subClaseDTO.setFactor_relativo(subClase.getFactorRelativo());
+                subClaseDTO.setId_clase_derivada(subClase.getClaseDerivada().getId());
+                subClaseDTO.setNombre_clase_derivada(subClase.getClaseDerivada().getNombre());
+                subClaseDTO.setUnidad_clase_derivada(subClase.getClaseDerivada().getUnidad().getNombre());
+                
+                return Response.status(201).entity(subClaseDTO).build();  
+            }else{
+                // busco la subclase, si no está respondo
+                ProductoSubClase subClase = subClaseFacade.find(entity.getId());
+                if(subClase != null){
+                    // si existe primero verifico que no vaya a duplicar nombre y unidad ya existentes
+                    ProductoSubClase subClase2 = subClaseFacade.getSubClaseByIdPrincipalAndIdDerivada(
+                            entity.getId_clase_principal(), entity.getId_clase_derivada());
+                    if(!Objects.equals(subClase2.getId(), subClase.getId())){
+                        // si ya existe otra subclase para la principal y derivada, respondo
+                        return Response
+                                .status(Response.Status.FORBIDDEN)
+                                .entity("Ya hay otra Sub Clase de producto con el la id_clase_principal e id_clase_derivada remitidos")
+                                .type(MediaType.TEXT_PLAIN)
+                                .build();
+                    }else{
+                        // si valida todo setea y edita
+                        subClase.setClasePrincipal(claseFacade.find(entity.getId_clase_principal()));
+                        subClase.setClaseDerivada(claseFacade.find(entity.getId_clase_derivada()));
+                        subClase.setFactorRelativo(entity.getFactor_relativo());
+                        subClaseFacade.edit(subClase);
+
+                        SubClaseProdResponseDTO subClaseDTO = new SubClaseProdResponseDTO();
+                        subClaseDTO.setId(subClase.getId());
+                        subClaseDTO.setFactor_relativo(subClase.getFactorRelativo());
+                        subClaseDTO.setId_clase_derivada(subClase.getClaseDerivada().getId());
+                        subClaseDTO.setNombre_clase_derivada(subClase.getClaseDerivada().getNombre());
+                        subClaseDTO.setUnidad_clase_derivada(subClase.getClaseDerivada().getUnidad().getNombre());
+                
+                        return Response.ok().entity(subClaseDTO).build();
+                    }
+                }else{
+                    return Response
+                            .status(Response.Status.NO_CONTENT)
+                            .entity("No hay una subclase de productos registrada con la id recibida")
+                            .type(MediaType.TEXT_PLAIN)
+                            .build();
+                }
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al insertar/editar la sub clase de productos desde TRAZ, "
+                    + "para la clase origen principal con id: " + entity.getId_clase_principal() + ", "
+                            + "y la clase derivada con el id: " + entity.getId_clase_derivada() + ". " + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al insertar/registrar la sub clase de producto. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /*************
+     * PRODUCTOS * 
+     *************/    
+    
+    /**
      * Método que retorna un Producto los id de la especie local y de la clase
      * Responde un objeto completo. Para ser obtenida desde el TRAZ
      * @param id_especie Long identificador de la especie local
@@ -573,7 +807,7 @@ public class ProductoTrazFacadeREST {
             LOG.fatal("Hubo un error al obtener el producto para TRAZ para la especie: " + id_especie + " y la clase: " + id_clase + ". " + ex.getMessage());
             return Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Hubo un error al obtener la clase de producto. " + ex.getMessage())
+                    .entity("Hubo un error al obtener el producto. " + ex.getMessage())
                     .type(MediaType.TEXT_PLAIN)
                     .build();
         }
@@ -673,6 +907,116 @@ public class ProductoTrazFacadeREST {
         }
     }    
     
+    /**
+     * Método para obtener un producto según su id
+     * @param id Long identificador del producto
+     * @return Response con el ProductoResponseDTO o el mensaje que corresponda
+     */
+    @GET
+    @Path("/{id}")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProductoById(@PathParam("id") Long id) {
+        try{
+            Producto prod = prodFacade.find(id);
+            if(prod != null){
+                // instancia el ResponseDTO
+                ProductoResponseDTO prodResp = new ProductoResponseDTO();
+                // setea el ResponseDTO
+                setearProductoResponse(prodResp, prod);
+                
+                return Response.ok(prodResp).build();
+            }else{
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("No hay un producto con la id remitida.")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+            }
+            
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al obtener el producto para TRAZ según la id: " + id + ". " + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al obtener el producto. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /************
+     * FACTORES * 
+     ************/    
+    
+    /**
+     * Método para obtener los factores de transformación y residuos para según 
+     * los tres parámetros.
+     * Para CGL y TRAZ
+     * @param grupo int grupo de la especie del producto
+     * @param nivel int nivel de desempeño del establecimiento
+     * @param grado int grado de elaboración de la clase a elaborar
+     * @return Response con el FactoresTransformacionDTO o el mensaje que corresponda
+     */    
+    @GET
+    @Path("factores/grados")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)    
+    public Response getFactoresByGrupoAndNivelAndGrado(
+            @QueryParam("grupo") @DefaultValue("0") int grupo, 
+            @QueryParam("nivel") @DefaultValue("0") int nivel, 
+            @QueryParam("grado") @DefaultValue("0") int grado) {
+        try{
+            FactoresTransformacion factor = factoresFacade.getFatoresByGrupoNivelGrado(grupo, nivel, grado);
+            if(factor != null){
+                // setea el ResponseDTO
+                FactoresTransformacionDTO factorDTO = new FactoresTransformacionDTO();
+                setearFactorTansformacionResponse(factorDTO, factor);
+                return Response.ok(factorDTO).build();
+            }else{
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("No hay factores de transformación con los grupo, nivel y grado recibidos")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al obtener los factores de transformación para el grupo: " + grupo + ", el nivel: " + nivel + " y el grado" + grado + ". En TRAZ " + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al obtener los factores de transformación de productos. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /**
+     * Método para obtener los factores de transformación y residuos para según 
+     * los dos parámetros.
+     * Para CGL y TRAZ
+     * @param grupo int grupo de la especie del producto
+     * @param nivel int nivel de desempeño del establecimiento
+     * @return Response con el listado de FactoresTransformacionDTO
+     */
+    @GET
+    @Path("factores")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)      
+    public Response getFactoresByGrupoAndNivel(
+            @QueryParam("grupo") @DefaultValue("0") int grupo, 
+            @QueryParam("nivel") @DefaultValue("0") int nivel) {
+
+        List<FactoresTransformacionDTO> factoresDTO = new ArrayList<>();
+        FactoresTransformacionDTO factorDTO;
+        List<FactoresTransformacion> factores = factoresFacade.getFactoresByGrupoNivel(grupo, nivel);
+        if(!factores.isEmpty()){
+            for(FactoresTransformacion factor : factores){
+                factorDTO = new FactoresTransformacionDTO();
+                setearFactorTansformacionResponse(factorDTO, factor);
+                factoresDTO.add(factorDTO);
+            }
+        }
+        return Response.ok(factoresDTO).build();
+    }
     /********************
      * Métodos privados *
      ********************/
@@ -724,7 +1068,7 @@ public class ProductoTrazFacadeREST {
         clase.setGeneraResiduos(entity.isGenera_residuos());
         clase.setFactorTransfDirecto(entity.getFactor_transf_directo());
         clase.setDefinePiezas(entity.isDefine_piezas());
-    }
+    }  
 
     /**
      * Método para setear un ResponseDTO de clase a partir de una entidad PoductoClase
@@ -741,12 +1085,12 @@ public class ProductoTrazFacadeREST {
         claseResp.setUnidad(unidad);
         claseResp.setHabilitado(clase.isHabilitado());
         claseResp.setNivel_transformacion(clase.getNivelTransformacion());
-        // seteo clase origen si contine una
+        // seteo clase origen si contine una [el genérico va sin subclases]
         if(clase.getClaseOrigen() != null){
             ClaseProdGenericoResponseDTO claseOrigen = new ClaseProdGenericoResponseDTO();
             claseOrigen.setId(clase.getClaseOrigen().getId());
             claseOrigen.setNombre(clase.getClaseOrigen().getNombre());
-            claseOrigen.setNombre_unidad(clase.getClaseOrigen().getUnidad().getNombre());
+            claseOrigen.setNombre_unidad(clase.getClaseOrigen().getUnidad().getNombre());            
             claseResp.setClase_origen(claseOrigen);
         }
         // continúa
@@ -754,6 +1098,21 @@ public class ProductoTrazFacadeREST {
         claseResp.setGenera_residuos(clase.isGeneraResiduos());
         claseResp.setFactor_transf_directo(clase.getFactorTransfDirecto());
         claseResp.setDefine_piezas(clase.isDefinePiezas());
+        
+        if(!clase.getSubClases().isEmpty()){
+            // si hay subclases, las agrego
+            List<SubClaseProdResponseDTO> subclases = new ArrayList<>();
+            for(ProductoSubClase scl : clase.getSubClases()){
+                SubClaseProdResponseDTO sub = new SubClaseProdResponseDTO();
+                sub.setId(scl.getId());
+                sub.setFactor_relativo(scl.getFactorRelativo());
+                sub.setId_clase_derivada(scl.getClaseDerivada().getId());
+                sub.setNombre_clase_derivada(scl.getClaseDerivada().getNombre());
+                sub.setUnidad_clase_derivada(scl.getClaseDerivada().getUnidad().getNombre());
+                subclases.add(sub);
+            }
+            claseResp.setSub_clases(subclases);
+        }        
     }
 
     /**
@@ -835,5 +1194,33 @@ public class ProductoTrazFacadeREST {
         claseDTO.setId(clase.getId());
         claseDTO.setNombre(clase.getNombre());
         claseDTO.setNombre_unidad(clase.getUnidad().getNombre());
+        if(!clase.getSubClases().isEmpty()){
+            // si hay subclases, las agrego
+            List<SubClaseProdResponseDTO> subclases = new ArrayList<>();
+            for(ProductoSubClase scl : clase.getSubClases()){
+                SubClaseProdResponseDTO sub = new SubClaseProdResponseDTO();
+                sub.setId(scl.getId());
+                sub.setFactor_relativo(scl.getFactorRelativo());
+                sub.setId_clase_derivada(scl.getClaseDerivada().getId());
+                sub.setNombre_clase_derivada(scl.getClaseDerivada().getNombre());
+                sub.setUnidad_clase_derivada(scl.getClaseDerivada().getUnidad().getNombre());
+                subclases.add(sub);
+            }
+            claseDTO.setSub_clases(subclases);
+        }
+    }
+    
+    /**
+     * Método para setear un FactoresTransformacionDTO response
+     * @param factorDTO FactoresTransformacionDTO objeto a setear
+     * @param factor FactoresTransformacion objeto origen
+     */
+    private void setearFactorTansformacionResponse(FactoresTransformacionDTO factorDTO, FactoresTransformacion factor){
+        factorDTO.setId(factor.getId());
+        factorDTO.setGrupo_especie(factor.getGrupoEspecie());
+        factorDTO.setNivel_desempenio(factor.getNivelDesempenio());
+        factorDTO.setGrado_elaboracion(factor.getGradoElaboracion());
+        factorDTO.setFactor_residuos_grado(factor.getFactorResiduosGrado());
+        factorDTO.setFactor_transf_total(factor.getFactorTransfTotal());
     }
 }

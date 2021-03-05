@@ -4,6 +4,7 @@
 package ar.gob.ambiente.sacvefor.localcompleto.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Objeto que encapsula los atributos de una Clase de productos
@@ -14,9 +15,18 @@ public class ClaseProdGenericoResponseDTO implements Serializable {
     private Long id;
     private String nombre;
     private String nombre_unidad;
+    private List<SubClaseProdResponseDTO> sub_clases; 
     
     public ClaseProdGenericoResponseDTO(){
         
+    }
+
+    public List<SubClaseProdResponseDTO> getSub_clases() {
+        return sub_clases;
+    }
+
+    public void setSub_clases(List<SubClaseProdResponseDTO> sub_clases) {
+        this.sub_clases = sub_clases;
     }
 
     public Long getId() {

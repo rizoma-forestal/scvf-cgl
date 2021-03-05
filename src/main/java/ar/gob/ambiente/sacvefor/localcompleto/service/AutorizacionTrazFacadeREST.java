@@ -102,7 +102,7 @@ public class AutorizacionTrazFacadeREST {
             }else{
                 return Response
                         .status(Response.Status.FORBIDDEN)
-                        .entity("No hay un Proponente registrado con el CIUT remtido.")
+                        .entity("No hay un Proponente registrado con el CUIT remitido.")
                         .type(MediaType.TEXT_PLAIN)
                         .build();
             }

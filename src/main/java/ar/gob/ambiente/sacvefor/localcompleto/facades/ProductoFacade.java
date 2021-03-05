@@ -72,6 +72,24 @@ public class ProductoFacade extends AbstractFacade<Producto> {
     }
     
     /**
+     * Método para los productos con clases derivadas de la clase cuyo id se recibe 
+     * y con especie local correspondiente al id recibido
+     * @param idClaseOrigen Long identificador de la clase de origen
+     * @param idEspecie Long identificador de la especie local
+     * @return List<Producto> listado de productos retornados
+     */
+    public List<Producto> getSubProductosHabilitadosByIdClaseAndIdEspecie(Long idClaseOrigen, Long idEspecie){
+        String queryString = "SELECT prod FROM Producto prod "
+                + "WHERE prod.clase.claseOrigen.id = :idClaseOrigen "
+                + "AND prod.especieLocal.id = :idEspecie "
+                + "AND prod.habilitado = true";
+        Query q = em.createQuery(queryString)
+                .setParameter("idClaseOrigen", idClaseOrigen)
+                .setParameter("idEspecie", idEspecie);
+        return q.getResultList();
+    }
+    
+    /**
      * Método sobreescrito que lista los Productos ordenadas por el nombre vulgar de la Especie
      * @return List<Producto> listado de productos ordenados por el nombre de la especie local
      */
