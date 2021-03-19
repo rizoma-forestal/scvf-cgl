@@ -15,13 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilderException;
 import org.apache.log4j.Logger;
 
 /**
@@ -164,6 +168,115 @@ public class ItemProductivoTrazFacadeREST {
             return Response
                     .status(Response.Status.FORBIDDEN)
                     .entity("id_guia no puede ser nulo.")
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /**
+     * Método que obtiene un Item productivo según la id, para ser obtenido desde TRAZ
+     * @param id Long identificación del item
+     * @return Response con el ItemProductivoCGLResponseDTO
+     */
+    @GET
+    @Path("{id}")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response findPorId(@PathParam("id") Long id) {
+        LOG.info("Se está consultando mediante REST un item productivo mendiante su id: " + id);
+            try{
+            // verifica si existe el item buscado
+            ItemProductivo item = itemFacade.find(id);
+            if(item != null){
+                ItemProductivoCGLResponseDTO itemDTO = new ItemProductivoCGLResponseDTO();
+                setearItemDTO(itemDTO, item);
+                return Response.ok(itemDTO).build();
+            }else{
+                return Response
+                        .status(Response.Status.FORBIDDEN)
+                        .entity("No existe item productivo con el id: " + id)
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al obtener el item productivo: " + id + "." + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al obtener el item producctivo. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /**
+     * Método que actualiza el saldo de un item productivo descontado desde TRAZ
+     * @param entity ItemProductivoCGLResponseDTO con los atributos del ItemProductivo
+     * @return Response con el ItemProductivoCGLResponseDTO
+     */
+    @POST
+    @Path("")
+    @Secured
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response updateItemProductivo(ItemProductivoCGLResponseDTO entity) {
+        LOG.info("Se está actualizando mediante REST el saldo de un item productivo, id: " + entity.getId());
+        
+        try{
+            if(entity.getId() != null){
+                // obtengo el item productivo
+                ItemProductivo item = itemFacade.find(entity.getId());
+                if(item != null){
+                    // se verifica la correspondencia de detalle de piezas
+                    if(item.getDetallePiezas() != null && entity.getDetalle_piezas() == null) {
+                        return Response
+                                .status(Response.Status.FORBIDDEN)
+                                .entity("El item a editar tiene detalle de piezas.")
+                                .type(MediaType.TEXT_PLAIN)
+                                .build();
+                    }
+                    if(item.getDetallePiezas() == null && entity.getDetalle_piezas() != null){
+                        return Response
+                                .status(Response.Status.FORBIDDEN)
+                                .entity("El item a editar no tiene detalle de piezas.")
+                                .type(MediaType.TEXT_PLAIN)
+                                .build();  
+                    }
+                    // actualiza detalle
+                    if(item.getDetallePiezas() != null){
+                        item.getDetallePiezas().setSaldoPiezas(entity.getDetalle_piezas().getSaldo_piezas());
+                        item.getDetallePiezas().setSaldoVolumen(entity.getDetalle_piezas().getSaldo_volumen());
+                    }
+                    // actualiza el saldo general del item
+                    item.setSaldo(entity.getSaldo());
+                    item.setSaldoKg(entity.getSaldo_kg());
+                    item.setSaldoM3(entity.getSaldo_m3());
+                    
+                    // se actualiza el item
+                    itemFacade.edit(item);
+                    
+                    // se retorna el item editado
+                    ItemProductivoCGLResponseDTO itemDTO = new ItemProductivoCGLResponseDTO();
+                    setearItemDTO(itemDTO, item);
+                    return Response.ok().entity(itemDTO).build();
+                }else{
+                    return Response
+                            .status(Response.Status.FORBIDDEN)
+                            .entity("No existe item productivo con el id: " + entity.getId())
+                            .type(MediaType.TEXT_PLAIN)
+                            .build();
+                }
+            }else{
+                return Response
+                        .status(Response.Status.FORBIDDEN)
+                        .entity("Solo se puede editar un item existente, el id no puede ser null.")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al actualizar el item productivo con la id: " + entity.getId() + "." + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al actualizar el item productivo. " + ex.getMessage())
                     .type(MediaType.TEXT_PLAIN)
                     .build();
         }
