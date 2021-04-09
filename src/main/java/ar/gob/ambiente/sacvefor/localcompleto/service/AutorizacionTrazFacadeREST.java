@@ -224,6 +224,14 @@ public class AutorizacionTrazFacadeREST {
             predioDTO.setDepartamento(inm.getDepartamento());
             predioDTO.setDomicilio(inm.getDomicilio());
             predioDTO.setNombre(inm.getNombre());
+            // setea origen si tiene configurado
+            if(inm.getOrigen() != null){
+                GenericoParamCGLResponseDTO origenDTO = new GenericoParamCGLResponseDTO();
+                origenDTO.setId(inm.getOrigen().getId());
+                origenDTO.setNombre(inm.getOrigen().getNombre());
+                predioDTO.setOrigen(origenDTO);
+            }
+
             predios.add(predioDTO);
         }
         return predios;

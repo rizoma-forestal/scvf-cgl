@@ -7,6 +7,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Producto;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoClase;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoEspecieLocal;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoSubClase;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoTasa;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoUnidadMedida;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.FactoresTransFacade;
@@ -1017,6 +1018,51 @@ public class ProductoTrazFacadeREST {
         }
         return Response.ok(factoresDTO).build();
     }
+    
+    /*********
+     * TASAS * 
+     *********/      
+    
+    /**
+     * Método para obtener las tasas configuradas para un producto 
+     * requerido para TRAZ
+     * @param id_producto Long identificador del producto
+     * @return Response con el listado de tasas del producto o el mensaje que corresponda
+     */
+    @GET
+    @Path("tasas/{id_producto}")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)    
+    public Response getTasasByIdProducto(@PathParam("id_producto") Long id_producto){
+        try{
+            // verifica la existencia del producto
+            Producto prod = prodFacade.find(id_producto);
+            List<ProductoTasa> tasas = new ArrayList<>();
+            if(prod != null){
+                // obtiene las tasas vinculadas al producto, solo las habilitadas
+                for(ProductoTasa t : prod.getTasas()){
+                    if(t.getTipo().isHabilitado()){
+                        tasas.add(t);
+                    }
+                }
+                return Response.ok(tasas).build(); 
+            }else{
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("No hay un producto con la id remitida.")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
+            }
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al obtener las tasas para TRAZ del producto con la id: " + id_producto + ". " + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al obtener el producto. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }    
+    
     /********************
      * Métodos privados *
      ********************/

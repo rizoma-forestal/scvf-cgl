@@ -19,9 +19,18 @@ public class PredioGCLResponseDTO implements Serializable {
     private String departamento;
     private String localidad;
     private Long id_loc_gt;
+    private GenericoParamCGLResponseDTO origen;
     
     public PredioGCLResponseDTO() {
         
+    }
+
+    public GenericoParamCGLResponseDTO getOrigen() {
+        return origen;
+    }
+
+    public void setOrigen(GenericoParamCGLResponseDTO origen) {
+        this.origen = origen;
     }
 
     public Long getId() {
