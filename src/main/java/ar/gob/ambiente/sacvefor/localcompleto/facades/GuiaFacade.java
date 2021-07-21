@@ -197,6 +197,46 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }
     
     /**
+     * Obtiene todas las guías cuyo tipo no habilita transporte, emitidas y vigentes,  
+     * según el número de fuente (para guías de fiscalización de primer movimiento)
+     * Requerido para los servicios de TRAZ
+     * @param fuente String código de la Autorización de la que descontó
+     * @return List<Guia> listado de las Guías retornadas
+     */
+    public List<Guia> findFiscByNumFuente(String fuente){
+        Date hoy = new Date(System.currentTimeMillis());
+        String queryString = "SELECT guia FROM Guia guia "
+                + "WHERE guia.numFuente = :fuente "
+                + "AND guia.tipo.habilitaTransp = false "
+                + "AND guia.estado.habilitaFuenteProductos = true "
+                + "AND guia.fechaVencimiento >= :hoy";
+        Query q = em.createQuery(queryString)
+              .setParameter("hoy", hoy)  
+              .setParameter("fuente", fuente);
+        return q.getResultList();
+    }
+    
+    /**
+     * Obtiene todas las guías cuyo tipo no habilita transporte, emitidas y vigentes, 
+     * según el id_establecimiento del origen (para guías de fiscalización de removido)
+     * Requerido para los servicios de TRAZ
+     * @param id_establecimiento Long identificación del Establecimiento origen registrado en TRAZ
+     * @return List<Guia> listado de las Guías retornadas
+     */
+    public List<Guia> findFiscByIdEstablecimiento(Long id_establecimiento){
+        Date hoy = new Date(System.currentTimeMillis());
+        String queryString = "SELECT guia FROM Guia guia "
+                + "WHERE guia.origen.id_establecimiento = :id_establecimiento "
+                + "AND guia.tipo.habilitaTransp = false "
+                + "AND guia.estado.habilitaFuenteProductos = true "
+                + "AND guia.fechaVencimiento >= :hoy";
+        Query q = em.createQuery(queryString)
+                .setParameter("hoy", hoy)
+                .setParameter("id_establecimiento", id_establecimiento);
+        return q.getResultList();
+    }
+    
+    /**
      * Metodo que devuelve las Guías emitidas que tengan como Destinatario al CUIT recibido.
      * Que no sean de movimiento interno
      * @param cuit Long cuit del Destinatario cuyas Guías se busca

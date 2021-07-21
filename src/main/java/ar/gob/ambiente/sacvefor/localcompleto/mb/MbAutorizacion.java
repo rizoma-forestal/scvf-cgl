@@ -1482,6 +1482,8 @@ public class MbAutorizacion {
         itemAutorizado.setUnidad(producto.getClase().getUnidad().getNombre());
         itemAutorizado.setIdEspecieTax(producto.getEspecieLocal().getIdTax());
         itemAutorizado.setKilosXUnidad(producto.getEquivalKg());
+        itemAutorizado.setM3XUnidad(producto.getEquivalM3());
+        itemAutorizado.setGrupoEspecie(producto.getEspecieLocal().getGrupoEspecie());
         if(producto == null){
             JsfUtil.addErrorMessage("No se registra un " + ResourceBundle.getBundle("/Config").getString("Producto") + " para la Especie local y Clase seleccionadas.");
         }   
@@ -1520,8 +1522,12 @@ public class MbAutorizacion {
                     itemAutorizado.setSaldo(itemAutorizado.getTotal());
                     // seteo el equivalente total en Kg.
                     itemAutorizado.setTotalKg(itemAutorizado.getTotal() * itemAutorizado.getKilosXUnidad());
+                    // seteo el equivalente total en M3
+                    itemAutorizado.setTotalM3(itemAutorizado.getTotal() * itemAutorizado.getM3XUnidad());
                     // seteo el equivalente en Kg. del saldo
                     itemAutorizado.setSaldoKg(itemAutorizado.getTotalKg());
+                    // seteo el equivalente en M3 del saldo
+                    itemAutorizado.setSaldoM3(itemAutorizado.getTotalM3());
                     // seteo el código de origen del Producto
                     itemAutorizado.setCodigoProducto(crearCodigoProducto());
 
@@ -1590,8 +1596,12 @@ public class MbAutorizacion {
         itemAutorizado.setSaldo(itemAutorizado.getTotal());
         // seteo el equivalente total en Kg.
         itemAutorizado.setTotalKg(itemAutorizado.getTotal() * itemAutorizado.getKilosXUnidad());
+        // seteo el equivalente total en M3
+        itemAutorizado.setTotalM3(itemAutorizado.getTotal() * itemAutorizado.getM3XUnidad());
         // seteo el equivalente en Kg. del saldo
         itemAutorizado.setSaldoKg(itemAutorizado.getTotalKg());
+        // seteo el equivalente en M3 del saldo
+        itemAutorizado.setSaldoM3(itemAutorizado.getTotalM3());
         try{
             // actualizo
             itemFacade.edit(itemAutorizado);

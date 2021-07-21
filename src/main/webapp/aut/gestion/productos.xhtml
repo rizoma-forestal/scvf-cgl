@@ -31,7 +31,7 @@
                         <f:selectItems value="#{mbAutorizacion.lstProductos}" 
                                        var="prodClase" itemLabel="#{prodClase.clase.nombre}-#{prodClase.clase.unidad.abreviatura}" itemValue="#{prodClase}"/>
                     </p:selectOneMenu>
-                    <p:commandButton title="Buscar #{config.Inmueble} existente" styleClass="save" icon="fa fa-fw fa-search" 
+                    <p:commandButton title="Buscar #{config.Producto} existente" styleClass="save" icon="fa fa-fw fa-search" 
                                      value="Buscar" action="#{mbAutorizacion.buscarProducto()}" update="frProductos,messages"/>
                     <p:commandButton title="Limpiar formulario" icon="fa fa-fw fa-refresh" value="Limpiar" >
                         <p:ajax update="pnBuscar" resetValues="true" />
@@ -110,7 +110,7 @@
                              widgetVar="itemsTable"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="5,10,15">
-                    <p:column headerText="id" style="width:50px">
+                    <p:column headerText="id" style="width:20px">
                         <p:outputLabel value="#{item.id}"/>
                     </p:column>
                     <p:column headerText="Especie local" 
@@ -131,38 +131,36 @@
                         filterBy="#{item.unidad}" >
                         <p:outputLabel value="#{item.unidad}"/>
                     </p:column>
-                    <p:column headerText="Cantidad" style="text-align: right !important;"  
-                        filterMatchMode="contains"
-                        sortBy="#{item.total}" 
-                        filterBy="#{item.total}" >
+                    <p:column headerText="Cantidad" style="text-align: right; width:60px !important" >
                         <p:outputLabel value="#{item.total}" >
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Cant. en Kg." style="text-align: right !important;"  
-                        filterMatchMode="contains"
-                        sortBy="#{item.totalKg}" 
-                        filterBy="#{item.totalKg}" >
+                    <p:column headerText="Cant. en Kg" style="text-align: right; width:80px !important;" >
                         <p:outputLabel value="#{item.totalKg}" >
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Saldo" style="text-align: right !important;" 
-                        filterMatchMode="contains"
-                        sortBy="#{item.saldo}" 
-                        filterBy="#{item.saldo}" >
+                    <p:column headerText="Cant. en M3" style="text-align: right; width:80px !important;" >
+                        <p:outputLabel value="#{item.totalM3}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Saldo" style="text-align: right; width:60px !important;" >
                         <p:outputLabel value="#{item.saldo}" >
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Saldo en Kg." style="text-align: right !important;" 
-                        filterMatchMode="contains"
-                        sortBy="#{item.saldoKg}" 
-                        filterBy="#{item.saldoKg}" >
+                    <p:column headerText="Saldo en Kg" style="text-align: right; width:80px !important;" >
                         <p:outputLabel value="#{item.saldoKg}" >
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
+                    <p:column headerText="Saldo en M3" style="text-align: right; width:80px !important;" >
+                        <p:outputLabel value="#{item.saldoM3}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column> 
                     <p:column style="width:30px">
                         <p:commandButton styleClass="fa" icon="fa fa-fw fa-search-plus" title="Ver detalle" process="@this" 
                                          update="@form" action="#{mbAutorizacion.prepareViewProducto()}" >

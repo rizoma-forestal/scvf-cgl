@@ -2450,6 +2450,8 @@ public class MbGuia {
         itemAsignado.setNombreVulgar(itemFuente.getNombreVulgar());
         itemAsignado.setIdEspecieTax(itemFuente.getIdEspecieTax());
         itemAsignado.setKilosXUnidad(itemFuente.getKilosXUnidad());
+        itemAsignado.setM3XUnidad(itemFuente.getM3XUnidad());
+        itemAsignado.setGrupoEspecie(itemFuente.getGrupoEspecie());
         itemAsignado.setCodigoProducto(itemFuente.getCodigoProducto());
         
         TipoParam tipoParamTipoItemActual = tipoParamFacade.getExistente(ResourceBundle.getBundle("/Config").getString("TipoItem"));
@@ -2535,6 +2537,7 @@ public class MbGuia {
                             ip.setSaldo(ip.getSaldo() - itemAsignado.getTotal());
                         }
                         ip.setSaldoKg(ip.getSaldo() * ip.getKilosXUnidad());
+                        ip.setSaldoM3(ip.getSaldo() * ip.getM3XUnidad());
                         ip.setDescontado(true);
                         // actualizo el item fuente
                         itemFacade.edit(ip);
@@ -2545,6 +2548,10 @@ public class MbGuia {
                     itemAsignado.setTotalKg(itemAsignado.getTotal() * itemAsignado.getKilosXUnidad());
                     // seteo el equivalente en Kg. del saldo
                     itemAsignado.setSaldoKg(itemAsignado.getTotalKg());
+                    // actualizo el equivalente total en M3
+                    itemAsignado.setTotalM3(itemAsignado.getTotal() * itemAsignado.getM3XUnidad());
+                    // seteo el equivalente en M3 del saldo
+                    itemAsignado.setSaldoM3(itemAsignado.getTotalM3());
                     // actualizo el item asignado a la guía
                     itemFacade.edit(itemAsignado);
                     editandoItem = false;
@@ -2562,8 +2569,12 @@ public class MbGuia {
                     itemAsignado.setSaldo(itemAsignado.getTotal());
                     // seteo el equivalente total en Kg.
                     itemAsignado.setTotalKg(itemAsignado.getTotal() * itemAsignado.getKilosXUnidad());
+                    // seteo el equivalente total en M3
+                    itemAsignado.setTotalM3(itemAsignado.getTotal() * itemAsignado.getM3XUnidad());
                     // seteo el equivalente en Kg. del saldo
                     itemAsignado.setSaldoKg(itemAsignado.getTotalKg());
+                    // seteo el equivalente en M3 del saldo
+                    itemAsignado.setSaldoM3(itemAsignado.getTotalM3());
                     // seteo la guía
                     itemAsignado.setGuia(guia);
                     itemFacade.create(itemAsignado);
@@ -2605,6 +2616,8 @@ public class MbGuia {
                 itemOrigen.setSaldo(saldoActualizado);
                 // actualizo el saldo en Kg
                 itemOrigen.setSaldoKg(itemOrigen.getSaldo() * itemOrigen.getKilosXUnidad());
+                // actualizo el saldo en M3
+                itemOrigen.setSaldoM3(itemOrigen.getSaldo() * itemOrigen.getM3XUnidad());
                 // actualizo el itemOrigen
                 itemFacade.edit(itemOrigen);
                 // elimino el itemAsignado de la Guía
@@ -3930,14 +3943,19 @@ public class MbGuia {
 
     /**
      * Método para liquidar todas las tasas de los productos de una guía para luego generar el volante de pago.
-     * Primero recorre las tasas configuradas para la guía. Por cada una verifica si discrimina valores según la configuración.
-     * Si discrimina, verifica por cada tasa con discriminación registrada que, además de estar en la base, deberán estar también en el properties.
-     * Al momento son 5:
-     *  1. Según el origen del predio: CondAforoFiscal=FISCAL CON AFORO. El valor de la variable configurada deberá ser el del origen del predio a validar, de las fuentes de productos.
-     *  2. Según el destino de los productos: CondDerInspExt=DESTINO EXTERNO y CondDerInspInt=DESTINO INTERNO
-     *  3. Según el tipo de intervención autorizado para la fuente de productos: IntervPCUS=CAMBIO USO DEL SUELO y IntervPM=PLAN MANEJO SOSTENIBLE.
-     *  El valor de cada variable configurada deberá ser el tipo de intervención que corresponda para cada caso.
-     * Según corresponda en cada caso se agregará o no al listado de tasas a liquidar.
+     * Primero recorre las tasas configuradas para la guía. Por cada una verifica si discrimina ante algún caso.
+     * Si discrimina, verifica el caso de liquidación. Por ahora los configurados como Parametricas de tipo DISC_TASA son 3
+     *  1. ORIGEN_PREDIO
+     *  2. DEST_GUIAS
+     *  3. TIPO_INTERVENCION
+     * Registrados a su vez como tipoParam configurados en el properties:
+     *  1. OrigenPredio
+     *  2. DestinoGuias
+     *  3. TipoInterv
+     * Si es por origen del predio, compara con el nombre de la paramétrica origen, del primer inmueble vinculado a la Autorización
+     * Si es por destino de los productos, compara con el atributo isExterno de la Guía
+     * Si es por tipo de intervención, compara con la paramétrica tipo intervención de la Autorización fuente de productos
+     * En cada caso, si hay coincidencia, se agrega la tasa al listado para liquidar
      * Si no discrimina, se agrega directamente.
      * Luego, se recorren los ítems productivos y por cada uno se calcula el detalle correpondiente a cada tasa que integra el listado, 
      * siempre que el ítem la tenga configurada.
@@ -3948,44 +3966,37 @@ public class MbGuia {
     private void liquidarTasas(Guia guiaAct) {
         for(TipoGuiaTasa tgt : guiaAct.getTipo().getTasas()){
             // por cada tasa que tenga configurada la guía a liquidar, verifico si tiene discriminaciones
-            if(tgt.getTipo().isLeeConf()){
-                // si las tiene, respondo en cada caso
-                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("CondAforoFiscal"))){
-                    // si discrimina por origen del predio, verifico si el predio de la fuente de productos tiene un origen que corresponda a la discriminación
-                    Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
-                    if(aut.getInmuebles().get(0).getOrigen().getNombre().equals(ResourceBundle.getBundle("/Config").getString("CondAforoFiscal"))){
-                        // si el origen del predio amerita el pago, guardo la tasa en el listado
-                        lstNombresTasas.add(tgt.getTipo().getNombre());
-                    }
-                }
-                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("CondDerInspExt"))){
-                    // si discrimina por el destino externo de los productos se la agrega si el destino de la guía es externo
-                    if(guiaAct.isDestinoExterno()){
-                        lstNombresTasas.add(tgt.getTipo().getNombre());
-                    }
-                }
-                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("CondDerInspInt"))){
-                    // si discrimina por el destino interno de los productos se la agrega si el destino de la guía es interno
-                    if(!guiaAct.isDestinoExterno()){
-                        lstNombresTasas.add(tgt.getTipo().getNombre());
-                    }
-                }
-                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("IntervPCUS"))){
-                    // si discrimina por intervención PCUS de la fuente de productos, se la agrega si ese es el tipo de intervención
-                    Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
-                    if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPCUS"))){
-                        lstNombresTasas.add(tgt.getTipo().getNombre());
-                    }
-                }
-                if(tgt.getTipo().getConf().equals(ResourceBundle.getBundle("/Config").getString("IntervPM"))){
-                    // si discrimina por intervención PM de la fuente de productos, se la agrega si ese es el tipo de intervención
-                    Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
-                    if(aut.getIntervencion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("IntervPM"))){
-                        lstNombresTasas.add(tgt.getTipo().getNombre());
-                    }
-                }
+          if(tgt.isDiscrimina()){
+              // en prinicpio podrá tener tres tipos de discriminación, ferifico de cuál se trata
+              if(tgt.getCasoLiquidacion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("OrigenPredio"))){
+                  // si discrimina según el origen del predio obtengo la autorización
+                  Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
+                  if(aut.getInmuebles().get(0).getOrigen().getNombre().equals(tgt.getMatchDisc().getNombre())){
+                      // si coincide el origen del predio con el valor a discriminar, agrego la tasa
+                      lstNombresTasas.add(tgt.getTipo().getNombre());
+                  }
+              }
+              else if(tgt.getCasoLiquidacion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("DestinoGuias"))){
+                  // si discrimina según el destino de la guía, lo comparo
+                  if(guiaAct.isDestinoExterno() && tgt.getMatchDisc().getNombre().equals("EXTERNO")){
+                      // si el destino externo y el valor a discriminar también, agrego
+                      lstNombresTasas.add(tgt.getTipo().getNombre());
+                  }
+                  else if(!guiaAct.isDestinoExterno() && tgt.getMatchDisc().getNombre().equals("INTERNO")){
+                      // si el destino interno y el valor a discriminar también, agrego
+                      lstNombresTasas.add(tgt.getTipo().getNombre());
+                  }
+              }
+              else if(tgt.getCasoLiquidacion().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TipoInterv"))){
+                  // si discrimina según el tipo de intervención autorizada obtengo la autorización
+                  Autorizacion aut = autFacade.getExistente(guia.getNumFuente());
+                  if(aut.getIntervencion().getNombre().equals(tgt.getMatchDisc().getNombre())){
+                      // si coincide el tipo de intervención con el valor a discriminar, agrego
+                      lstNombresTasas.add(tgt.getTipo().getNombre());
+                  }
+              }
             }else{
-                // si no las tiene, directamente agrego la tasa al listado
+                // si no discrimina, directamente agrego la tasa al listado
                 lstNombresTasas.add(tgt.getTipo().getNombre());
             }
         }

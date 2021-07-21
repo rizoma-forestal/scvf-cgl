@@ -49,6 +49,47 @@ public class ProductoFacade extends AbstractFacade<Producto> {
     }      
     
     /**
+     * Método para obtener un Producto según la id de la especie local y la id de la clase
+     * Para homologar productos desde TRAZ
+     * @param id_especie Long identificador de le especie local
+     * @param id_clase Long identificador de la clase de producto
+     * @return Producto producto correspondiente
+     */
+    public Producto getExistenteXid_especieYid_clase(Long id_especie, Long id_clase){
+        List<Producto> lstProductos;
+        String queryString = "SELECT prod FROM Producto prod "
+                + "WHERE prod.clase.id = :id_clase "
+                + "AND prod.especieLocal.id = :id_especie";
+        Query q = em.createQuery(queryString)
+                .setParameter("id_especie", id_especie)
+                .setParameter("id_clase", id_clase);
+        lstProductos = q.getResultList();
+        if(lstProductos.isEmpty()){
+            return null;
+        }else{
+            return lstProductos.get(0);
+        }
+    }
+    
+    /**
+     * Método para los productos con clases derivadas de la clase cuyo id se recibe 
+     * y con especie local correspondiente al id recibido
+     * @param idClaseOrigen Long identificador de la clase de origen
+     * @param idEspecie Long identificador de la especie local
+     * @return List<Producto> listado de productos retornados
+     */
+    public List<Producto> getSubProductosHabilitadosByIdClaseAndIdEspecie(Long idClaseOrigen, Long idEspecie){
+        String queryString = "SELECT prod FROM Producto prod "
+                + "WHERE prod.clase.claseOrigen.id = :idClaseOrigen "
+                + "AND prod.especieLocal.id = :idEspecie "
+                + "AND prod.habilitado = true";
+        Query q = em.createQuery(queryString)
+                .setParameter("idClaseOrigen", idClaseOrigen)
+                .setParameter("idEspecie", idEspecie);
+        return q.getResultList();
+    }
+    
+    /**
      * Método sobreescrito que lista los Productos ordenadas por el nombre vulgar de la Especie
      * @return List<Producto> listado de productos ordenados por el nombre de la especie local
      */
