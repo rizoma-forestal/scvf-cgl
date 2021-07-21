@@ -21,7 +21,7 @@
             <p:layoutUnit id="top" styleClass="top" position="north" size="100" resizable="true" closable="true" collapsible="true">
                 <h:panelGrid id="topPg" columns="3" styleClass="topPg" >
                     <img src="#{request.contextPath}/resources/img/logoSACveforHeader.jpg" width="80" height="80" style="float: left; margin-left: 15px" />
-                    <p:outputLabel id="topOl" value="SACVeFor - Gestión local de la Provincia de #{config.Provincia}" styleClass="topOl" />
+                    <p:outputLabel id="topOl" value="#{bundle.Aplicacion} de la Provincia de #{config.Provincia}" styleClass="topOl" />
                     <h:panelGrid columns="1">
                         <p:outputLabel value="Usuario: #{mbSesion.usuario.nombreCompleto}" styleClass="topUs" />
                         <p:outputLabel value="Rol: #{mbSesion.usuario.rol.nombre}" styleClass="topUs" />
@@ -57,6 +57,17 @@
                                 <p:menuitem value="#{config.Delegaciones}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.EntidadesParametricas}/deleg.xhtml" 
                                             rendered="#{(mbSesion.usuario.rol.nombre eq config.Administrador 
                                                         or mbSesion.usuario.rol.nombre eq config.Pruebas) and config.ImprimeFormularios eq 'si'}" />
+                                
+                                <p:menuitem value="#{config.EstadosGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/estado.xhtml" 
+                                            rendered="#{mbSesion.usuario.rol.nombre eq config.Administrador 
+                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas}"/>
+                                <p:menuitem value="#{config.TiposGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/tipo.xhtml" 
+                                            rendered="#{mbSesion.usuario.rol.nombre eq config.Administrador 
+                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas}"/>
+                                <p:menuitem value="#{config.Copias}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/copia.xhtml" 
+                                            rendered="#{(mbSesion.usuario.rol.nombre eq config.Administrador 
+                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas) and config.emiteRemota ne 'si'}"/>
+                                
                                 <p:submenu label="#{config.Productos}" 
                                            rendered="#{mbSesion.usuario.rol.nombre eq config.Administrador 
                                                        or mbSesion.usuario.rol.nombre eq config.Pruebas }" >
@@ -95,12 +106,7 @@
                                 <p:menuitem value="#{config.Ver}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.VerGuias}/listado.xhtml" />
                                 <p:menuitem value="#{config.Gestionar}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.GestionarGuias}/index.xhtml" 
                                             rendered="#{config.emiteRemota ne 'si'}" />
-                                <p:menuitem value="#{config.EstadosGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/estado.xhtml" 
-                                            rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
-                                <p:menuitem value="#{config.TiposGuia}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/tipo.xhtml" 
-                                            rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
-                                <p:menuitem value="#{config.Copias}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.ParamGuias}/copia.xhtml" 
-                                            rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta and config.emiteRemota ne 'si'}"/>
+
                                 <p:menuitem value="#{config.Destinatarios}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/destinatario.xhtml" 
                                             rendered="#{mbSesion.usuario.rol.nombre ne config.Consulta}"/>
                                 <p:menuitem value="#{config.Obrajeros}" url="#{config.Server}#{bundle.RutaAplicacion}/#{bundle.PersonasGuias}/obrajero.xhtml" 

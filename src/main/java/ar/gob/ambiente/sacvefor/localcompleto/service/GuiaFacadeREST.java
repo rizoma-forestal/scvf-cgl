@@ -556,7 +556,17 @@ public class GuiaFacadeREST {
             result = guiaFacade.getEmitidasByDestinatario(destino);
         }
         return result;
-    }      
+    }   
+    
+    @GET
+    @Path("/vigentes/matricula/{matricula}")
+    @Secured
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public List<Guia> findVigenteByMatricula(@PathParam("matricula") String matricula){
+        List<Guia> result = new ArrayList<>();
+        result = guiaFacade.getVigentesByMatricula(matricula);
+        return result;
+    }    
 
     /**
      * @api {get} /guias Ver todas las Guías
