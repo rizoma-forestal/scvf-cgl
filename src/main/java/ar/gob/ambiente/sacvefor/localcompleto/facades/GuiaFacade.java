@@ -267,6 +267,23 @@ public class GuiaFacade extends AbstractFacade<Guia> {
     }
     
     /**
+     * Método que retorna las Guías de Transporte emitidas vigentes según la matrícula del vehículo de transporte
+     * @param matricula String matrícula del vehículo
+     * @return List<Guia> listado de las guías transportadas por el vehículo en estado de "emitida" y vigentes
+     */
+    public List<Guia> getVigentesByMatricula(String matricula){
+        Date hoy = new Date(System.currentTimeMillis());
+        String queryString = "SELECT guia FROM Guia guia "
+                + "WHERE guia.transporte.vehiculo.matricula = :matricula "
+                + "AND guia.estado.nombre = 'EMITIDA' "
+                + "AND guia.fechaVencimiento >= :hoy";
+        Query q = em.createQuery(queryString)
+                .setParameter("matricula", matricula)
+                .setParameter("hoy", hoy);
+        return q.getResultList();
+    }
+    
+    /**
      * Método que obtiene las Guías en estado de EMITIDA o CERRADA que se hayan emitido entre
      * las fechas de inicio y fin recibidas como parámetro, para toda la provincia
      * @param inicio Date fecha límite de inicio del período dentro del cual se emitieron las guías consultadas
