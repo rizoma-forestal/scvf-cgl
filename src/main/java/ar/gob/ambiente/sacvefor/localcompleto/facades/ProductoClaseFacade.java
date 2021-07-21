@@ -3,6 +3,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.facades;
 
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoClase;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ProductoUnidadMedida;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.Query;
@@ -76,6 +77,7 @@ public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
      * @return List<ProductoClase> listado con las Clases solicitadas
      */
     public List<ProductoClase> getClasesOrigen(int nivelTransformacion){
+        List<ProductoClase> lstClases = new ArrayList<>();
         if(nivelTransformacion == 1 || nivelTransformacion == 2){
             nivelTransformacion = nivelTransformacion - 1;
             String queryString = "SELECT clase FROM ProductoClase clase "
@@ -86,7 +88,7 @@ public class ProductoClaseFacade extends AbstractFacade<ProductoClase> {
                     .setParameter("nivelTransformacion", nivelTransformacion);
             return q.getResultList();
         }else{
-            return null;
+            return lstClases;
         }
     }
 }

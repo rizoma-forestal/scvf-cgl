@@ -31,6 +31,7 @@ public class ApplicationConfig extends Application {
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.GiuaTrazFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.GuiaFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.GuiaSICMAFacadeREST.class);
+        resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.ImagenesTrazFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.ItemProductivoFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.ItemProductivoTrazFacadeREST.class);
         resources.add(ar.gob.ambiente.sacvefor.localcompleto.service.LocalidadFacadeREST.class);

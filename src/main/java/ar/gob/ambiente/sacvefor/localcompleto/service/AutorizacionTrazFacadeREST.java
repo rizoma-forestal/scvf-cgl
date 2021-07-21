@@ -11,6 +11,7 @@ import ar.gob.ambiente.sacvefor.localcompleto.entities.Inmueble;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ItemProductivo;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Parametrica;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.Persona;
+import ar.gob.ambiente.sacvefor.localcompleto.entities.Rodal;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.TipoParam;
 import ar.gob.ambiente.sacvefor.localcompleto.entities.ZonaIntervencion;
 import ar.gob.ambiente.sacvefor.localcompleto.facades.AutorizacionFacade;
@@ -230,6 +231,17 @@ public class AutorizacionTrazFacadeREST {
                 origenDTO.setId(inm.getOrigen().getId());
                 origenDTO.setNombre(inm.getOrigen().getNombre());
                 predioDTO.setOrigen(origenDTO);
+            }
+            // setea rodales si los tiene configurados
+            if(!inm.getRodales().isEmpty()){
+                List<PredioGCLResponseDTO.RodalDTO> lstRDto = new ArrayList<>();
+                for (Rodal r : inm.getRodales()) {
+                    PredioGCLResponseDTO.RodalDTO rDTO = new PredioGCLResponseDTO.RodalDTO();
+                    rDTO.setId(r.getId());
+                    rDTO.setNumOrden(r.getNumOrden());
+                    lstRDto.add(rDTO);
+                }
+                predioDTO.setRodales(lstRDto);
             }
 
             predios.add(predioDTO);

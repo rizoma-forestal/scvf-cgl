@@ -909,6 +909,42 @@ public class ProductoTrazFacadeREST {
     }    
     
     /**
+     * Método para obtener todos los productos registrados con los atributos completos de la clase
+     * @return List<ProductoCompletoResponseDTO> Response con el listado de Productos completos o el mensaje que corresponda
+     */
+    @GET
+    @Path("")
+    @Secured
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllProductos() {
+        try{
+            List<Producto> lstProd = prodFacade.findAll();
+            
+            // crea el listado de DTO y el objeto individual para ir agregando
+            List<ProductoCompletoResponseDTO> prodCompletosDTO = new ArrayList<>();
+            ProductoCompletoResponseDTO productoCompletoDTO;
+                
+            if(!lstProd.isEmpty()){
+                for(Producto prod : lstProd){
+                    // instancia el ResponseDTO
+                    productoCompletoDTO = new ProductoCompletoResponseDTO();
+                    setearProductoCompletoResponse(productoCompletoDTO, prod);
+                    prodCompletosDTO.add(productoCompletoDTO);
+                }   
+            }
+            return Response.ok(prodCompletosDTO).build();
+            
+        }catch(IllegalArgumentException | UriBuilderException ex){
+            LOG.fatal("Hubo un error al obtener los productos para TRAZ: " + ex.getMessage());
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Hubo un error al obtener los productos. " + ex.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+    
+    /**
      * Método para obtener un producto según su id
      * @param id Long identificador del producto
      * @return Response con el ProductoResponseDTO o el mensaje que corresponda
@@ -1182,6 +1218,29 @@ public class ProductoTrazFacadeREST {
         prodResp.setFecha_alta(prod.getFechaAlta().toString());
         prodResp.setHabilitado(prod.isHabilitado());
     }
+    
+    /**
+     * Método para setear un ResponseDTO para producto completo, que incluye un 
+     * ClaseProdResponseDTO en lugar de un ClaseProdGenericoResponseDTO
+     * @param productoCompletoDTO ProductoCompletoResponseDTO a setear
+     * @param prod Producto con los datos a setear en el response
+     */
+    private void setearProductoCompletoResponse(ProductoCompletoResponseDTO productoCompletoDTO, Producto prod) {
+        productoCompletoDTO.setId(prod.getId());
+        // especie local
+        EspecieLocalDTO esp_local = new EspecieLocalDTO();
+        setearEspecieResponse(esp_local, prod.getEspecieLocal());
+        productoCompletoDTO.setEspecie_local(esp_local); 
+        // clase
+        ClaseProdResponseDTO clase = new ClaseProdResponseDTO();
+        setearClaseResponse(clase, prod.getClase());
+        productoCompletoDTO.setClase(clase);
+        // completa
+        productoCompletoDTO.setEquival_kg(prod.getEquivalKg());
+        productoCompletoDTO.setEquival_m3(prod.getEquivalM3());
+        productoCompletoDTO.setFecha_alta(prod.getFechaAlta().toString());
+        productoCompletoDTO.setHabilitado(prod.isHabilitado());        
+    }    
     
     /**
      * Metodo para setear los atributos básicos del producto

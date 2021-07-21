@@ -4,6 +4,8 @@
 package ar.gob.ambiente.sacvefor.localcompleto.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Objeto que contiene los atributos básicos de un Inmueble vinculado a una Autorización
@@ -20,9 +22,10 @@ public class PredioGCLResponseDTO implements Serializable {
     private String localidad;
     private Long id_loc_gt;
     private GenericoParamCGLResponseDTO origen;
+    private List<RodalDTO> rodales;
     
     public PredioGCLResponseDTO() {
-        
+        rodales = new ArrayList<>();
     }
 
     public GenericoParamCGLResponseDTO getOrigen() {
@@ -87,5 +90,38 @@ public class PredioGCLResponseDTO implements Serializable {
 
     public void setId_loc_gt(Long id_loc_gt) {
         this.id_loc_gt = id_loc_gt;
+    }
+
+    public List<RodalDTO> getRodales() {
+        return rodales;
+    }
+
+    public void setRodales(List<RodalDTO> rodales) {
+        this.rodales = rodales;
+    }
+
+    public static class RodalDTO implements Serializable{
+        
+        private Long id;
+        private String numOrden;
+        
+        public RodalDTO() {
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getNumOrden() {
+            return numOrden;
+        }
+
+        public void setNumOrden(String numOrden) {
+            this.numOrden = numOrden;
+        }
     }
 }
