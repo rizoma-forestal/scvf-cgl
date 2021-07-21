@@ -22,11 +22,7 @@
                             <p:outputLabel value="Nombre: " for="v_nombre"/>
                             <p:outputLabel id="v_nombre" value="#{mbParametrica.parametrica.nombre}"/>
                             <p:outputLabel value="Tipo: " for="v_tipo"/>
-                            <p:outputLabel id="v_tipo" value="#{mbParametrica.parametrica.tipo.nombre}"/>
-                            <p:outputLabel value="Discrimina liquidación: " for="v_disc" rendered="#{mbParametrica.parametrica.tipo.nombre eq 'TIPO_TASA'}"/>
-                            <p:selectBooleanCheckbox id="v_disc" disabled="true" value="#{mbParametrica.parametrica.leeConf}" rendered="#{mbParametrica.parametrica.tipo.nombre eq 'TIPO_TASA'}" />
-                            <p:outputLabel value="Variable configurada: " for="v_conf" rendered="#{mbParametrica.parametrica.leeConf}"/>
-                            <p:outputLabel id="v_conf" value="#{mbParametrica.parametrica.conf}" rendered="#{mbParametrica.parametrica.leeConf}" />
+                            <p:outputLabel id="v_tipo" value="#{mbParametrica.parametrica.tipo.nombre}"/>              
                         </h:panelGrid>
                     </p:panel>
                     <!-- Formulario new-edit -->
@@ -45,19 +41,8 @@
                                 <f:selectItem itemLabel="Seleccione el Tipo" itemValue="" noSelectionOption="true"/>
                                 <f:selectItems value="#{mbParametrica.lstTipoParam}" 
                                                var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo}"/>
-                                <p:ajax update="pgLeeConf" />
                             </p:selectOneMenu> 
-                        </h:panelGrid>
-                        
-                        <h:panelGrid id="pgLeeConf" columns="2" >
-                            <p:outputLabel value="Discrimina liquidación: " for="chkConf" rendered="#{mbParametrica.parametrica.tipo.nombre eq 'TIPO_TASA'}" />
-                            <p:selectBooleanCheckbox id="chkConf" value="#{mbParametrica.parametrica.leeConf}" rendered="#{mbParametrica.parametrica.tipo.nombre eq 'TIPO_TASA'}" >
-                                <p:ajax event="change" update="pgLeeConf" /> 
-                            </p:selectBooleanCheckbox>
-                            <p:outputLabel value="Variable configurada: " for="conf" rendered="#{mbParametrica.parametrica.leeConf}"/>
-                            <p:inputText id="conf" value="#{mbParametrica.parametrica.conf}" rendered="#{mbParametrica.parametrica.leeConf}"/>
-                        </h:panelGrid>
-                        
+                        </h:panelGrid>             
                         <h:panelGrid columns="2">
                             <p:commandButton styleClass="save" icon="fa fa-fw fa-save" value="Guardar" action="#{mbParametrica.saveParametrica()}" update="frEntParam"/>
                             <p:commandButton icon="fa fa-fw fa-refresh" value="Limpiar" action="#{mbParametrica.limpiarFormParam()}" update="pnFrm"/>

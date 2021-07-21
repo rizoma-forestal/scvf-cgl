@@ -83,8 +83,13 @@
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Cant. en Kg." style="text-align: right !important;" >
+                    <p:column headerText="Cant. en Kg" style="text-align: right !important;" >
                         <p:outputLabel value="#{itemOrigen.totalKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cant. en M3" style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemOrigen.totalM3}" >
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
@@ -93,8 +98,13 @@
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Saldo en Kg." style="text-align: right !important;" >
+                    <p:column headerText="Saldo en Kg" style="text-align: right !important;" >
                         <p:outputLabel value="#{itemOrigen.saldoKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Saldo en M3" style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemOrigen.saldoM3}" >
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
@@ -133,8 +143,13 @@
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Cantidad en Kg." style="text-align: right !important;" >
+                    <p:column headerText="Cantidad en Kg" style="text-align: right !important;" >
                         <p:outputLabel value="#{itemAsignado.totalKg}" >
+                            <f:convertNumber type="currency"  currencySymbol=""/>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cantidad en M3" style="text-align: right !important;" >
+                        <p:outputLabel value="#{itemAsignado.totalM3}" >
                             <f:convertNumber type="currency"  currencySymbol=""/>
                         </p:outputLabel>
                     </p:column>

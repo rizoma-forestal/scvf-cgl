@@ -123,6 +123,10 @@
                             <p:inputNumber id="eqJg" value="#{mbProducto.producto.equivalKg}" decimalPlaces="2" minValue="0"  
                                  required="true" requiredMessage="Debe ingresar la equivalencia en Kg. para la Unidad." 
                                  decimalSeparator="," thousandSeparator="." />
+                            <p:outputLabel value="Equivalencia en M3." for="eqm3"/>
+                            <p:inputNumber id="eqm3" value="#{mbProducto.producto.equivalM3}" decimalPlaces="2" minValue="0"  
+                                 required="true" requiredMessage="Debe ingresar la equivalencia en M3. para la Unidad." 
+                                 decimalSeparator="," thousandSeparator="." />
                         </h:panelGrid>
                         <h:panelGrid columns="1">
                             <p:commandButton value="Agregar Tasas" icon="fa fa-fw fa-external-link" process="@this" 
@@ -152,6 +156,10 @@
                             <p:outputLabel id="v_unidad" value="#{mbProducto.producto.clase.unidad.abreviatura}"/>
                             <p:outputLabel value="Equivalencia en Kg." />
                             <p:outputLabel value="#{mbProducto.producto.equivalKg}" >
+                                <f:convertNumber type="currency"  currencySymbol=""/>
+                            </p:outputLabel>
+                            <p:outputLabel value="Equivalencia en M3" />
+                            <p:outputLabel value="#{mbProducto.producto.equivalM3}" >
                                 <f:convertNumber type="currency"  currencySymbol=""/>
                             </p:outputLabel>
                             <h:panelGrid id="pgBoton" columns="2" >
@@ -216,6 +224,14 @@
                                 sortBy="#{prod.equivalKg}" 
                                 filterBy="#{prod.equivalKg}" >
                                 <p:outputLabel value="#{prod.equivalKg}" >
+                                    <f:convertNumber type="currency"  currencySymbol=""/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Equival. M3" style="text-align: right !important;" 
+                                filterMatchMode="contains"
+                                sortBy="#{prod.equivalM3}" 
+                                filterBy="#{prod.equivalM3}" >
+                                <p:outputLabel value="#{prod.equivalM3}" >
                                     <f:convertNumber type="currency"  currencySymbol=""/>
                                 </p:outputLabel>
                             </p:column>

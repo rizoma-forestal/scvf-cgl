@@ -20,7 +20,7 @@
                 <!-- Diálogo para agegar las Tasas al Tipo de Guía -->
                 <p:dialog header="Agregue las tasas que correspondan" widgetVar="dlgAgregarTasa" minHeight="40" closable="false">
                     <h:form prependId="false" id="frAgregarTasa">
-                        <p:panel id="pnDlg" style="margin-bottom:10px; width: 550px">
+                        <p:panel id="pnDlg" style="margin-bottom:10px; width: 800px">
                             <h:panelGrid columns="2" >
                                 <p:outputLabel value="Tasa" for="cmbTasas"/>    
                                 <p:selectOneMenu id="cmbTasas" value="#{mbParamGuia.tipoGuiaTasa.tipo}" required="true" 
@@ -28,6 +28,31 @@
                                     <f:selectItem itemLabel="Seleccione una Tasa" itemValue="" noSelectionOption="true"/>
                                     <f:selectItems value="#{mbParamGuia.lstTiposTasas}" 
                                                    var="tipoTasa" itemLabel="#{tipoTasa.nombre}" itemValue="#{tipoTasa}"/>
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Discrimina liquidación: " for="v_discrimina"/>
+                                <p:selectBooleanCheckbox id="v_discrimina" value="#{mbParamGuia.tipoGuiaTasa.discrimina}" >
+                                    <p:ajax update="pgDiscTasa" />
+                                </p:selectBooleanCheckbox>
+                            </h:panelGrid>
+                            <h:panelGrid columns="3" id="pgDiscTasa" >
+                                <!-- Lista los casos de discriminación de liquidación de tasas -->
+                                <p:outputLabel value="Caso" rendered="#{mbParamGuia.tipoGuiaTasa.discrimina}"/>
+                                <p:selectOneMenu id="cmbCasoLiq" value="#{mbParamGuia.tipoGuiaTasa.casoLiquidacion}" 
+                                                 rendered="#{mbParamGuia.tipoGuiaTasa.discrimina}" >
+                                    <f:selectItem itemLabel="Seleccione un caso" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbParamGuia.lstCasosLiq}" 
+                                                   var="casoLiq" itemLabel="#{casoLiq.nombre}" itemValue="#{casoLiq}" >
+                                    </f:selectItems>
+                                    <p:ajax listener="#{mbParamGuia.casoDiscChangeListener()}" update="cmbValorDisc" />
+                                </p:selectOneMenu>
+                                
+                                <!-- Lista los valores a discriminar según el caso seleccionado -->
+                                <p:outputLabel value="Valor" rendered="#{mbParamGuia.tipoGuiaTasa.discrimina}"/>
+                                <p:selectOneMenu id="cmbValorDisc" value="#{mbParamGuia.tipoGuiaTasa.matchDisc}" 
+                                                 rendered="#{mbParamGuia.tipoGuiaTasa.discrimina}" >
+                                    <f:selectItem itemLabel="Seleccione un valor" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{mbParamGuia.lstValDisc}" 
+                                                   var="valLiq" itemLabel="#{valLiq.nombre}" itemValue="#{valLiq}"/>
                                 </p:selectOneMenu>
                             </h:panelGrid>
                             <h:panelGrid columns="2" >
@@ -42,6 +67,15 @@
                                      id="dtTasas">
                                     <p:column headerText="Nombre" >                              
                                         <p:outputLabel value="#{tasa.tipo.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Discrimina" filterMatchMode="equals" style="width:70px" >
+                                        <p:outputLabel value="#{tasa.discrimina ? 'Sí': 'No'}" />
+                                    </p:column>
+                                    <p:column headerText="Caso" >                              
+                                        <p:outputLabel value="#{tasa.casoLiquidacion.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Valor" >                              
+                                        <p:outputLabel value="#{tasa.matchDisc.nombre}"/>
                                     </p:column>
                                     <p:column style="width:30px">
                                         <p:commandButton icon="fa fa-fw fa-toggle-off" title="Eliminar" action="#{mbParamGuia.desagregarTasa()}" 
@@ -60,14 +94,23 @@
                 
                 <!-- Diálogo para ver las Tasas al Tipo de Guía -->
                 <p:dialog header="Tasas a pagar por el Tipo de Guía" widgetVar="dlgVerTasas" minHeight="40" closable="false">
-                    <p:panel id="pnDlgView" style="margin-bottom:10px; width: 400px">
+                    <p:panel id="pnDlgView" style="margin-bottom:10px; width: 800px">
                         <h:panelGrid columns="1" >
                             <p:dataTable styleClass="table" value="#{mbParamGuia.tipoGuia.tasas}"
                                  var="tasa"
                                  id="dtViewTasas">
-                                <p:column headerText="Nombre" >                              
-                                    <p:outputLabel value="#{tasa.tipo.nombre}"/>
-                                </p:column>
+                                    <p:column headerText="Nombre" >                              
+                                        <p:outputLabel value="#{tasa.tipo.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Discrimina" filterMatchMode="equals" style="width:70px" >
+                                        <p:outputLabel value="#{tasa.discrimina ? 'Sí': 'No'}" />
+                                    </p:column>
+                                    <p:column headerText="Caso" >                              
+                                        <p:outputLabel value="#{tasa.casoLiquidacion.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Valor" >                              
+                                        <p:outputLabel value="#{tasa.matchDisc.nombre}"/>
+                                    </p:column>
                             </p:dataTable> 
                         </h:panelGrid>
                         <f:facet name="footer">
@@ -81,7 +124,9 @@
                     <p:panel id="pnFrmView" header="Detalle" rendered="#{mbParamGuia.view}" >
                         <h:panelGrid id="pgDatosGrales" columns="2" >
                             <p:outputLabel value="Nombre: " for="v_nombre"/>
-                            <p:outputLabel id="v_nombre" value="#{mbParamGuia.tipoGuia.nombre}"/>
+                            <p:outputLabel id="v_nombre" value="#{mbParamGuia.tipoGuia.nombre}"/>                            
+                            <p:outputLabel value="Tipo de movimiento: " for="v_tipo_mov"/>
+                            <p:outputLabel id="v_tipo_mov" value="#{mbParamGuia.tipoGuia.tipoMovimiento.nombre}"/>  
                             <p:outputLabel value="Habilita transporte: " for="v_habTransp"/>
                             <p:selectBooleanCheckbox disabled="true" id="v_habTransp" value="#{mbParamGuia.tipoGuia.habilitaTransp}" />
                             <p:outputLabel value="Movimiento interno: " for="v_movInterno" rendered="#{mbParamGuia.tipoGuia.habilitaTransp}" />
@@ -109,6 +154,13 @@
                             <p:outputLabel value="Nombre" for="nombre"/>
                             <p:inputText id="nombre" value="#{mbParamGuia.tipoGuia.nombre}" style="text-transform: uppercase; width: 250px"
                                      requiredMessage="Debe ingresar el Nombre" required="true"/>
+                            <p:outputLabel value="Tipo de movimiento" for="cmbTipoMov"/>   
+                            <p:selectOneMenu id="cmbTipoMov" value="#{mbParamGuia.tipoGuia.tipoMovimiento}" required="true" 
+                                             requiredMessage="Debe seleccionar un Tipo de Movimiento." >
+                                <f:selectItem itemLabel="Seleccione el Tipo de movimiento" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{mbParamGuia.lstTipoMovimientos}" 
+                                               var="tipo_mov" itemLabel="#{tipo_mov.nombre}" itemValue="#{tipo_mov}"/>
+                            </p:selectOneMenu> 
                         </h:panelGrid> 
                         <h:panelGrid id="pgTransp" columns="2">
                             <p:outputLabel value="Habilita transporte: " for="habTransp"/>
@@ -182,6 +234,12 @@
                                 sortBy="#{tipoGuia.nombre}" 
                                 filterBy="#{tipoGuia.nombre}" >
                                 <p:outputLabel value="#{tipoGuia.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Tipo Mov." 
+                                filterMatchMode="contains"
+                                sortBy="#{tipoGuia.tipoMovimiento.nombre}" 
+                                filterBy="#{tipoGuia.tipoMovimiento.nombre}" >
+                                <p:outputLabel value="#{tipoGuia.tipoMovimiento.nombre}"/>
                             </p:column>
                             <p:column filterBy="#{tipoGuia.habilitaTransp}" headerText="Hab. Transp." filterMatchMode="equals" >
                                 <f:facet name="filter">

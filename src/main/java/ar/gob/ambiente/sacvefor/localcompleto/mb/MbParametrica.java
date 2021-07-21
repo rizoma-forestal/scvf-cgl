@@ -192,13 +192,13 @@ public class MbParametrica implements Serializable{
                     msg = msg + "El Parámetro que está tratando de persisitir ya existe, por favor verifique los datos ingresados. ";
                 }
             }
-            // si es una tasa, valida que si lee configuración, tenga el valor de la variable correspóndiente seteado
-            if(parametrica.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TipoTasa"))){
-                if(parametrica.isLeeConf() && parametrica.getConf().equals("")){
-                    valida = false;
-                    msg = msg + "Si registra una tasa de liquidación discriminada, debe definir el contenido de dicha configuración.";
-                }
-            }
+//            // si es una tasa, valida que si lee configuración, tenga el valor de la variable correspóndiente seteado
+//            if(parametrica.getTipo().getNombre().equals(ResourceBundle.getBundle("/Config").getString("TipoTasa"))){
+//                if(parametrica.isLeeConf() && parametrica.getConf().equals("")){
+//                    valida = false;
+//                    msg = msg + "Si registra una tasa de liquidación discriminada, debe definir el contenido de dicha configuración.";
+//                }
+//            }
             if(valida){
                 String tempNombre = parametrica.getNombre();
                 parametrica.setNombre(tempNombre.toUpperCase());

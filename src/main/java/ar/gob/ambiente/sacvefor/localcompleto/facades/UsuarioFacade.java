@@ -72,4 +72,25 @@ public class UsuarioFacade extends AbstractFacade<Usuario> {
             return lUs.get(0);
         }
     }    
+    
+    /**
+     * Método para obtener Usuario para un rol
+     * Solo se usa para roles de un solo usuario, como el caso de cliente-traz
+     * A utilizar para el registro de productos desde TRAZ
+     * @param id_rol Long id del rol
+     * @return Usuario solicitado
+     */
+    public Usuario getByRol(Long id_rol){
+        List<Usuario> lstUsuarios;
+        String queryString = "SELECT us FROM Usuario us "
+                + "WHERE us.rol.id = :id_rol";
+        Query q = em.createQuery(queryString)
+                .setParameter("id_rol", id_rol);
+        lstUsuarios = q.getResultList();
+        if(lstUsuarios.isEmpty()){
+            return null;
+        }else{
+            return lstUsuarios.get(0);
+        }
+    }
 }

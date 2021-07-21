@@ -16,6 +16,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 
@@ -26,6 +28,7 @@ import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
  */
 @Entity
 @Audited
+@XmlRootElement
 public class Producto implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -61,6 +64,13 @@ public class Producto implements Serializable {
      * Variable privada: Equivalencia en Kg. de la Unidad de medida de la Clase del Producto
      */
     private float equivalKg;
+    
+    /**
+     * Variable privada: Equivalencia en m3 de la Unidad de medida de la Clase del Producto
+     * En los casos en que la unidad sea m3, el equivalente será 1
+     * Agregada para la versión 2 de TRAZ
+     */
+    private float equivalM3;
     
     /**
      * Variable privada: fecha de alta del producto
@@ -106,6 +116,15 @@ public class Producto implements Serializable {
         tasas = new ArrayList<>();
     }
 
+    @XmlTransient
+    public float getEquivalM3() {
+        return equivalM3;
+    }
+    
+    public void setEquivalM3(float equivalM3) {
+        this.equivalM3 = equivalM3;
+    }
+
     public float getEquivalKg() {
         return equivalKg;
     }
@@ -114,6 +133,7 @@ public class Producto implements Serializable {
         this.equivalKg = equivalKg;
     }
 
+    @XmlTransient
     public List<ProductoTasa> getTasas() {
         return tasas;
     }

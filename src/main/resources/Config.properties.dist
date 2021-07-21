@@ -98,21 +98,8 @@ GuiaMadre=GUIA MADRE
 TegFuente=ORIGEN
 TegDestino=DESTINO
 
-# Tipos de discriminación para tasas. Cada tasa que lee de aquí la discriminación deberá tener seteado en el atributo 'conf' 
-# el contenido de la variable correspondiente.
-#################################################
-# Si al liquidar tasas discrimina según el origen del predio.
+# Si discrimina tasas por origen del predio, para que lo muestre en los reportes
 DiscTasaOrigen=si
-CondAforoFiscal=FISCAL CON AFORO
-# Si al liquidar tasas discrimina según el destino de la guía sea interno o externo a la provincia
-CondDerInspExt=DESTINO EXTERNO
-CondDerInspInt=DESTINO INTERNO
-# Si al liquidar tasas discrimina según el tipo de intervención autorizada.
-IntervPCUS=CAMBIO USO DEL SUELO
-IntervPM=PLAN MANEJO SOSTENIBLE
-TasaPCUS=RENTAS-PCUS
-TasaPM=RENTAS-PM
-
 # Mostrar destino asignado a los productos en una guía de extracción
 DiscTasaDestExt=si
 # Permitir emisión de guías con tasas sin la acreditación del pago
@@ -234,6 +221,9 @@ TipoFuente=TIPO_FUENTE
 TipoEntidadGuia=TIPO_ENT_GUIA
 OrigenPredio=ORIGEN_PREDIO
 CuencaForestal=CUENCA_FORESTAL
+DestinoGuias=DEST_GUIAS
+DiscTasas=DISC_TASA
+TipoMov=TIPO_MOV
 
 # ----------------------- #
 # Roles de usuarios local #

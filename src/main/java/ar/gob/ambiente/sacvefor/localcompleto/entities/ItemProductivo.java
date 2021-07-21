@@ -3,6 +3,7 @@ package ar.gob.ambiente.sacvefor.localcompleto.entities;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
@@ -116,6 +118,15 @@ public class ItemProductivo implements Serializable {
     private Parametrica tipoActual;
     
     /**
+     * Variable privada: DetallePiezas para los productos transformados que lo requieran
+     * Necesaria por los servicios requeridos por TRAZ
+     */
+    @Audited(targetAuditMode = NOT_AUDITED)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval=true)
+    @JoinColumn(name = "detalle_piezas_id")
+    private DetallePiezas detallePiezas;
+    
+    /**
      * Variable privada: Referencia del ítem del cual se originó el actual
      * Para los items de tipo "Autorización" no habrá itemOrigen
      */
@@ -137,6 +148,31 @@ public class ItemProductivo implements Serializable {
      */
     @Column
     private float kilosXUnidad;
+    
+    /**
+     * Variable privada: análogo a kilosXUnidad, la equivalencia en m3 de una unidad gravimétrica
+     * Requerido por la versión 2.0 de TRAZ
+     */
+    private float m3XUnidad;
+    
+    /**
+     * Variable privada: análogo a totalKg, indica la equivalencia en m3 del total de un producto de unidad gravimétrica 
+     * Requerido por la versión 2.0 de TRAZ
+     */    
+    private float totalM3;
+    
+    /**
+     * Variable privada: análogo a saldoKg, indica la equivalencia en m3 del saldo de un producto de unidad gravimétrica 
+     * Requerido por la versión 2.0 de TRAZ
+     */    
+    private float saldoM3;
+    
+    /**
+     * Variable privada: atributo de la especie que se registra en el item productivo
+     * Utilizado para seleccionar el factor de transformación
+     * Agregada para la versión 2 de TRAZ
+     */
+    private int grupoEspecie;
     
     /**
      * Variable privada: Cantidad autorizada de Producto a extraer cupo
@@ -237,10 +273,50 @@ public class ItemProductivo implements Serializable {
      */
     @Transient
     private boolean descontado;    
-    
+      
     /**********************
      * Métodos de acceso **
      **********************/  
+    public int getGrupoEspecie() {
+        return grupoEspecie;
+    }
+  
+    public void setGrupoEspecie(int grupoEspecie) {
+        this.grupoEspecie = grupoEspecie;
+    }
+
+    public DetallePiezas getDetallePiezas() {
+        return detallePiezas;
+    }
+  
+    public void setDetallePiezas(DetallePiezas detallePiezas) {
+        this.detallePiezas = detallePiezas;
+    }
+
+    public float getM3XUnidad() {
+        return m3XUnidad;
+    }
+
+    public void setM3XUnidad(float m3XUnidad) {
+        this.m3XUnidad = m3XUnidad;
+    }
+
+    public float getTotalM3() {
+        return totalM3;
+    }
+
+    public void setTotalM3(float totalM3) {
+        this.totalM3 = totalM3;
+    }
+
+    public float getSaldoM3() {
+        return saldoM3;
+    }
+
+    public void setSaldoM3(float saldoM3) {
+        this.saldoM3 = saldoM3;
+    }
+
     public String getCodigoProducto() {
         return codigoProducto;
     }
